@@ -2,7 +2,7 @@
 
 module Main where
 
-import Data.Char (isUpper)
+import Data.Char (isUpper, isSpace)
 import Data.List
 import Debug.Trace
 import System.IO
@@ -112,17 +112,14 @@ pTerm, pCon, pVar, pFun :: Parser Term
 pTerm  =  pCon  <|>  pVar <|> pFun
 pCon   =  Con   <$>  pNatural
 pVar   =  Var   <$>  pList1 pUpper
-pFun   =  Fun   <$>  pIdentifier <*> (pTerms `opt` [])
+pFun   =  Fun   <$>  pIdentifier <*> (pParens pTerms `opt` [])
 
 pTerms :: Parser [Term]
 pTerms =  pListSep pComma pTerm
 
-isSpace :: Char -> Bool
-isSpace x = x `elem` " \n"
-
 start :: Parser a -> String -> (a, [Error LineColPos])
 start p inp = parse ((,) <$> p <*> pEnd)  $  createStr (LineColPos 0 0 0) 
-                                          .  filter (not.isSpace) $ inp 
+                                          .  filter (not . isSpace) $ inp 
              
 pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)
