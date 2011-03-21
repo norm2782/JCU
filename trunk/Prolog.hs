@@ -1,6 +1,8 @@
 {-# LANGUAGE Rank2Types, FlexibleContexts #-}
 
-module Main where
+-- TODO: Do not strip whitespace, but just deal with it. Otherwise the error
+-- messages are useless!
+module Prolog where
 
 import Data.Char (isUpper, isSpace)
 import Data.List
@@ -80,30 +82,8 @@ solve rules lt@(t:ts)  e  n  =
 display :: Show a => String -> a -> String
 display string value = string ++ show value ++ "\n"
 
-main :: IO ()          
-main = 
- do  hSetBuffering stdin LineBuffering
-     putStr "File with rules? "
-     fn  <- getLine
-     s   <- readFile fn
-     let (rules, errors) = start (pList pRule) s
-     if null errors 
-         then  do  mapM_ print rules
-                   loop rules  
-         else  do  putStrLn "No rules parsed"
-                   mapM_ print errors
-                   main
-
-loop :: [Rule] -> IO ()
-loop rules =  do  putStr "term? "
-                  s <- getLine
-                  unless (s == "stop") $
-                      do  let (goal, errors) = start pFun s 
-                          if null errors
-                              then  printsolutions (solve rules [goal] [] 0)
-                              else  do  putStrLn "A term was expected:"
-                                        mapM_ print errors
-                          loop rules
+pRules :: Parser [Rule]
+pRules = pList pRule
 
 pRule :: Parser Rule
 pRule = (:<-:)  <$> pFun <*> ((pToken ":-" *> pTerms) `opt` []) <* pDot
@@ -117,24 +97,10 @@ pFun   =  Fun   <$>  pIdentifier <*> (pParens pTerms `opt` [])
 pTerms :: Parser [Term]
 pTerms =  pListSep pComma pTerm
 
-start :: Parser a -> String -> (a, [Error LineColPos])
-start p inp = parse ((,) <$> p <*> pEnd)  $  createStr (LineColPos 0 0 0) 
-                                          .  filter (not . isSpace) $ inp 
+startParse :: Parser a -> String -> (a, [Error LineColPos])
+startParse p inp = parse ((,) <$> p <*> pEnd)  $  createStr (LineColPos 0 0 0) 
+                                               .  filter (not . isSpace) $ inp 
              
 pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)
 
-printsolutions :: [EnvTrace] -> IO () 
-printsolutions sols = sequence_ [ printGetLn bs | bs <- sols]
-    where printGetLn bs = do  printsolution bs
-                              getLine
-
-printsolution :: EnvTrace -> IO ()
-printsolution (bs, trace) = do  mapM_ putStr trace
-                                putStr (concatMap showBdg bs) 
- where  showBdg (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm t ++ "\n"
-                        |  otherwise = ""  
-        showTerm (Con n)     = show n 
-        showTerm t@(Var _)   = showTerm (lookUp t bs) 
-        showTerm (Fun f [])  = f 
-        showTerm (Fun f ts)  = f ++ "(" ++ intercalate ", " (map showTerm ts) ++ ")"
