@@ -61,8 +61,8 @@ unify  (t, u)  env@(Just e)  =  trace  ("unifying: " ++ show t ++ " " ++ show u 
          uni x (Var y)          =  Just ((y, x): e)
          uni (Con x) (Con y)    =  if  x == y then env else Nothing
          uni (Fun x xs) (Fun y ys) 
-           | x == y && length xs == length ys  =  foldr unify env (zip xs ys)
-           | otherwise                         =  Nothing
+           | x == y && length xs == length ys  = foldr unify env (zip xs ys)
+           | otherwise                         = Nothing
          uni _ _                =  Nothing
 
 solve :: [Rule] -> [Term] -> Env -> Int -> [EnvTrace]
@@ -138,4 +138,3 @@ printsolution (bs, trace) = do  mapM_ putStr trace
         showTerm t@(Var _)   = showTerm (lookUp t bs) 
         showTerm (Fun f [])  = f 
         showTerm (Fun f ts)  = f ++ "(" ++ intercalate ", " (map showTerm ts) ++ ")"
-
