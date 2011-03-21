@@ -34,21 +34,21 @@ gui = do -- Application frame
 onRun :: (Textual a, Textual b, Textual c) => a -> b -> c -> d -> IO ()
 onRun rules query output _ = do
     set output [ text := "Running..." ]
-    rs  <- get  rules   text
+    rs <- get rules text
     let (rules, rerr) = startParse pRules rs
     if null rerr
-        then do qs  <- get  query   text
-                let (goal, ferr) = startParse pFun qs
-                if null ferr
-                    then do append output "Done!"
-                            showSolutions output $ solve rules [goal] [] 0
-                    else append output $ "Invalid query: " ++ qs
-        else append output $ "Errors in parsing rules!" ++ show rerr
+        then  do qs <- get query text
+                 let (goal, ferr) = startParse pFun qs
+                 if null ferr
+                     then  do  append output "Done!"
+                               showSolutions output $ solve rules [goal] [] 0
+                     else  append output $ "Invalid query: " ++ qs
+        else  append output $ "Errors in parsing rules!" ++ show rerr
 
 append :: Textual a => a -> String -> IO ()
 append t s = do
     txt <- get t text
-    set t [ text := '\n' : txt ++ s ]
+    set t [ text := txt ++ '\n':s ]
 
 onClear :: (Textual a, Textual b, Textual c) => a -> b -> c -> d -> IO ()
 onClear rules query output _ = do
