@@ -20,7 +20,8 @@ gui = do -- Application frame
     clear   <- button    frame  [  text := "Clear"
                                 ,  on command ::= onClear rules query output
                                 ]
-    set frame  [  layout := column 5  [ boxed "" (grid 5 5 [
+    set frame  [  layout := column 5  [ boxed "Enter rules and queries, press Run and be amazed!"
+                                          (grid 5 5 [
                                              [label "Rules:",   hfill $ widget rules]
                                           ,  [label "Query:",   hfill $ widget query]
                                           ,  [label "Output:",  hfill $ widget output]
