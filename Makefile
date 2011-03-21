@@ -5,3 +5,6 @@ default:
 
 clean:
 	rm -rf GUI GUI.app/ *.hi *.o
+
+run:
+	open ./GUI.app
