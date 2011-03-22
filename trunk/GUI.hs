@@ -1,13 +1,9 @@
 module Main where
 
-import Control.Concurrent.STM.TVar
-import Control.Monad.STM
 import Data.Char (isUpper)
 import Data.List (intercalate)
 import Graphics.UI.WX
 import Prolog
-
-data AppState = AppState { currentFile :: String }
 
 main :: IO ()
 main = start gui
@@ -87,9 +83,9 @@ onRun cvas vlogic rules query output _ = do
                      else  append output $ "Invalid query: " ++ qs
         else  append output $ "Errors in parsing rules! " ++ show rerr
 
-draw :: TVar [a] -> DC b -> t -> IO ()
+draw :: Valued w => w [a] -> DC a1 -> t -> IO ()
 draw tv dc va = do
-    vl <- atomically $ readTVar tv
+    vl <- get tv value
     set dc [fontFace := "Courier New", fontSize := 16, fontWeight := WeightBold ]
     if null vl -- vl contains the solve results! honestly!
         then drawText dc "No solutions yet!" (pt 50 50) []
