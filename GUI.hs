@@ -119,16 +119,16 @@ draw tv query dc va = do
 
 drawTraces :: DC a -> [EnvTrace] -> Int -> IO ()
 drawTraces dc trs y = foldM_ drawTraces' 50 trs
-    where drawTraces' x (_,tr) = do drawTrace dc tr x
-                                    return $ x+300
+    where drawTraces' x (_,tr) = do  drawTrace dc tr x
+                                     return $ x+300
 
 drawTrace :: DC a -> [Trace] -> Int -> IO ()
 drawTrace dc trs x = foldM_ drawTrace' 350 trs
-    where drawTrace' y t = do drawText dc (show $ goal t) (pt x y) []
-                              line dc (pt 0 (y+15)) (pt 700 (y+15)) []
-                              drawText dc (show $ unif t) (pt x (y-20)) []
-                              line dc (pt 0 (y-5)) (pt 700 (y-5)) []
-                              return $ y-40
+    where drawTrace' y t = do  drawText dc (show $ goal t) (pt x y) []
+                               line dc (pt 0 (y+15)) (pt 700 (y+15)) []
+                               drawText dc (show $ unif t) (pt x (y-20)) []
+                               line dc (pt 0 (y-5)) (pt 700 (y-5)) []
+                               return $ y-40
 
 append :: Textual a => a -> String -> IO ()
 append t s = appendText t $ '\n':s
