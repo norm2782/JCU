@@ -19,11 +19,11 @@ data Term   =  Con Int
             |  Fun Ident [Term]
             deriving Eq
 
-data Rule   =   Term :<-: [Term]
+data Rule   =  Term :<-: [Term]
+data Trace  =  Trace Term Rule Env [Term]
 
 type Env       = [(Ident, Term)]
-type Trace     = [String]
-type EnvTrace  = (Env, Trace)
+type EnvTrace  = (Env, [Trace])
 
 
 instance Show Term where
@@ -33,7 +33,14 @@ instance Show Term where
   show (Fun i ts)  =  i ++ "(" ++ showCommas ts ++ ")"
 
 instance Show Rule where
-  show (t :<-: ts) = show t ++ ":-" ++ showCommas ts ++"."
+  show (t :<-: ts) = show t ++ ":-" ++ showCommas ts ++ "."
+
+instance Show Trace where
+    show (Trace t r e ts) = display "goal                  : " t   ++
+                            display "unifies with head of  : " r   ++
+                            display "new environment       : " e   ++
+                            display "new goals             : " ts  ++ "\n"
+                        where display string value = string ++ show value ++ "\n"
 
 showCommas :: Show a => [a] -> String
 showCommas l = intercalate ", " (map show l)
@@ -55,6 +62,8 @@ instance Taggable Term where
 instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
 
+-- TODO: Grab the thing in the trace function somehow and extract it, so we can
+-- do stuff with it
 unify ::  (Term, Term) ->  Maybe Env -> Maybe Env                         
 unify  _       Nothing       =  Nothing
 unify  (t, u)  env@(Just e)  =  trace  ("unifying: " ++ show t ++ " " ++ show u ++ "\n")
@@ -70,17 +79,12 @@ unify  (t, u)  env@(Just e)  =  trace  ("unifying: " ++ show t ++ " " ++ show u 
 solve :: [Rule] -> [Term] -> Env -> Int -> [EnvTrace]
 solve rules []         e  _  =  [(e, [])]
 solve rules lt@(t:ts)  e  n  = 
-    [  (sol, msg:trace)  
-    |  (c :<-: cs)  <- map (tag n) rules
-    ,  Just r       <- [unify (t, c) (Just e)]
-    ,  let msg =  display "goal                  : " t            ++
-                  display "unifies with head of  : " (c :<-: cs)  ++
-                  display "new environment       : " r            ++
-                  display "new goals             : " (cs ++ ts)   ++ "\n"
-    ,  (sol, trace) <- solve rules (cs ++ ts) r (n+1)]
-
-display :: Show a => String -> a -> String
-display string value = string ++ show value ++ "\n"
+    [  (sol, trc:trace)  
+    |  tm@(c :<-: cs)   <- map (tag n) rules
+    ,  Just r           <- [unify (t, c) (Just e)]
+    ,  let trc = Trace t tm r (cs ++ ts)
+    ,  (sol, trace)     <- solve rules (cs ++ ts) r (n+1)
+    ]
 
 pRules :: Parser [Rule]
 pRules = pList pRule

@@ -37,7 +37,7 @@ printsolutions sols = sequence_ [ printGetLn bs | bs <- sols]
                               getLine
 
 printsolution :: EnvTrace -> IO ()
-printsolution (bs, trace) = do  mapM_ putStr trace
+printsolution (bs, trace) = do  mapM_ (putStr . show) trace
                                 putStr (concatMap showBdg bs) 
  where  showBdg (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm t ++ "\n"
                         |  otherwise = ""  
