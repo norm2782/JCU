@@ -63,7 +63,9 @@ instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
 
 -- TODO: Grab the thing in the trace function somehow and extract it, so we can
--- do stuff with it
+-- do stuff with it. Or... the intermediate traces contain all directly useful 
+-- information.. the rest is just what the program tries. Lets not worry about 
+-- this yet. Discuss this with Doaitse.
 unify ::  (Term, Term) ->  Maybe Env -> Maybe Env                         
 unify  _       Nothing       =  Nothing
 unify  (t, u)  env@(Just e)  =  trace  ("unifying: " ++ show t ++ " " ++ show u ++ "\n")
