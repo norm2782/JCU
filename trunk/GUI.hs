@@ -90,16 +90,10 @@ onRun cvas vlogic rules query output _ = do
 draw :: TVar [a] -> DC b -> t -> IO ()
 draw tv dc va = do
     vl <- atomically $ readTVar tv
-    circle dc (pt 200 200) 20 [penKind := PenDash DashDot]
-    arc dc (pt 100 100) 20 90 230 [color := red, penWidth :~ (+1), penKind := PenSolid]
-    if null vl -- vl contains the solve results! honestly!
-        then ellipticArc dc (rect  (pt 20  20) (sz 60 30)) 90 230 [color := blue, penWidth :~ (*2)]
-        else ellipticArc dc (rect  (pt 20  20) (sz 60 30)) 90 230 [color := black, penWidth :~ (*2)]
-
-    c <- get dc color
     set dc [fontFace := "Courier New", fontSize := 16, fontWeight := WeightBold ]
-    drawText dc (show c) (pt 50 50) []
-    rotatedText dc "rotated text" (pt 80 160) 45 [textColor := green]
+    if null vl -- vl contains the solve results! honestly!
+        then drawText dc "No solutions yet!" (pt 50 50) []
+        else drawText dc "We have a solution!" (pt 50 100) []
 
 append :: Textual a => a -> String -> IO ()
 append t s = appendText t $ '\n':s
