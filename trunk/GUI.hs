@@ -10,27 +10,69 @@ main = start gui
 
 gui :: IO ()
 gui = do -- Application frame 
-    frame   <- frame [text := "Prolog in Haskell"]
-    rules   <- textCtrl  frame  []
-    query   <- textCtrl  frame  []
-    output  <- textCtrl  frame  []
-    run     <- button    frame  [  text := "Run!"
-                                ,  on command ::= onRun rules query output
-                                ]
-    clear   <- button    frame  [  text := "Clear"
-                                ,  on command ::= onClear rules query output
-                                ]
-    set frame  [  layout := column 5  [ boxed "Enter rules and queries, press Run and be amazed!"
-                                          (grid 5 5 [
-                                             [label "Rules:",   hfill $ widget rules]
-                                          ,  [label "Query:",   hfill $ widget query]
-                                          ,  [label "Output:",  hfill $ widget output]
-                                          ,  [widget run]
-                                          ,  [widget clear]
-                                          ])
-                                      ]
+    frame    <- frame [text := "Prolog in Haskell"]
+    rules    <- textCtrl  frame  []
+    query    <- textCtrl  frame  []
+    output   <- textCtrl  frame  []
+    file     <- menuPane  [text := "&File"]
+    mopen    <- menuItem  file   [  text        := "&Open"
+                                 ,  help        := "Open a Prolog file"
+                                 ,  on command  := onOpen frame rules
+                                 ]
+    msave    <- menuItem  file   [  text        := "&Save"
+                                 ,  help        := "Save a Prolog file"
+                                 ,  on command  := onSave frame rules
+                                 ]
+    msaveas  <- menuItem  file   [  text        := "&Save As"
+                                 ,  help        := "Save As a Prolog file"
+                                 ,  on command  := onSaveAs frame rules
+                                 ]
+    mquit    <- menuItem  file   [  text        := "&Quit"
+                                 ,  help        := "Quit the program"
+                                 ,  on command  := close frame
+                                 ]
+    run      <- button    frame  [  text := "Run!"
+                                 ,  on command ::= onRun rules query output
+                                 ]
+    clear    <- button    frame  [  text := "Clear"
+                                 ,  on command ::= onClear rules query output
+                                 ]
+    set frame  [  menuBar  := [file]
+               ,  layout   := column 5  [ boxed "Enter rules and queries, press Run and be amazed!"
+                                            (grid 5 5 [
+                                               [label "Rules:",   hfill $ widget rules]
+                                            ,  [label "Query:",   hfill $ widget query]
+                                            ,  [label "Output:",  hfill $ widget output]
+                                            ,  [widget run]
+                                            ,  [widget clear]
+                                            ])
+                                        ]
                ,  clientSize := sz 800 600
                ]
+
+fileFilter :: [(String, [String])]
+fileFilter = [("Prolog files (*.prl)", ["*.prl"])]
+
+runDiag diag frame hdr = diag frame True True hdr fileFilter "" ""
+
+onOpen :: Textual w => Window a -> w -> IO ()
+onOpen frame rules = do
+    diag <- runDiag fileOpenDialog frame "Select Prolog file"
+    case diag of
+        Nothing  -> return () -- TODO: Nice error handling
+        Just f   -> do  cnts <- readFile f
+                        set rules [ text := cnts ]
+    
+onSave :: Textual w => Window a -> w -> IO ()
+onSave frame rules = do
+    diag <- runDiag fileSaveDialog frame "Save Prolog file"
+    case diag of
+        Nothing  -> return () -- TODO: Nice handling
+        Just f   -> do  rs <- get rules text
+                        writeFile f rs
+
+onSaveAs :: Textual w => Window a -> w -> IO ()
+onSaveAs = onSave
 
 onRun :: (Textual a, Textual b, Textual c) => a -> b -> c -> d -> IO ()
 onRun rules query output _ = do
