@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Monad
 import Data.Char (isUpper)
 import Data.List (intercalate)
 import Graphics.UI.WX
@@ -104,28 +105,30 @@ ouder(X0, Y0):-ma(X0, Y0).    ouder(X0, Y0):-pa(X0, Y0).
 -}
 
 
-
+-- TODO: Clean up and improve drawing code
 draw :: (Textual b, Valued w) => w [EnvTrace] -> b -> DC a1 -> t -> IO ()
 draw tv query dc va = do
     vl  <- get tv value
     q   <- get query text
-    set dc [  fontFace    := "Courier New"
-           ,  fontSize    := 14 ]
-    if null vl -- vl contains a list of EnvTraces. In case for the example above, one EnvTrace for ma and one for pa
+    set dc [  fontFace  := "Courier New"
+           ,  fontSize  := 14 ]
+    if null vl
         then  drawText dc "No solutions yet!" (pt 50 50) []
-        else  do  drawText   dc "We have a solution!" (pt 50 50) []
-                  drawTrace  dc (head vl) 50 350
-                  --line dc (pt 0 315) (pt 500 315) []
-                  --drawText dc q (pt 75 320) []
+        else  do  drawText    dc "We have a solution!" (pt 50 50) []
+                  drawTraces  dc vl 350
 
-drawTrace :: DC a -> EnvTrace -> Int -> Int -> IO ()
-drawTrace dc (e, (t:ts)) x y = do
-    drawText dc (show $ goal t) (pt x y) []
-    line dc (pt 0 (y+14)) (pt 500 (y+14)) []
-    drawText dc (show $ unif t) (pt x (y-20)) []
-    line dc (pt 0 (y-5)) (pt 500 (y-5)) []
-    drawTrace dc (e, ts) x (y-40)
-drawTrace _ _ _ _ = return ()
+drawTraces :: DC a -> [EnvTrace] -> Int -> IO ()
+drawTraces dc trs y = foldM_ drawTraces' 50 trs
+    where drawTraces' x (_,tr) = do drawTrace dc tr x
+                                    return $ x+300
+
+drawTrace :: DC a -> [Trace] -> Int -> IO ()
+drawTrace dc trs x = foldM_ drawTrace' 350 trs
+    where drawTrace' y t = do drawText dc (show $ goal t) (pt x y) []
+                              line dc (pt 0 (y+15)) (pt 700 (y+15)) []
+                              drawText dc (show $ unif t) (pt x (y-20)) []
+                              line dc (pt 0 (y-5)) (pt 700 (y-5)) []
+                              return $ y-40
 
 append :: Textual a => a -> String -> IO ()
 append t s = appendText t $ '\n':s
