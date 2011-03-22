@@ -11,6 +11,9 @@ main = start gui
 gui :: IO ()
 gui = do -- Application frame 
     frame    <- frame [text := "Prolog in Haskell"]
+    cvas     <- panel frame  [  on paint    := onPaint
+                             ,  clientSize  := sz 200 200
+                             ]
     rules    <- textCtrl  frame  []
     query    <- textCtrl  frame  []
     output   <- textCtrl  frame  []
@@ -40,7 +43,8 @@ gui = do -- Application frame
     set frame  [  menuBar  := [file]
                ,  layout   := column 5  [ boxed "Enter rules and queries, press Run and be amazed!"
                                             (grid 5 5 [
-                                               [label "Rules:",   hfill $ widget rules]
+                                               [label "Canvas:",  hfill $ widget cvas] 
+                                            ,  [label "Rules:",   hfill $ widget rules]
                                             ,  [label "Query:",   hfill $ widget query]
                                             ,  [label "Output:",  hfill $ widget output]
                                             ,  [widget run]
@@ -51,7 +55,7 @@ gui = do -- Application frame
                ]
 
 fileFilter :: [(String, [String])]
-fileFilter = [("Prolog files (*.prl)", ["*.prl"])]
+fileFilter = [("Prolog files (*.pro, *.pl)", ["*.pro", "*.pl"])]
 
 runDiag diag frame hdr = diag frame True True hdr fileFilter "" ""
 
@@ -87,6 +91,8 @@ onRun rules query output _ = do
                                showSolutions output $ solve rules [goal] [] 0
                      else  append output $ "Invalid query: " ++ qs
         else  append output $ "Errors in parsing rules! " ++ show rerr
+
+onPaint cvas area = undefined
 
 append :: Textual a => a -> String -> IO ()
 append t s = do
