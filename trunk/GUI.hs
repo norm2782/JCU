@@ -26,15 +26,19 @@ gui = do -- Application frame
     msave    <- menuItem   mfile  [  text        := "&Save\tCtrl+S"
                                   ,  help        := "Save a Prolog file"
                                   ,  on command  := onSave f rules ]
-    msaveas  <- menuItem   mfile  [  text        := "&Save As"
+    msaveas  <- menuItem   mfile  [  text        := "&Save As\tCtrl+Shift+S"
                                   ,  help        := "Save As a Prolog file"
                                   ,  on command  := onSaveAs f rules ]
     mquit    <- menuQuit   mfile  [  text        := "&Quit"
                                   ,  help        := "Quit the program"
                                   ,  on command  := close f ]
+    mquery   <- menuPane   [text  := "Query" ]
+    mrun     <- menuItem   mquery [  text        := "&Run\tCtrl+R"
+                                  ,  help        := "Run the query"
+                                  ,  on command  ::= onRun cvas vlogic rules query output ]
     run      <- button     f  [  text := "Run!"
                               ,  on command ::= onRun cvas vlogic rules query output ]
-    set f  [  menuBar  := [mfile]
+    set f  [  menuBar  := [mfile, mquery]
            ,  layout   := column 5 [ boxed "Enter rules and queries, press Run and be amazed!"
                                        (grid 5 5 [
                                               [label "Canvas:",  hfill $ widget cvas] 
