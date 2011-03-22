@@ -108,3 +108,12 @@ startParse p inp = parse ((,) <$> p <*> pEnd)  $  createStr (LineColPos 0 0 0)
 pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)
 
+showBdg :: Env -> (Ident, Term) -> String
+showBdg bs (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm bs t ++ "\n"
+                   |  otherwise = ""
+
+showTerm :: Env -> Term -> String
+showTerm _   (Con n)     = show n 
+showTerm bs  t@(Var _)   = showTerm bs (lookUp t bs) 
+showTerm _   (Fun f [])  = f 
+showTerm bs  (Fun f ts)  = f ++ "(" ++ intercalate ", " (map (showTerm bs) ts) ++ ")"
