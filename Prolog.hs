@@ -18,7 +18,10 @@ data Term   =  Con Int
             deriving Eq
 
 data Rule   =  Term :<-: [Term]
-data Trace  =  Trace Term Rule Env [Term]
+data Trace  =  Trace  { goal   :: Term
+                      , unif   :: Rule
+                      , env    :: Env
+                      , terms  :: [Term] }
 
 type Env       = [(Ident, Term)]
 type EnvTrace  = (Env, [Trace])
