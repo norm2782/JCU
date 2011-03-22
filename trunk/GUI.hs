@@ -44,6 +44,8 @@ gui = do -- Application frame
                                        ]
            ,  clientSize := sz 800 600 ]
 
+runDiag :: (t1 -> Bool -> Bool -> t2 -> [(String, [String])] -> String
+        -> String -> t) -> t1 -> t2 -> t
 runDiag diag f hdr =  diag f True True hdr
                           [("Prolog files (*.pro, *.pl)", ["*.pro", "*.pl"])]
                           "" ""
@@ -67,6 +69,8 @@ onSave f rules = do
 onSaveAs :: Textual w => Window a -> w -> IO ()
 onSaveAs = onSave
 
+onRun :: (Textual a, Textual w1, Textual w2, Valued w, Paint w3)
+      => w3 -> w [EnvTrace] -> w1 -> w2 -> a -> t -> IO ()
 onRun cvas vlogic rules query output _ = do
     set output [ text := "Running..." ]
     set vlogic [ value := [] ]
