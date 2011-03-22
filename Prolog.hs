@@ -1,7 +1,5 @@
 {-# LANGUAGE Rank2Types, FlexibleContexts #-}
 
--- TODO: Do not strip whitespace, but just deal with it. Otherwise the error
--- messages are useless!
 module Prolog where
 
 import Data.Char (isUpper, isSpace)
@@ -92,23 +90,22 @@ pRules :: Parser [Rule]
 pRules = pList pRule
 
 pRule :: Parser Rule
-pRule = (:<-:)  <$> pFun <*> ((pToken ":-" *> pTerms) `opt` []) <* pDot
+pRule = (:<-:)  <$> pFun <*> ((pSpaces *> pToken ":-" <* pSpaces *> pTerms) `opt` []) <* pSpaces <* pDot
 
 pTerm, pCon, pVar, pFun :: Parser Term
 pTerm  =  pCon  <|>  pVar <|> pFun
-pCon   =  Con   <$>  pNatural
-pVar   =  Var   <$>  pList1 pUpper
-pFun   =  Fun   <$>  pIdentifier <*> (pParens pTerms `opt` [])
+pCon   =  Con   <$>  pNatural <* pSpaces
+pVar   =  Var   <$>  pList1 pUpper <* pSpaces
+pFun   =  Fun   <$>  (pIdentifier <* pSpaces) <*> (pParens pTerms `opt` [])
 
 pTerms :: Parser [Term]
-pTerms =  pListSep pComma pTerm
+pTerms =  pListSep pComma (pSpaces *> pTerm <* pSpaces)
 
 startParse :: Parser a -> String -> (a, [Error LineColPos])
-startParse p inp = parse ((,) <$> p <*> pEnd)  $  createStr (LineColPos 0 0 0) 
-                                               .  filter (not . isSpace) $ inp 
-             
+startParse p inp = parse ((,) <$> p <*> pEnd) $ createStr (LineColPos 0 0 0) inp
+
 pIdentifier :: Parser String
-pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)
+pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit) <* pSpaces
 
 showBdg :: Env -> (Ident, Term) -> String
 showBdg bs (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm bs t ++ "\n"
