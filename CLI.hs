@@ -32,16 +32,8 @@ loop rules =  do  putStr "term? "
                           loop rules
 
 printsolutions :: [EnvTrace] -> IO () 
-printsolutions sols = sequence_ [ printGetLn bs | bs <- sols]
-    where printGetLn bs = do  printsolution bs
-                              getLine
+printsolutions sols = sequence_ [ printGetLn etr | etr <- sols]
+    where printGetLn (bs, trace) = do  mapM_ (putStr . show) trace
+                                       putStr (concatMap (showBdg bs) bs)
+                                       getLine
 
-printsolution :: EnvTrace -> IO ()
-printsolution (bs, trace) = do  mapM_ (putStr . show) trace
-                                putStr (concatMap showBdg bs) 
- where  showBdg (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm t ++ "\n"
-                        |  otherwise = ""  
-        showTerm (Con n)     = show n 
-        showTerm t@(Var _)   = showTerm (lookUp t bs) 
-        showTerm (Fun f [])  = f 
-        showTerm (Fun f ts)  = f ++ "(" ++ intercalate ", " (map showTerm ts) ++ ")"

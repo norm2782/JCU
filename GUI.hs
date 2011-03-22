@@ -58,14 +58,6 @@ onClear rules query output _ = do
     set output  [ text := "" ]
 
 showSolutions :: Textual a => a -> [EnvTrace] -> IO ()
-showSolutions t es = sequence_ [ showSolution t bs | bs <- es]
-
-showSolution :: Textual a => a -> EnvTrace -> IO ()
-showSolution t (bs, trace) = do  mapM_ (append t . show) trace
-                                 append t $ concatMap showBdg bs
- where  showBdg (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm t ++ "\n"
-                        |  otherwise = ""  
-        showTerm (Con n)     = show n 
-        showTerm t@(Var _)   = showTerm (lookUp t bs) 
-        showTerm (Fun f [])  = f 
-        showTerm (Fun f ts)  = f ++ "(" ++ intercalate ", " (map showTerm ts) ++ ")"
+showSolutions t es = sequence_ [ showSolution t etr | etr <- es]
+    where showSolution t (bs, trace) = do  mapM_ (append t . show) trace
+                                           append t $ concatMap (showBdg bs) bs
