@@ -12,16 +12,16 @@ gui :: IO ()
 gui = do -- Application frame 
     f        <- frame [text := "Prolog in Haskell"]
     vlogic   <- variable   [  value := [] ]
-    cvas     <- panel f    [  on paint    := draw vlogic
-                           ,  clientSize  := sz 200 200 ]
     rules    <- textCtrl   f  []
     query    <- textEntry  f  []
     output   <- textCtrl   f  []
+    cvas     <- panel f    [  on paint    := draw vlogic query
+                           ,  clientSize  := sz 200 200 ]
     mfile    <- menuPane   [text := "&File"]
-    mopen    <- menuItem   mfile  [  text        := "&Open"
+    mopen    <- menuItem   mfile  [  text        := "&Open\tCtrl+O"
                                   ,  help        := "Open a Prolog file"
                                   ,  on command  := onOpen f rules ]
-    msave    <- menuItem   mfile  [  text        := "&Save"
+    msave    <- menuItem   mfile  [  text        := "&Save\tCtrl+S"
                                   ,  help        := "Save a Prolog file"
                                   ,  on command  := onSave f rules ]
     msaveas  <- menuItem   mfile  [  text        := "&Save As"
@@ -69,6 +69,8 @@ onSaveAs = onSave
 
 onRun cvas vlogic rules query output _ = do
     set output [ text := "Running..." ]
+    set vlogic [ value := [] ]
+    repaint cvas
     rs <- get rules text
     let (rules, rerr) = startParse pRules rs
     if null rerr
@@ -83,13 +85,16 @@ onRun cvas vlogic rules query output _ = do
                      else  append output $ "Invalid query: " ++ qs
         else  append output $ "Errors in parsing rules! " ++ show rerr
 
-draw :: Valued w => w [a] -> DC a1 -> t -> IO ()
-draw tv dc va = do
-    vl <- get tv value
+draw :: (Textual b, Valued w) => w [a] -> b -> DC a1 -> t -> IO ()
+draw tv query dc va = do
+    vl  <- get tv value
+    q   <- get query text
     set dc [fontFace := "Courier New", fontSize := 16, fontWeight := WeightBold ]
     if null vl -- vl contains the solve results! honestly!
-        then drawText dc "No solutions yet!" (pt 50 50) []
-        else drawText dc "We have a solution!" (pt 50 100) []
+        then  drawText dc "No solutions yet!" (pt 50 50) []
+        else  do  drawText dc "We have a solution!" (pt 50 100) []
+                  line dc (pt 0 115) (pt 500 115) []
+                  drawText dc q (pt 75 120) []
 
 append :: Textual a => a -> String -> IO ()
 append t s = appendText t $ '\n':s
