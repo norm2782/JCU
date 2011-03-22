@@ -44,7 +44,7 @@ onRun rules query output _ = do
                      then  do  append output "Done!"
                                showSolutions output $ solve rules [goal] [] 0
                      else  append output $ "Invalid query: " ++ qs
-        else  append output $ "Errors in parsing rules!" ++ show rerr
+        else  append output $ "Errors in parsing rules! " ++ show rerr
 
 append :: Textual a => a -> String -> IO ()
 append t s = do
@@ -61,7 +61,7 @@ showSolutions :: Textual a => a -> [EnvTrace] -> IO ()
 showSolutions t es = sequence_ [ showSolution t bs | bs <- es]
 
 showSolution :: Textual a => a -> EnvTrace -> IO ()
-showSolution t (bs, trace) = do  mapM_ (append t) trace
+showSolution t (bs, trace) = do  mapM_ (append t . show) trace
                                  append t $ concatMap showBdg bs
  where  showBdg (x, t)  |  isUpper (head x) && length x == 1 =  x ++ " = " ++ showTerm t ++ "\n"
                         |  otherwise = ""  
