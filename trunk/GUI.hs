@@ -16,7 +16,8 @@ gui = do -- Application frame
     query    <- textEntry  f  []
     output   <- textCtrl   f  []
     cvas     <- panel f    [  on paint    := draw vlogic query
-                           ,  clientSize  := sz 200 200 ]
+                           ,  clientSize  := sz 800 500
+                           ]
     mfile    <- menuPane   [text := "&File"]
     mopen    <- menuItem   mfile  [  text        := "&Open\tCtrl+O"
                                   ,  help        := "Open a Prolog file"
@@ -42,7 +43,7 @@ gui = do -- Application frame
                                            ,  [widget run]
                                            ])
                                        ]
-           ,  clientSize := sz 800 600 ]
+           ,  clientSize := sz 1000 700 ]
 
 runDiag :: (t1 -> Bool -> Bool -> t2 -> [(String, [String])] -> String
         -> String -> t) -> t1 -> t2 -> t
@@ -72,8 +73,8 @@ onSaveAs = onSave
 onRun :: (Textual a, Textual w1, Textual w2, Valued w, Paint w3)
       => w3 -> w [EnvTrace] -> w1 -> w2 -> a -> t -> IO ()
 onRun cvas vlogic rules query output _ = do
-    set output [ text := "Running..." ]
-    set vlogic [ value := [] ]
+    set output  [  text   := "Running..." ]
+    set vlogic  [  value  := [] ]
     repaint cvas
     rs <- get rules text
     let (rules, rerr) = startParse pRules rs
@@ -89,16 +90,42 @@ onRun cvas vlogic rules query output _ = do
                      else  append output $ "Invalid query: " ++ qs
         else  append output $ "Errors in parsing rules! " ++ show rerr
 
-draw :: (Textual b, Valued w) => w [a] -> b -> DC a1 -> t -> IO ()
+{-
+ouder(X,ama):
+
+
+    ma(max, ama):-.                pa(alex, ama):-.
+    ---------------                ----------------
+        ma(X0, Y0)                    pa(X0, Y0)
+--------------------------    --------------------------
+ouder(X0, Y0):-ma(X0, Y0).    ouder(X0, Y0):-pa(X0, Y0).
+--------------------------------------------------------
+                    ouder(X,ama)
+-}
+
+
+
+draw :: (Textual b, Valued w) => w [EnvTrace] -> b -> DC a1 -> t -> IO ()
 draw tv query dc va = do
     vl  <- get tv value
     q   <- get query text
-    set dc [fontFace := "Courier New", fontSize := 16, fontWeight := WeightBold ]
-    if null vl -- vl contains the solve results! honestly!
+    set dc [  fontFace    := "Courier New"
+           ,  fontSize    := 14 ]
+    if null vl -- vl contains a list of EnvTraces. In case for the example above, one EnvTrace for ma and one for pa
         then  drawText dc "No solutions yet!" (pt 50 50) []
-        else  do  drawText dc "We have a solution!" (pt 50 100) []
-                  line dc (pt 0 115) (pt 500 115) []
-                  drawText dc q (pt 75 120) []
+        else  do  drawText   dc "We have a solution!" (pt 50 50) []
+                  drawTrace  dc (head vl) 50 350
+                  --line dc (pt 0 315) (pt 500 315) []
+                  --drawText dc q (pt 75 320) []
+
+drawTrace :: DC a -> EnvTrace -> Int -> Int -> IO ()
+drawTrace dc (e, (t:ts)) x y = do
+    drawText dc (show $ goal t) (pt x y) []
+    line dc (pt 0 (y+14)) (pt 500 (y+14)) []
+    drawText dc (show $ unif t) (pt x (y-20)) []
+    line dc (pt 0 (y-5)) (pt 500 (y-5)) []
+    drawTrace dc (e, ts) x (y-40)
+drawTrace _ _ _ _ = return ()
 
 append :: Textual a => a -> String -> IO ()
 append t s = appendText t $ '\n':s
