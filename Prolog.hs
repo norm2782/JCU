@@ -17,7 +17,7 @@ data Term   =  Con Int
             |  Fun Ident [Term]
             deriving Eq
 
-data Rule   =  Term :<-: [Term]
+data Rule   =  Term   :<-: [Term]
 data Trace  =  Trace  { goal   :: Term
                       , unif   :: Rule
                       , env    :: Env
@@ -26,21 +26,20 @@ data Trace  =  Trace  { goal   :: Term
 type Env       = [(Ident, Term)]
 type EnvTrace  = (Env, [Trace])
 
-
 instance Show Term where
-  show (Con i)     =  show  i
-  show (Var i)     =        i
-  show (Fun i [])  =        i
-  show (Fun i ts)  =  i ++ "(" ++ showCommas ts ++ ")"
+  show (Con  i)      =  show  i
+  show (Var  i)      =        i
+  show (Fun  i  [])  =        i
+  show (Fun  i  ts)  =  i ++ "(" ++ showCommas ts ++ ")"
 
 instance Show Rule where
   show (t :<-: ts) = show t ++ ":-" ++ showCommas ts ++ "."
 
 instance Show Trace where
-    show (Trace t r e ts) = display "goal                  : " t   ++
-                            display "unifies with head of  : " r   ++
-                            display "new environment       : " e   ++
-                            display "new goals             : " ts  ++ "\n"
+    show (Trace t r e ts) =  display "goal                  : " t   ++
+                             display "unifies with head of  : " r   ++
+                             display "new environment       : " e   ++
+                             display "new goals             : " ts  ++ "\n"
                         where display string value = string ++ show value ++ "\n"
 
 showCommas :: Show a => [a] -> String

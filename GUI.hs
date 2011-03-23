@@ -14,7 +14,7 @@ gui = do -- Application frame
     f        <- frame [text := "Prolog in Haskell"]
     vlogic   <- variable   [  value := [] ]
     rules    <- textCtrl   f  []
-    query    <- textEntry  f  []
+    query    <- textEntry  f  [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f  []
     cvas     <- panel f    [  on paint    := draw vlogic query
                            ,  clientSize  := sz 800 500
