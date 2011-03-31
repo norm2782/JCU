@@ -53,20 +53,17 @@ gui = do -- Application frame
                                      ]
              ,  clientSize := sz 1000 700 ]
 
--- TODO: Clean up. Needs abstraction. Way too much repetition here!
 onAdd sw vrows istermr = do itr  <- get istermr value
                             rws  <- get vrows value
                             if itr
-                              then do nrs <- createRow sw rws termRow
-                                      set vrows [ value := nrs ]
-                                      set sw [  layout      := grid 5 5 nrs
-                                             ,  clientSize  := sz 500 200]
-                                      set istermr [ value := False ]
-                              else do nrs <- createRow sw rws ruleRow
-                                      set vrows [ value := nrs ]
-                                      set sw [  layout      := grid 5 5 nrs
-                                             ,  clientSize  := sz 500 200 ]
-                                      set istermr [ value := True ]
+                              then addRow sw vrows istermr rws termRow itr
+                              else addRow sw vrows istermr rws ruleRow itr
+
+addRow sw vrows istermr rws rt itr = do nrs <- createRow sw rws rt
+                                        set vrows [ value := nrs ]
+                                        set sw [  layout      := grid 5 5 nrs
+                                               ,  clientSize  := sz 500 200 ]
+                                        set istermr [ value := (not itr) ]
 
 createRow sw vrows f = do  ok    <- button sw [text := "OK"]
                            hint  <- button sw [text := "Hint"]
