@@ -65,9 +65,11 @@ addRow sw vrows istermr rws rt itr = do nrs <- createRow sw rws rt
                                                ,  clientSize  := sz 500 200 ]
                                         set istermr [ value := (not itr) ]
 
-createRow sw vrows f = do  ok    <- button sw [text := "OK"]
-                           hint  <- button sw [text := "Hint"]
-                           del   <- button sw [text := "Del"]
+createRow sw vrows f = let mkBtn file = bitmapButton sw [  picture     := file
+                                                        ,  clientSize  := sz 16 16 ] in
+                       do  ok    <- mkBtn "accept.png"
+                           hint  <- mkBtn "help.png"
+                           del   <- mkBtn "delete.png"
                            fld   <- textEntry sw []
                            return $ (f ok hint del fld) : vrows
 
