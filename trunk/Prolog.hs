@@ -33,6 +33,7 @@ instance Show Term where
   show (Fun  i  ts)  =  i ++ "(" ++ showCommas ts ++ ")"
 
 instance Show Rule where
+  show (t :<-: []) = show t ++ "."
   show (t :<-: ts) = show t ++ ":-" ++ showCommas ts ++ "."
 
 instance Show Trace where
