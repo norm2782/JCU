@@ -21,9 +21,11 @@ gui = do -- Application frame
     windowReLayoutMinimal f
     vlogic   <- variable       [  value := [] ]
     venvtr   <- variable       [  value := [] ] -- Stores [EnvTrace]. Each EnvTrace is a total solution.
-    vrows    <- variable       [  value := [] ] -- [LogicRow]
-    istermr  <- variable       [  value := True ]
-    onAdd sw vrows istermr -- Add initial row
+    vrows    <- variable       [  value := [] ] -- [[Layout]]
+    strtRow  <- mkStartRow sw
+    rawrows  <- variable       [  value := [strtRow] ]
+    istermr  <- variable       [  value := False ]
+    addInitial sw vrows rawrows
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -48,7 +50,8 @@ gui = do -- Application frame
                                    ,  help        := "Run the query"
                                    ,  on command  := onRun cvas vlogic rules query output ]
     addbtn   <- button     f       [  text        := "Add"
-                                   ,  on command  := onAdd sw vrows istermr ]
+                                   ,  on command  := onAdd sw vrows rawrows istermr 
+                                   ]
     run      <- button     f       [  text        := "Run!"
                                    ,  on command  := onRun cvas vlogic rules query output ]
     set sw   [  layout      := column 5 [hfill $ widget cvas]
@@ -59,46 +62,75 @@ gui = do -- Application frame
                                         ]
              ,  clientSize := sz 1000 700 ]
 
-onAdd :: (Form (Window a), Valued w, Valued w1) => Window a -> w [[Layout]]
-      -> w1 Bool -> IO ()
-onAdd sw vrows istermr = do
-  nrw  <- createRow sw vrows
+addInitial :: (Form w2, Valued w, Valued w1, Dimensions w2) => w2
+           -> w1 [[Layout]] -> w [LogicRow] -> IO ()
+addInitial sw vrows rawrows = do
+  rws  <- get rawrows value
+  let  (StartRow fld btn) = head rws
+  let  newRows = [[ widget $ empty, widget $ row 5  [ widget fld, widget btn ] ]]
+  refreshGrid sw vrows newRows
+
+refreshGrid :: (Form w1, Valued w, Dimensions w1) => w1 -> w [[Layout]]
+            -> [[Layout]] -> IO ()
+refreshGrid sw vrows newRows = do
+  set  vrows    [ value       :=  newRows ]
+  set  sw       [ layout      :=  grid 5 5 newRows
+                , clientSize  :=  sz 500 200 ]
+
+onAdd :: (Form (Window a1), Valued w2, Valued w, Valued w1) => Window a1
+      -> w1 [[Layout]] -> w [LogicRow] -> w2 Bool -> IO ()
+onAdd sw vrows rawrows istermr = do
+  nrw  <- createRow sw vrows rawrows
+  set rawrows [ value :~ \xs -> nrw:xs]
   itr  <- get istermr value
   rws  <- get vrows value
   let  newRows = if itr then mkTermLayout nrw:rws
                         else mkRuleLayout nrw:rws
-  set  vrows    [ value       :=  newRows ]
-  set  sw       [ layout      :=  grid 5 5 newRows
-                , clientSize  :=  sz 500 200 ]
-  set  istermr  [ value       :~  \x -> not x ]
+  refreshGrid sw vrows newRows
+  set  istermr  [ value :~  \x -> not x ]
 
-data LogicRow = LogicRow  { okButton   :: BitmapButton ()
+data LogicRow = StartRow  { okButton   :: BitmapButton ()
+                          , logicFld   :: TextCtrl () }
+              | LogicRow  { okButton   :: BitmapButton ()
                           , hntButton  :: BitmapButton ()
                           , delButton  :: BitmapButton ()
                           , logicFld   :: TextCtrl () }
 
-createRow :: (Form (Window a), Valued w) => Window a -> w [[Layout]]
-          -> IO LogicRow
-createRow sw vrows =
+mkStartRow :: Window a -> IO LogicRow
+mkStartRow sw  =
+   let  mkBtn file cmd = bitmapButton sw [  picture     := file
+                                         ,  clientSize  := sz 16 16
+                                         ,  on command  := cmd ] in
+   do   ok    <- mkBtn "accept.png" undefined 
+        fld   <- textEntry sw []
+        return $ StartRow ok fld
+
+createRow :: (Form (Window a1), Valued w, Valued w1) => Window a1
+          -> w1 [[Layout]] -> w [LogicRow] -> IO LogicRow
+createRow sw vrows rawrows =
    let  mkBtn file cmd = bitmapButton sw [  picture     := file
                                          ,  clientSize  := sz 16 16
                                          ,  on command  := cmd ] in
    do   ok    <- mkBtn "accept.png" undefined 
         hint  <- mkBtn "help.png" undefined
-        del   <- mkBtn "delete.png" (popRow sw vrows) -- TODO: I want a reference to these guys for deletion!
+        del   <- mkBtn "delete.png" (popRow sw vrows rawrows) -- TODO: I want a reference to these guys for deletion!
         fld   <- textEntry sw []
         return $ LogicRow ok hint del fld
 
-popRow :: (Form w1, Valued w, Dimensions w1) => w1 -> w [[Layout]] -> IO ()
-popRow sw vrows = do
-  rows <- get vrows value
+popRow :: (Form w2, Valued w1, Valued w, Dimensions w2) => w2 -> w1 [[Layout]]
+       -> w [LogicRow] -> IO ()
+popRow sw vrows rawrows = do
+  rows   <- get rawrows value
+  grdrs  <- get vrows value
   case rows of
     []     ->  return ()
+    [x]    ->  return ()
     (x:xs) ->  let tl = tail xs in
                do -- objectDelete x
-                  set vrows  [  value := tl ]
-                  set sw     [  layout      := grid 5 5 tl
-                             ,  clientSize  := sz 500 200 ]
+                  set rawrows [ value := tl ]
+                  set sw  [ layout      := grid 5 5 (tail grdrs)
+                          , clientSize  := sz 500 200 ]
+
 
 mkRuleLayout, mkTermLayout :: LogicRow -> [Layout]
 mkRuleLayout (LogicRow btnOK btnHint btnDel fld) =
