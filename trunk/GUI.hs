@@ -75,13 +75,13 @@ onAdd sw rows = do
 data LogicRow = LogicRow  { lgText  :: String
                           , traces  :: [EnvTrace] }
 
---mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
+mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
 mkBtn sw file cmd = bitmapButton sw  [ picture     := file
                                      , clientSize  := sz 16 16
                                      , on command  := cmd ]
 
---mkBtnOK, mkBtnHint, mkBtnDel :: Valued w => Window a -> w [LogicRow]
---                             -> IO (BitmapButton ())
+mkBtnOK, mkBtnHint, mkBtnDel :: (Form (Window a), Valued w) => Window a
+                             -> w [LogicRow] -> IO (BitmapButton ())
 mkBtnOK    sw rows = mkBtn sw "accept.png"  (doBtnOK    sw rows)
 mkBtnHint  sw rows = mkBtn sw "help.png"    (doBtnHint  sw rows)
 mkBtnDel   sw rows = mkBtn sw "delete.png"  (doBtnDel   sw rows)
@@ -104,8 +104,8 @@ popRow sw rows = do
                    drawRows sw rows rws
 
 -- TODO: Down here, way too much IO!
---mkGridRows :: Valued w => Window a -> w [LogicRow] -> [LogicRow] -> Bool -> Bool 
---           -> IO [[Layout]]
+mkGridRows :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
+           -> [LogicRow] -> Bool -> Bool -> IO [[Layout]]
 mkGridRows _  _    []   _       _        = return []
 mkGridRows sw rows [x]  isTerm  isFirst  = case isTerm of
   True   -> do  tr <- mkTermRow  sw x rows isFirst True
@@ -120,8 +120,8 @@ mkGridRows sw rows (x:xs) isTerm isFirst = case isTerm of
                 rr <- mkRuleRow  sw x rows isFirst False
                 return $ rr : zs
 
---mkRuleRow, mkTermRow :: Valued w => Window a -> LogicRow -> w [LogicRow]
---                     -> Bool -> Bool -> IO [Layout]
+mkRuleRow :: (Form (Window a), Valued w) => Window a -> LogicRow
+          -> w [LogicRow] -> t -> Bool -> IO [Layout]
 mkRuleRow sw row rows _       isLast = do
   fld <- answerField sw row rows False isLast
   return [fld, widget $ hrule 350 ]
@@ -129,8 +129,8 @@ mkTermRow sw row rows isFirst isLast = do
   fld <- answerField sw row rows isFirst isLast
   return [ widget $ empty, fld ]
 
---answerField :: Valued w => Window a -> LogicRow -> w [LogicRow] -> Bool
---            -> Bool -> IO Layout
+answerField :: (Form (Window a), Valued w) => Window a -> LogicRow
+            -> w [LogicRow] -> Bool -> Bool -> IO Layout
 answerField sw rw rows isFirst isLast = do
   ok    <- mkBtnOK    sw rows
   hint  <- mkBtnHint  sw rows
