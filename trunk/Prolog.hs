@@ -43,7 +43,7 @@ instance Show Trace where
                              display "new goals             : " ts  ++ "\n"
                         where display str val = str ++ show val ++ "\n"
 
-showCommas ::  Show a => [a] -> String
+showCommas :: Show a => [a] -> String
 showCommas l = intercalate ", " (map show l)
 
 lookUp :: Term -> Env -> Term

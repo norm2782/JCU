@@ -18,14 +18,9 @@ gui = do -- Application frame
     sw       <- scrolledWindow f  [ style       := wxVSCROLL
                                   , scrollRate  := sz 20 20
                                   , clientSize  := sz 400 400 ]
-    windowReLayoutMinimal f
     vlogic   <- variable       [  value := [] ]
     venvtr   <- variable       [  value := [] ] -- Stores [EnvTrace]. Each EnvTrace is a total solution.
-    vrows    <- variable       [  value := [] ] -- [[Layout]]
-    strtRow  <- mkStartRow sw
-    rawrows  <- variable       [  value := [strtRow] ]
-    istermr  <- variable       [  value := False ]
-    addInitial sw vrows rawrows
+    rows     <- variable       [  value := [LogicRow "" []] ]
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -50,7 +45,7 @@ gui = do -- Application frame
                                    ,  help        := "Run the query"
                                    ,  on command  := onRun cvas vlogic rules query output ]
     addbtn   <- button     f       [  text        := "Add"
-                                   ,  on command  := onAdd sw vrows rawrows istermr 
+                                   ,  on command  := onAdd sw rows
                                    ]
     run      <- button     f       [  text        := "Run!"
                                    ,  on command  := onRun cvas vlogic rules query output ]
@@ -62,94 +57,97 @@ gui = do -- Application frame
                                         ]
              ,  clientSize := sz 1000 700 ]
 
-addInitial :: (Form w2, Valued w, Valued w1, Dimensions w2) => w2
-           -> w1 [[Layout]] -> w [LogicRow] -> IO ()
-addInitial sw vrows rawrows = do
-  rws  <- get rawrows value
-  let  (StartRow fld btn) = head rws
-  let  newRows = [[ widget $ empty, widget $ row 5  [ widget fld, widget btn ] ]]
-  refreshGrid sw vrows newRows
+drawRows sw rows rws = do
+  nrws <- mkGridRows sw rows rws True True
+  set sw  [ layout      := grid 5 5 nrws
+          , clientSize  := sz 500 200 ]
 
-refreshGrid :: (Form w1, Valued w, Dimensions w1) => w1 -> w [[Layout]]
-            -> [[Layout]] -> IO ()
-refreshGrid sw vrows newRows = do
-  set  vrows    [ value       :=  newRows ]
-  set  sw       [ layout      :=  grid 5 5 newRows
-                , clientSize  :=  sz 500 200 ]
-
-onAdd :: (Form (Window a1), Valued w2, Valued w, Valued w1) => Window a1
-      -> w1 [[Layout]] -> w [LogicRow] -> w2 Bool -> IO ()
-onAdd sw vrows rawrows istermr = do
-  nrw  <- createRow sw vrows rawrows
-  set rawrows [ value :~ \xs -> nrw:xs]
-  itr  <- get istermr value
-  rws  <- get vrows value
-  let  newRows = if itr then mkTermLayout nrw:rws
-                        else mkRuleLayout nrw:rws
-  refreshGrid sw vrows newRows
-  set  istermr [ value :~ \x -> not x ]
+onAdd sw rows = do
+  rws  <- get rows value
+  let nrws = (LogicRow "" []) : rws
+  set rows [ value := nrws ]
+  drawRows sw rows nrws
 
 -- TODO: make a naive function which just draws the entire grid from scratch
 -- also, maybe I have to revise this data type. how about just a String for the
 -- txt contents and (Maybe) actions for callbacks? actual fields are just view
 -- rendering anyway. Also some flag for readonly
-data LogicRow  = StartRow  { okButton   :: BitmapButton ()
-                           , logicFld   :: TextCtrl () }
-               | OpenRow   { okButton   :: BitmapButton ()
-                           , hntButton  :: BitmapButton ()
-                           , delButton  :: BitmapButton ()
-                           , logicFld   :: TextCtrl () }
-               | DoneRow   { answerTxt  :: StaticText () }
+data LogicRow = LogicRow  { lgText  :: String
+                          , traces  :: [EnvTrace] }
 
-mkStartRow :: Window a -> IO LogicRow
-mkStartRow sw  =
-   let  mkBtn file cmd = bitmapButton sw [  picture     := file
-                                         ,  clientSize  := sz 16 16
-                                         ,  on command  := cmd ] in
-   do   ok    <- mkBtn "accept.png" undefined 
-        fld   <- textEntry sw []
-        return $ StartRow ok fld
+--mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
+mkBtn sw file cmd = bitmapButton sw  [ picture     := file
+                                     , clientSize  := sz 16 16
+                                     , on command  := cmd ]
 
-createRow :: (Form (Window a1), Valued w, Valued w1) => Window a1
-          -> w1 [[Layout]] -> w [LogicRow] -> IO LogicRow
-createRow sw vrows rawrows =
-   let  mkBtn file cmd = bitmapButton sw [  picture     := file
-                                         ,  clientSize  := sz 16 16
-                                         ,  on command  := cmd ] in
-   do   ok    <- mkBtn "accept.png" undefined 
-        hint  <- mkBtn "help.png" undefined
-        del   <- mkBtn "delete.png" (popRow sw vrows rawrows) -- TODO: I want a reference to these guys for deletion!
-        fld   <- textEntry sw []
-        return $ OpenRow ok hint del fld
+--mkBtnOK, mkBtnHint, mkBtnDel :: Valued w => Window a -> w [LogicRow]
+--                             -> IO (BitmapButton ())
+mkBtnOK    sw rows = mkBtn sw "accept.png"  (doBtnOK    sw rows)
+mkBtnHint  sw rows = mkBtn sw "help.png"    (doBtnHint  sw rows)
+mkBtnDel   sw rows = mkBtn sw "delete.png"  (doBtnDel   sw rows)
 
-popRow :: (Form w2, Valued w1, Valued w, Dimensions w2) => w2 -> w1 [[Layout]]
-       -> w [LogicRow] -> IO ()
-popRow sw vrows rawrows = do
-  rows   <- get rawrows value
-  grdrs  <- get vrows value
-  case rows of
-    []     ->  return ()
-    [x]    ->  return ()
-    (x:xs) ->  let tl = tail xs in
-  -- TODO: Somehow remove widgets. objectDelete doesn't really work that well...
-               do  set rawrows [ value := tl ]
-                   set sw  [ layout      := grid 5 5 (tail grdrs)
-                           , clientSize  := sz 500 200 ]
+mkTxtFld :: Window a -> String -> IO (TextCtrl ())
+mkTxtFld sw val = textEntry sw [text := val]
 
-mkRuleLayout, mkTermLayout :: LogicRow -> [Layout]
-mkRuleLayout (OpenRow btnOK btnHint btnDel fld) =
-  [ answerField btnOK btnHint btnDel fld, widget $ hrule 350 ]
-mkTermLayout (OpenRow btnOK btnHint btnDel fld) =
-  [ widget $ empty, answerField btnOK btnHint btnDel fld ]
+doBtnOK    sw rows = undefined
+doBtnHint  sw rows = undefined
+doBtnDel   sw rows = popRow sw rows
 
-answerField :: (Widget w3, Widget w, Widget w2, Widget w1) => w -> w1 -> w2
-            -> w3 -> Layout
-answerField btnOK btnHint btnDel fld = widget $ row 5  [ widget btnOK
-                                                       , widget btnHint
-                                                       , widget btnDel
-                                                       , widget fld ]
+-- | Remove the top row. Does not remove a row if there is but one left.
+popRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> IO ()
+popRow sw rows = do
+  rws <- get rows value
+  case rws of
+    []      -> return ()
+    [x]     -> return ()
+    (x:xs)  -> do  set rows [ value := xs ]
+                   drawRows sw rows rws
 
-overGrid :: (Widget w1,Widget w3,Widget w5,Widget w4,Widget w2,Widget w) =>w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
+-- TODO: Down here, way too much IO!
+--mkGridRows :: Valued w => Window a -> w [LogicRow] -> [LogicRow] -> Bool -> Bool 
+--           -> IO [[Layout]]
+mkGridRows _  _    []   _       _        = return []
+mkGridRows sw rows [x]  isTerm  isFirst  = case isTerm of
+  True   -> do  tr <- mkTermRow  sw x rows isFirst True
+                return [tr]
+  False  -> do  tr <- mkRuleRow  sw x rows isFirst True
+                return [tr]
+mkGridRows sw rows (x:xs) isTerm isFirst = case isTerm of
+  True   -> do  zs <- mkGridRows sw rows xs False  False
+                tr <- mkTermRow  sw x rows isFirst False
+                return $ tr : zs
+  False  -> do  zs <- mkGridRows sw rows xs True   False
+                rr <- mkRuleRow  sw x rows isFirst False
+                return $ rr : zs
+
+--mkRuleRow, mkTermRow :: Valued w => Window a -> LogicRow -> w [LogicRow]
+--                     -> Bool -> Bool -> IO [Layout]
+mkRuleRow sw row rows _       isLast = do
+  fld <- answerField sw row rows False isLast
+  return [fld, widget $ hrule 350 ]
+mkTermRow sw row rows isFirst isLast = do
+  fld <- answerField sw row rows isFirst isLast
+  return [ widget $ empty, fld ]
+
+--answerField :: Valued w => Window a -> LogicRow -> w [LogicRow] -> Bool
+--            -> Bool -> IO Layout
+answerField sw rw rows isFirst isLast = do
+  ok    <- mkBtnOK    sw rows
+  hint  <- mkBtnHint  sw rows
+  del   <- mkBtnDel   sw rows
+  fld   <- mkTxtFld   sw (lgText rw)
+  set ok    [enabled := isLast]
+  set hint  [enabled := isLast]
+  set del   [enabled := isLast]
+  set fld   [enabled := isLast]
+  return $ widget $ row 5  [ widget ok, widget hint
+                           , if isFirst
+                               then widget empty
+                               else widget del
+                           , widget fld ]
+
+overGrid :: (Widget w1, Widget w3, Widget w5, Widget w4, Widget w2, Widget w)
+         => w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
 overGrid sw rules query output run rbox = row 5 [widget mgrd, vfill $ widget rbox]
   where mgrd = grid 5 5  [ [label "Action:",  hfill $ widget sw    ]
                          , [label "Rules:",   hfill $ widget rules ]
@@ -157,9 +155,6 @@ overGrid sw rules query output run rbox = row 5 [widget mgrd, vfill $ widget rbo
                          , [label "Output:",  hfill $ widget output]
                          , [widget run]
                          ]
-
-onSolve = undefined
-onHint  = undefined
 
 runDiag :: (t1 -> Bool -> Bool -> t2 -> [(String, [String])] -> String
         -> String -> t) -> t1 -> t2 -> t
