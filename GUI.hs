@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Main where
 
 import Control.Monad
@@ -13,11 +15,15 @@ main = start gui
 gui :: IO ()
 gui = do -- Application frame 
     f        <- frame [text := "Prolog in Haskell"]
-    sw       <- scrolledWindow f []
+    sw       <- scrolledWindow f  [ style       := wxVSCROLL
+                                  , scrollRate  := sz 20 20
+                                  , clientSize  := sz 400 400 ]
+    windowReLayoutMinimal f
     vlogic   <- variable       [  value := [] ]
     venvtr   <- variable       [  value := [] ] -- Stores [EnvTrace]. Each EnvTrace is a total solution.
-    vrows    <- variable       [  value := [] ]
+    vrows    <- variable       [  value := [] ] -- [LogicRow]
     istermr  <- variable       [  value := True ]
+    onAdd sw vrows istermr -- Add initial row
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -38,60 +44,83 @@ gui = do -- Application frame
                                   ,  help        := "Quit the program"
                                   ,  on command  := close f ]
     mquery   <- menuPane   [text  := "Query" ]
-    mrun     <- menuItem   mquery [  text        := "&Run\tCtrl+R"
-                                  ,  help        := "Run the query"
-                                  ,  on command  := onRun cvas vlogic rules query output ]
-    addbtn   <- button     f      [  text        := "Add"
-                                  ,  on command  := onAdd sw vrows istermr ]
-    run      <- button     f      [  text        := "Run!"
-                                  ,  on command  := onRun cvas vlogic rules query output ]
-    set sw   [  layout   := column 5 [hfill $ widget cvas]
-             ,  clientSize := sz 500 300 ]
-    set f    [  menuBar  := [mfile, mquery]
-             ,  layout   := column 5 [ boxed "Enter rules and queries, press Run and be amazed!"
-                                       (overGrid sw rules query output run rbox)
-                                     ]
+    mrun     <- menuItem   mquery  [  text        := "&Run\tCtrl+R"
+                                   ,  help        := "Run the query"
+                                   ,  on command  := onRun cvas vlogic rules query output ]
+    addbtn   <- button     f       [  text        := "Add"
+                                   ,  on command  := onAdd sw vrows istermr ]
+    run      <- button     f       [  text        := "Run!"
+                                   ,  on command  := onRun cvas vlogic rules query output ]
+    set sw   [  layout      := column 5 [hfill $ widget cvas]
+             ,  clientSize  := sz 500 300 ]
+    set f    [  menuBar     := [mfile, mquery]
+             ,  layout      := column 5 [ boxed "Enter rules and queries, press Run and be amazed!"
+                                                (overGrid sw rules query output run rbox)
+                                        ]
              ,  clientSize := sz 1000 700 ]
 
-onAdd sw vrows istermr = do itr  <- get istermr value
-                            rws  <- get vrows value
-                            if itr
-                              then addRow sw vrows istermr rws termRow itr
-                              else addRow sw vrows istermr rws ruleRow itr
+onAdd :: (Form (Window a), Valued w, Valued w1) => Window a -> w [[Layout]]
+      -> w1 Bool -> IO ()
+onAdd sw vrows istermr = do
+  nrw  <- createRow sw vrows
+  itr  <- get istermr value
+  rws  <- get vrows value
+  let  newRows = if itr then mkTermLayout nrw:rws
+                        else mkRuleLayout nrw:rws
+  set  vrows    [ value       :=  newRows ]
+  set  sw       [ layout      :=  grid 5 5 newRows
+                , clientSize  :=  sz 500 200 ]
+  set  istermr  [ value       :~  \x -> not x ]
 
-addRow sw vrows istermr rws rt itr = do nrs <- createRow sw rws rt
-                                        set vrows [ value := nrs ]
-                                        set sw [  layout      := grid 5 5 nrs
-                                               ,  clientSize  := sz 500 200 ]
-                                        set istermr [ value := (not itr) ]
+data LogicRow = LogicRow  { okButton   :: BitmapButton ()
+                          , hntButton  :: BitmapButton ()
+                          , delButton  :: BitmapButton ()
+                          , logicFld   :: TextCtrl () }
 
-createRow sw vrows f = let mkBtn file = bitmapButton sw [  picture     := file
-                                                        ,  clientSize  := sz 16 16 ] in
-                       do  ok    <- mkBtn "accept.png"
-                           hint  <- mkBtn "help.png"
-                           del   <- mkBtn "delete.png"
-                           fld   <- textEntry sw []
-                           return $ (f ok hint del fld) : vrows
+createRow :: (Form (Window a), Valued w) => Window a -> w [[Layout]]
+          -> IO LogicRow
+createRow sw vrows =
+   let  mkBtn file cmd = bitmapButton sw [  picture     := file
+                                         ,  clientSize  := sz 16 16
+                                         ,  on command  := cmd ] in
+   do   ok    <- mkBtn "accept.png" undefined 
+        hint  <- mkBtn "help.png" undefined
+        del   <- mkBtn "delete.png" (popRow sw vrows) -- TODO: I want a reference to these guys for deletion!
+        fld   <- textEntry sw []
+        return $ LogicRow ok hint del fld
 
-ruleRow btnOK btnHint btnDel fld =  [ answerField btnOK btnHint btnDel fld
-                                    , widget $ hrule 350 ]
-termRow btnOK btnHint btnDel fld =  [ widget $ empty
-                                    , answerField btnOK btnHint btnDel fld ]
+popRow :: (Form w1, Valued w, Dimensions w1) => w1 -> w [[Layout]] -> IO ()
+popRow sw vrows = do
+  rows <- get vrows value
+  case rows of
+    []     ->  return ()
+    (x:xs) ->  let tl = tail xs in
+               do -- objectDelete x
+                  set vrows  [  value := tl ]
+                  set sw     [  layout      := grid 5 5 tl
+                             ,  clientSize  := sz 500 200 ]
 
+mkRuleLayout, mkTermLayout :: LogicRow -> [Layout]
+mkRuleLayout (LogicRow btnOK btnHint btnDel fld) =
+  [ answerField btnOK btnHint btnDel fld, widget $ hrule 350 ]
+mkTermLayout (LogicRow btnOK btnHint btnDel fld) =
+  [ widget $ empty, answerField btnOK btnHint btnDel fld ]
+
+answerField :: (Widget w3, Widget w, Widget w2, Widget w1) => w -> w1 -> w2
+            -> w3 -> Layout
 answerField btnOK btnHint btnDel fld = widget $ row 5  [ widget btnOK
                                                        , widget btnHint
                                                        , widget btnDel
                                                        , widget fld ]
 
-
 overGrid :: (Widget w1,Widget w3,Widget w5,Widget w4,Widget w2,Widget w) =>w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
 overGrid sw rules query output run rbox = row 5 [widget mgrd, vfill $ widget rbox]
-  where mgrd = grid 5 5 [  [label "Action:",  hfill $ widget sw    ]
-                        ,  [label "Rules:",   hfill $ widget rules ]
-                        ,  [label "Query:",   hfill $ widget query ]
-                        ,  [label "Output:",  hfill $ widget output]
-                        ,  [widget run]
-                        ]
+  where mgrd = grid 5 5  [ [label "Action:",  hfill $ widget sw    ]
+                         , [label "Rules:",   hfill $ widget rules ]
+                         , [label "Query:",   hfill $ widget query ]
+                         , [label "Output:",  hfill $ widget output]
+                         , [widget run]
+                         ]
 
 onSolve = undefined
 onHint  = undefined
