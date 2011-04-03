@@ -87,14 +87,19 @@ onAdd sw vrows rawrows istermr = do
   let  newRows = if itr then mkTermLayout nrw:rws
                         else mkRuleLayout nrw:rws
   refreshGrid sw vrows newRows
-  set  istermr  [ value :~  \x -> not x ]
+  set  istermr [ value :~ \x -> not x ]
 
-data LogicRow = StartRow  { okButton   :: BitmapButton ()
-                          , logicFld   :: TextCtrl () }
-              | LogicRow  { okButton   :: BitmapButton ()
-                          , hntButton  :: BitmapButton ()
-                          , delButton  :: BitmapButton ()
-                          , logicFld   :: TextCtrl () }
+-- TODO: make a naive function which just draws the entire grid from scratch
+-- also, maybe I have to revise this data type. how about just a String for the
+-- txt contents and (Maybe) actions for callbacks? actual fields are just view
+-- rendering anyway. Also some flag for readonly
+data LogicRow  = StartRow  { okButton   :: BitmapButton ()
+                           , logicFld   :: TextCtrl () }
+               | OpenRow   { okButton   :: BitmapButton ()
+                           , hntButton  :: BitmapButton ()
+                           , delButton  :: BitmapButton ()
+                           , logicFld   :: TextCtrl () }
+               | DoneRow   { answerTxt  :: StaticText () }
 
 mkStartRow :: Window a -> IO LogicRow
 mkStartRow sw  =
@@ -115,7 +120,7 @@ createRow sw vrows rawrows =
         hint  <- mkBtn "help.png" undefined
         del   <- mkBtn "delete.png" (popRow sw vrows rawrows) -- TODO: I want a reference to these guys for deletion!
         fld   <- textEntry sw []
-        return $ LogicRow ok hint del fld
+        return $ OpenRow ok hint del fld
 
 popRow :: (Form w2, Valued w1, Valued w, Dimensions w2) => w2 -> w1 [[Layout]]
        -> w [LogicRow] -> IO ()
@@ -126,16 +131,15 @@ popRow sw vrows rawrows = do
     []     ->  return ()
     [x]    ->  return ()
     (x:xs) ->  let tl = tail xs in
-               do -- objectDelete x
-                  set rawrows [ value := tl ]
-                  set sw  [ layout      := grid 5 5 (tail grdrs)
-                          , clientSize  := sz 500 200 ]
-
+  -- TODO: Somehow remove widgets. objectDelete doesn't really work that well...
+               do  set rawrows [ value := tl ]
+                   set sw  [ layout      := grid 5 5 (tail grdrs)
+                           , clientSize  := sz 500 200 ]
 
 mkRuleLayout, mkTermLayout :: LogicRow -> [Layout]
-mkRuleLayout (LogicRow btnOK btnHint btnDel fld) =
+mkRuleLayout (OpenRow btnOK btnHint btnDel fld) =
   [ answerField btnOK btnHint btnDel fld, widget $ hrule 350 ]
-mkTermLayout (LogicRow btnOK btnHint btnDel fld) =
+mkTermLayout (OpenRow btnOK btnHint btnDel fld) =
   [ widget $ empty, answerField btnOK btnHint btnDel fld ]
 
 answerField :: (Widget w3, Widget w, Widget w2, Widget w1) => w -> w1 -> w2
