@@ -61,7 +61,7 @@ drawRows sw rows = do
   rws <- get rows value
   let rrws = reverse rws
 --  nrws <- mkGridRows sw rows
-  set sw  [ layout      := grid 5 5 (map lgLayout rrws)
+  set sw  [ layout      := grid 5 5 (map mkRowLayout rrws)
           , clientSize  := sz 500 200 ]
 
 
@@ -79,51 +79,55 @@ onAdd sw rows = do
 --data LogicRow = LogicRow  { lgText  :: String
 --                          , traces  :: [EnvTrace] }
 
-data LogicRow = LogicRow {  lgTraces  :: [EnvTrace]
-                         ,  lgTxtFld  :: TextCtrl ()
-                         ,  lgLayout  :: [Layout] }
+data RowType = TermRow | RuleRow
+
+data RowControls = RowControls {  lgTxtFld   :: TextCtrl ()
+                               ,  lgBtnOK    :: BitmapButton ()
+                               ,  lgBtnHint  :: BitmapButton ()
+                               ,  lgBtnDel   :: BitmapButton () }
+
+data LogicRow = LogicRow {  lgTraces   :: [EnvTrace]
+                         ,  lgRowType  :: RowType
+                         ,  lgCtrls    :: RowControls }
 
 lgText :: LogicRow -> IO String
 lgText lr = do 
-  val <- get (lgTxtFld lr) text
+  val <- get (lgTxtFld $ lgCtrls lr) text
   return val
 
 mkNewRow sw rows = do
   lrs <- get rows value
   let ist = length lrs `mod` 2 == 0
   nrw <- if ist
-           then mkTermRow sw rows
-           else mkRuleRow sw rows
+           then mkRow sw rows TermRow
+           else mkRow sw rows RuleRow
   return nrw
 
-mkRuleRow sw rows = do
-  fld <- answerField sw rows
-  return $ LogicRow [] (fst fld) [ snd fld, widget $ hrule 350 ]
-mkTermRow sw rows = do
-  fld <- answerField sw rows
-  return $ LogicRow [] (fst fld) [ widget $ empty, snd fld ]
+mkRow sw rows rt = do
+  ctrls <- mkControls sw rows
+  return $ LogicRow [] rt ctrls
 
-answerField sw rows  = do
-  ok    <- mkBtnOK    sw rows
-  hint  <- mkBtnHint  sw rows
-  del   <- mkBtnDel   sw rows
-  fld   <- mkTxtFld   sw
-  return $ (fld, widget $ row 5  [ widget ok,   widget hint
-                                 , widget del,  widget fld ])
+mkRowLayout (LogicRow _ TermRow ctrls) =  [ mkControlLayout ctrls
+                                            , widget $ hrule 350 ]
+mkRowLayout (LogicRow _ RuleRow ctrls) =  [ widget $ empty
+                                            , mkControlLayout ctrls ]
+
+mkControlLayout (RowControls t o h d) = widget $ row 5  [ widget o
+                                                        , widget h
+                                                        , widget d
+                                                        , widget t ]
+
+mkControls sw rows  = do
+  ok    <- mkBtn sw "accept.png"  (doBtnOK    sw rows)
+  hint  <- mkBtn sw "help.png"    (doBtnHint  sw rows)
+  del   <- mkBtn sw "delete.png"  (doBtnDel   sw rows)
+  fld   <- textEntry sw []
+  return $ RowControls fld ok hint del
 
 mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
 mkBtn sw file cmd = bitmapButton sw  [ picture     := file
                                      , clientSize  := sz 16 16
                                      , on command  := cmd ]
-
-mkBtnOK, mkBtnHint, mkBtnDel :: (Form (Window a), Valued w) => Window a
-                             -> w [LogicRow] -> IO (BitmapButton ())
-mkBtnOK    sw rows = mkBtn sw "accept.png"  (doBtnOK    sw rows)
-mkBtnHint  sw rows = mkBtn sw "help.png"    (doBtnHint  sw rows)
-mkBtnDel   sw rows = mkBtn sw "delete.png"  (doBtnDel   sw rows)
-
-mkTxtFld :: Window a -> IO (TextCtrl ())
-mkTxtFld sw = textEntry sw []
 
 doBtnOK    sw rows = undefined
 doBtnHint  sw rows = undefined
@@ -137,8 +141,16 @@ popRow sw rows = do
   case rws of
     []      -> return ()
     [x]     -> return ()
-    (x:xs)  -> do  set rows [ value := xs ]
+    (x:xs)  -> do  hideCtrls $ lgCtrls x
+                   set rows [ value := xs ]
                    drawRows sw rows
+
+hideCtrls (RowControls t o h d) = do
+  set t [visible := False]
+  set o [visible := False]
+  set h [visible := False]
+  set d [visible := False]
+
 
 -- TODO: Down here, way too much IO!
 {- mkGridRows :: (Form (Window a), Valued w) => Window a -> w [LogicRow]-}
