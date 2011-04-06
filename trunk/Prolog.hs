@@ -3,9 +3,8 @@
 module Prolog where
 
 import Data.Char (isUpper, isSpace)
-import Data.List
-import Debug.Trace
-import System.IO
+import Data.List (intercalate)
+import Debug.Trace (trace)
 import Text.ParserCombinators.UU
 import Text.ParserCombinators.UU.BasicInstances
 import Text.ParserCombinators.UU.Utils
