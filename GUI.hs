@@ -19,8 +19,9 @@ gui = do -- Application frame
     sw       <- scrolledWindow f  [ style       := wxVSCROLL
                                   , scrollRate  := sz 20 20
                                   , clientSize  := sz 800 500 ]
-    vlogic   <- variable       [  value := [] ]
-    rows     <- variable       [  value := [] ]
+    vlogic   <- variable [ value := [] ]
+    rows     <- variable [ value := [] ]
+    file     <- variable [ value := "" ]
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -31,13 +32,13 @@ gui = do -- Application frame
     mfile    <- menuPane   [text := "&File"]
     mopen    <- menuItem   mfile  [  text        := "&Open\tCtrl+O"
                                   ,  help        := "Open a Prolog file"
-                                  ,  on command  := onOpen f rules ]
+                                  ,  on command  := onOpen f rules file ]
     msave    <- menuItem   mfile  [  text        := "&Save\tCtrl+S"
                                   ,  help        := "Save a Prolog file"
-                                  ,  on command  := onSave f rules ]
+                                  ,  on command  := onSave f rules file ]
     msaveas  <- menuItem   mfile  [  text        := "&Save As\tCtrl+Shift+S"
                                   ,  help        := "Save As a Prolog file"
-                                  ,  on command  := onSaveAs f rules ]
+                                  ,  on command  := onSaveAs f rules file ]
     mquit    <- menuQuit   mfile  [  text        := "&Quit"
                                   ,  help        := "Quit the program"
                                   ,  on command  := close f ]
@@ -183,11 +184,12 @@ hideCtrls (LogicRow _ _ (RowControls t o h d)) = do
 -- fields. This might enable actual scrolling.
 overGrid :: (Widget w1, Widget w3, Widget w5, Widget w4, Widget w2, Widget w)
          => w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
-overGrid sw rules query output run rbox = row 5 [widget mgrd, vfill $ widget rbox]
-  where mgrd = grid 5 5  [ [label "Action:",  hfill $ widget sw    ]
-                         , [label "Rules:",   hfill $ widget rules ]
-                         , [label "Query:",   hfill $ widget query ]
-                         , [label "Output:",  hfill $ widget output]
+overGrid sw rules query output run rbox = row 5  [ widget mgrd
+                                                 , vfill $ widget rbox ]
+  where mgrd = grid 5 5  [ [label "Action:",  hfill $ widget sw     ]
+                         , [label "Rules:",   hfill $ widget rules  ]
+                         , [label "Query:",   hfill $ widget query  ]
+                         , [label "Output:",  hfill $ widget output ]
                          , [widget run]
                          ]
 
@@ -197,24 +199,30 @@ runDiag diag f hdr =  diag f True True hdr
                           [("Prolog files (*.pro, *.pl)", ["*.pro", "*.pl"])]
                           "" ""
 
-onOpen :: Textual w => Window a -> w -> IO ()
-onOpen f rules = do
+onOpen :: (Valued s, Textual w) => Window a -> w -> s String -> IO ()
+onOpen f rules file = do
     diag <- runDiag fileOpenDialog f "Select Prolog file"
     case diag of
         Nothing  -> return () -- TODO: Nice error handling
         Just f   -> do  cnts <- readFile f
+                        set file [value := f]
                         set rules [ text := cnts ]
 
-onSave :: Textual w => Window a -> w -> IO ()
-onSave f rules = do
-    diag <- runDiag fileSaveDialog f "Save Prolog file"
-    case diag of
-        Nothing  -> return () -- TODO: Nice handling
-        Just f   -> do  rs <- get rules text
-                        writeFile f rs
+onSave :: (Valued s, Textual w) => Window a -> w -> s String -> IO ()
+onSave f rules file = do
+  val <- get file value
+  if null val
+    then onSaveAs f rules file
+    else do  rs <- get rules text
+             writeFile val rs
 
-onSaveAs :: Textual w => Window a -> w -> IO ()
-onSaveAs = onSave
+onSaveAs :: (Valued s, Textual w) => Window a -> w -> s String -> IO ()
+onSaveAs f rules file =  do
+  diag <- runDiag fileSaveDialog f "Save Prolog file"
+  case diag of
+    Nothing  -> return ()
+    Just nm  -> do  rs <- get rules text
+                    writeFile nm rs
 
 onRun :: (Textual a, Textual w1, Textual w2, Valued w) => w [EnvTrace] -> w1
       -> w2 -> a -> IO ()
