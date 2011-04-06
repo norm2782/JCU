@@ -66,7 +66,7 @@ drawRows sw rows = do
 onAdd :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> IO ()
 onAdd sw rows = do
   rws  <- get rows value
-  mapM_ disableRow rws
+  mapM_ disableRow rws -- TODO: We don't need this for all of the rows, only for the first one.
   nr   <- mkNewRow sw rows
   let  nrws = nr : rws
   set  rows [ value := nrws ]
@@ -151,7 +151,7 @@ popRow sw rows = do
     [x]       -> return ()
     (x:y:xs)  -> do  hideCtrls x
                      enableRow y
-                     set rows [ value := xs ]
+                     set rows [ value := (y:xs) ]
                      drawRows sw rows
 
 enableRow :: LogicRow -> IO ()
