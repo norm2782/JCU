@@ -60,8 +60,7 @@ gui = do -- Application frame
 drawRows :: (Form w1, Valued w, Dimensions w1) => w1 -> w [LogicRow] -> IO ()
 drawRows sw rows = do
   rws <- get rows value
-  let rrws = reverse rws
-  set sw  [ layout      := grid 5 5 (map mkRowLayout rrws)
+  set sw  [ layout      := grid 5 5 (map mkRowLayout rws)
           , clientSize  := sz 500 200 ]
 
 onAdd :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> IO ()
