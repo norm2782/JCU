@@ -21,7 +21,6 @@ gui = do -- Application frame
                                   , clientSize  := sz 800 500 ]
     vlogic   <- variable       [  value := [] ]
     rows     <- variable       [  value := [] ]
-    onAdd sw rows
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -47,7 +46,7 @@ gui = do -- Application frame
                                    ,  help        := "Run the query"
                                    ,  on command  := onRun vlogic rules query output ]
     addbtn   <- button     f       [  text        := "Add"
-                                   ,  on command  := onAdd sw rows
+                                   ,  on command  := onAdd sw rows vlogic
                                    ]
     run      <- button     f       [  text        := "Run!"
                                    ,  on command  := onRun vlogic rules query output ]
@@ -58,6 +57,7 @@ gui = do -- Application frame
                                                 (overGrid sw rules query output run rbox)
                                         ]
              ,  clientSize := sz 1000 700 ]
+    onAdd sw rows vlogic -- Adds initial text field
 
 drawRows :: (Form w1, Valued w, Dimensions w1) => w1 -> w [LogicRow] -> IO ()
 drawRows sw rows = do
@@ -65,11 +65,12 @@ drawRows sw rows = do
   set sw  [ layout      := grid 5 5 (map mkRowLayout rws)
           , clientSize  := sz 500 200 ]
 
-onAdd :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> IO ()
-onAdd sw rows = do
+onAdd :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
+      -> w [EnvTrace] -> IO ()
+onAdd sw rows vlogic = do
   rws  <- get rows value
   mapM_ disableRow rws -- TODO: We don't need this for all of the rows, only for the first one.
-  nr   <- mkNewRow sw rows
+  nr   <- mkNewRow sw rows vlogic
   let  nrws = nr : rws
   set  rows [ value := nrws ]
   drawRows sw rows
@@ -98,19 +99,19 @@ lgText lr = do
   return val
 
 mkNewRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-         -> IO LogicRow
-mkNewRow sw rows = do
+         -> w [EnvTrace] -> IO LogicRow
+mkNewRow sw rows vlogic = do
   lrs <- get rows value
   let ist = length lrs `mod` 2 == 0
   nrw <- if ist
-           then mkRow sw rows TermRow
-           else mkRow sw rows RuleRow
+           then mkRow sw rows vlogic TermRow
+           else mkRow sw rows vlogic RuleRow
   return nrw
 
-mkRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> RowType
-      -> IO LogicRow
-mkRow sw rows rt = do
-  ctrls <- mkControls sw rows
+mkRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
+      -> w [EnvTrace] -> RowType -> IO LogicRow
+mkRow sw rows vlogic rt = do
+  ctrls <- mkControls sw rows vlogic
   return $ LogicRow [] rt ctrls
 
 mkRowLayout ::  LogicRow -> [Layout]
@@ -124,12 +125,12 @@ mkControlLayout (RowControls t o h d) = widget $ row 5  [ widget o, widget h
                                                         , widget d, widget t ]
 
 mkControls :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-           -> IO RowControls
-mkControls sw rows  = do
-  ok    <- mkBtn sw "accept.png"  (doBtnOK    sw rows)
-  hint  <- mkBtn sw "help.png"    (doBtnHint  sw rows)
-  del   <- mkBtn sw "delete.png"  (doBtnDel   sw rows)
+           -> w [EnvTrace] -> IO RowControls
+mkControls sw rows  vlogic = do
   fld   <- textEntry sw []
+  ok    <- mkBtn sw "accept.png"  (doBtnOK    sw rows vlogic fld)
+  hint  <- mkBtn sw "help.png"    (doBtnHint  sw rows vlogic fld)
+  del   <- mkBtn sw "delete.png"  (doBtnDel   sw rows)
   return $ RowControls fld ok hint del
 
 mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
@@ -137,9 +138,15 @@ mkBtn sw file cmd = bitmapButton sw  [ picture     := file
                                      , clientSize  := sz 16 16
                                      , on command  := cmd ]
 
-doBtnOK    sw rows = undefined
-doBtnHint  sw rows = undefined
-doBtnDel   sw rows = popRow sw rows
+doBtnOK sw rows vlogic fld = do
+  val <- get fld text
+  if null val
+    then set fld [text := "TODO: Color border instead"]
+    else return ()
+
+
+doBtnHint sw rows vlogic fld = undefined
+doBtnDel sw rows = popRow sw rows
 
 -- | Remove the top row. Does not remove a row if there is but one left.
 -- TODO: Really remove the widgets: they slow things down!
