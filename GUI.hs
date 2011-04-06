@@ -12,12 +12,13 @@ import Prolog
 main :: IO ()
 main = start gui
 
+-- TODO: Investigate using a Panel
 gui :: IO ()
 gui = do -- Application frame 
     f        <- frame [text := "Prolog in Haskell"]
     sw       <- scrolledWindow f  [ style       := wxVSCROLL
                                   , scrollRate  := sz 20 20
-                                  , clientSize  := sz 400 400 ]
+                                  , clientSize  := sz 800 500 ]
     vlogic   <- variable       [  value := [] ]
     rows     <- variable       [  value := [] ]
     onAdd sw rows
@@ -25,8 +26,9 @@ gui = do -- Application frame
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
     rbox     <- singleListBox f []
-    cvas     <- panel      sw  [  on paint    := draw vlogic query
-                               ,  clientSize  := sz 800 500 ]
+    -- TODO: Get rid of cvas completely. Figure out how the positioning stuff
+    -- works first.
+    cvas     <- panel      sw  [ clientSize  := sz 800 500 ]
     mfile    <- menuPane   [text := "&File"]
     mopen    <- menuItem   mfile  [  text        := "&Open\tCtrl+O"
                                   ,  help        := "Open a Prolog file"
@@ -43,12 +45,12 @@ gui = do -- Application frame
     mquery   <- menuPane   [text  := "Query" ]
     mrun     <- menuItem   mquery  [  text        := "&Run\tCtrl+R"
                                    ,  help        := "Run the query"
-                                   ,  on command  := onRun cvas vlogic rules query output ]
+                                   ,  on command  := onRun vlogic rules query output ]
     addbtn   <- button     f       [  text        := "Add"
                                    ,  on command  := onAdd sw rows
                                    ]
     run      <- button     f       [  text        := "Run!"
-                                   ,  on command  := onRun cvas vlogic rules query output ]
+                                   ,  on command  := onRun vlogic rules query output ]
     set sw   [  layout      := column 5 [hfill $ widget cvas]
              ,  clientSize  := sz 500 300 ]
     set f    [  menuBar     := [mfile, mquery]
@@ -113,15 +115,13 @@ mkRow sw rows rt = do
 
 mkRowLayout ::  LogicRow -> [Layout]
 mkRowLayout (LogicRow _ TermRow ctrls) =  [ mkControlLayout ctrls
-                                          , widget $ hrule 350 ]
+                                          , rule 350 5 ]
 mkRowLayout (LogicRow _ RuleRow ctrls) =  [ widget $ empty
                                           , mkControlLayout ctrls ]
 
 mkControlLayout ::  RowControls -> Layout
-mkControlLayout (RowControls t o h d) = widget $ row 5  [ widget o
-                                                        , widget h
-                                                        , widget d
-                                                        , widget t ]
+mkControlLayout (RowControls t o h d) = widget $ row 5  [ widget o, widget h
+                                                        , widget d, widget t ]
 
 mkControls :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
            -> IO RowControls
@@ -168,6 +168,8 @@ hideCtrls (LogicRow _ _ (RowControls t o h d)) = do
   set h [visible := False]
   set d [visible := False]
 
+-- TODO: See if we can use container instead of widget for the inner bunch of
+-- fields. This might enable actual scrolling.
 overGrid :: (Widget w1, Widget w3, Widget w5, Widget w4, Widget w2, Widget w)
          => w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
 overGrid sw rules query output run rbox = row 5 [widget mgrd, vfill $ widget rbox]
@@ -203,12 +205,11 @@ onSave f rules = do
 onSaveAs :: Textual w => Window a -> w -> IO ()
 onSaveAs = onSave
 
-onRun :: (Textual a, Textual w1, Textual w2, Valued w, Paint w3)
-      => w3 -> w [EnvTrace] -> w1 -> w2 -> a -> IO ()
-onRun cvas vlogic rules query output = do
+onRun :: (Textual a, Textual w1, Textual w2, Valued w) => w [EnvTrace] -> w1
+      -> w2 -> a -> IO ()
+onRun vlogic rules query output = do
     set output  [  text   := "Running..." ]
     set vlogic  [  value  := [] ]
-    repaint cvas
     rs <- get rules text
     let (rules, rerr) = startParse pRules rs
     if null rerr
@@ -219,9 +220,11 @@ onRun cvas vlogic rules query output = do
                                let sol = solve rules [goal] [] 0
                                set vlogic [ value := sol ]
                                showSolutions output sol
-                               repaint cvas
                      else  append output $ "Invalid query: " ++ qs
         else  append output $ "Errors in parsing rules! " ++ show rerr
+
+append :: Textual a => a -> String -> IO ()
+append t s = appendText t $ '\n':s
 
 {-
 ouder(X,ama):
@@ -235,37 +238,6 @@ ouder(X0, Y0):-ma(X0, Y0).    ouder(X0, Y0):-pa(X0, Y0).
 --------------------------------------------------------
                     ouder(X,ama)
 -}
-
-
--- TODO: Clean up and improve drawing code
-draw :: (Textual b, Valued w) => w [EnvTrace] -> b -> DC a1 -> t -> IO ()
-draw tv query dc va = do
-    vl  <- get tv value
-    q   <- get query text
-    set dc [  fontFace  := "Courier New"
-           ,  fontSize  := 14 ]
-    if null vl
-        then  drawText dc "No solutions yet!" (pt 50 50) []
-        else  do  drawText    dc "We have a solution!" (pt 50 50) []
-                  drawTraces  dc vl 350
-
-drawTraces :: DC a -> [EnvTrace] -> Int -> IO ()
-drawTraces dc trs y = foldM_ drawTraces' 50 trs
-    where drawTraces' x (_,tr) = do  drawTrace dc tr x
-                                     return $ x+300
-
-drawTrace :: DC a -> [Trace] -> Int -> IO ()
-drawTrace dc trs x = foldM_ drawTrace' 350 trs
-    where drawTrace' y t =  let dt f  y' = drawText  dc (show $ f t)  (pt x y')    []
-                                ln    y' = line      dc (pt 0 y')     (pt 700 y')  [] in
-                            do  dt goal y
-                                ln (y+15)
-                                dt unif (y-20)
-                                ln (y-5)
-                                return $ y-40
-
-append :: Textual a => a -> String -> IO ()
-append t s = appendText t $ '\n':s
 
 showSolutions :: Textual a => a -> [EnvTrace] -> IO ()
 showSolutions t es = sequence_ [ showSolution t etr | etr <- es]
