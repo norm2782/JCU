@@ -19,8 +19,8 @@ gui = do -- Application frame
                                   , scrollRate  := sz 20 20
                                   , clientSize  := sz 400 400 ]
     vlogic   <- variable       [  value := [] ]
-    venvtr   <- variable       [  value := [] ] -- Stores [EnvTrace]. Each EnvTrace is a total solution.
-    rows     <- variable       [  value := [LogicRow "" []] ]
+    rows     <- variable       [  value := [] ]
+    onAdd sw rows
     rules    <- textCtrl   f   []
     query    <- textEntry  f   [ text := "ouder(X,ama)" ]
     output   <- textCtrl   f   []
@@ -57,23 +57,59 @@ gui = do -- Application frame
                                         ]
              ,  clientSize := sz 1000 700 ]
 
-drawRows sw rows rws = do
-  nrws <- mkGridRows sw rows rws True True
-  set sw  [ layout      := grid 5 5 nrws
+drawRows sw rows = do
+  rws <- get rows value
+  let rrws = reverse rws
+--  nrws <- mkGridRows sw rows
+  set sw  [ layout      := grid 5 5 (map lgLayout rrws)
           , clientSize  := sz 500 200 ]
+
 
 onAdd sw rows = do
   rws  <- get rows value
-  let nrws = (LogicRow "" []) : rws
-  set rows [ value := nrws ]
-  drawRows sw rows nrws
+  nr   <- mkNewRow sw rows
+  let  nrws = nr : rws
+  set  rows [ value := nrws ]
+  drawRows sw rows
 
 -- TODO: make a naive function which just draws the entire grid from scratch
 -- also, maybe I have to revise this data type. how about just a String for the
 -- txt contents and (Maybe) actions for callbacks? actual fields are just view
 -- rendering anyway. Also some flag for readonly
-data LogicRow = LogicRow  { lgText  :: String
-                          , traces  :: [EnvTrace] }
+--data LogicRow = LogicRow  { lgText  :: String
+--                          , traces  :: [EnvTrace] }
+
+data LogicRow = LogicRow {  lgTraces  :: [EnvTrace]
+                         ,  lgTxtFld  :: TextCtrl ()
+                         ,  lgLayout  :: [Layout] }
+
+lgText :: LogicRow -> IO String
+lgText lr = do 
+  val <- get (lgTxtFld lr) text
+  return val
+
+mkNewRow sw rows = do
+  lrs <- get rows value
+  let ist = length lrs `mod` 2 == 0
+  nrw <- if ist
+           then mkTermRow sw rows
+           else mkRuleRow sw rows
+  return nrw
+
+mkRuleRow sw rows = do
+  fld <- answerField sw rows
+  return $ LogicRow [] (fst fld) [ snd fld, widget $ hrule 350 ]
+mkTermRow sw rows = do
+  fld <- answerField sw rows
+  return $ LogicRow [] (fst fld) [ widget $ empty, snd fld ]
+
+answerField sw rows  = do
+  ok    <- mkBtnOK    sw rows
+  hint  <- mkBtnHint  sw rows
+  del   <- mkBtnDel   sw rows
+  fld   <- mkTxtFld   sw
+  return $ (fld, widget $ row 5  [ widget ok,   widget hint
+                                 , widget del,  widget fld ])
 
 mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
 mkBtn sw file cmd = bitmapButton sw  [ picture     := file
@@ -86,14 +122,15 @@ mkBtnOK    sw rows = mkBtn sw "accept.png"  (doBtnOK    sw rows)
 mkBtnHint  sw rows = mkBtn sw "help.png"    (doBtnHint  sw rows)
 mkBtnDel   sw rows = mkBtn sw "delete.png"  (doBtnDel   sw rows)
 
-mkTxtFld :: Window a -> String -> IO (TextCtrl ())
-mkTxtFld sw val = textEntry sw [text := val]
+mkTxtFld :: Window a -> IO (TextCtrl ())
+mkTxtFld sw = textEntry sw []
 
 doBtnOK    sw rows = undefined
 doBtnHint  sw rows = undefined
 doBtnDel   sw rows = popRow sw rows
 
 -- | Remove the top row. Does not remove a row if there is but one left.
+-- TODO: Really remove the widgets: they slow things down!
 popRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow] -> IO ()
 popRow sw rows = do
   rws <- get rows value
@@ -101,50 +138,44 @@ popRow sw rows = do
     []      -> return ()
     [x]     -> return ()
     (x:xs)  -> do  set rows [ value := xs ]
-                   drawRows sw rows rws
+                   drawRows sw rows
 
 -- TODO: Down here, way too much IO!
-mkGridRows :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-           -> [LogicRow] -> Bool -> Bool -> IO [[Layout]]
-mkGridRows _  _    []   _       _        = return []
-mkGridRows sw rows [x]  isTerm  isFirst  = case isTerm of
-  True   -> do  tr <- mkTermRow  sw x rows isFirst True
-                return [tr]
-  False  -> do  tr <- mkRuleRow  sw x rows isFirst True
-                return [tr]
-mkGridRows sw rows (x:xs) isTerm isFirst = case isTerm of
-  True   -> do  zs <- mkGridRows sw rows xs False  False
-                tr <- mkTermRow  sw x rows isFirst False
-                return $ tr : zs
-  False  -> do  zs <- mkGridRows sw rows xs True   False
-                rr <- mkRuleRow  sw x rows isFirst False
-                return $ rr : zs
+{- mkGridRows :: (Form (Window a), Valued w) => Window a -> w [LogicRow]-}
+{-            -> [LogicRow] -> Bool -> Bool -> IO [(TextCtrl (), [Layout])]-}
+{- mkGridRows _  _    []   _       _        = return []-}
+{- mkGridRows sw rows [x]  isTerm  isFirst  = case isTerm of-}
+{-   True   -> do  tr <- mkTermRow  sw x rows isFirst True-}
+{-                 return [tr]-}
+{-   False  -> do  rr <- mkRuleRow  sw x rows isFirst True-}
+{-                 return [rr]-}
+{- mkGridRows sw rows (x:xs) isTerm isFirst = case isTerm of-}
+{-   True   -> do  zs <- mkGridRows  sw rows xs False   False-}
+{-                 tr <- mkTermRow   sw x rows isFirst  False-}
+{-                 return $ tr : zs-}
+{-   False  -> do  zs <- mkGridRows  sw rows xs True    False-}
+{-                 rr <- mkRuleRow   sw x rows isFirst  False-}
+{-                 return $ rr : zs-}
 
-mkRuleRow :: (Form (Window a), Valued w) => Window a -> LogicRow
-          -> w [LogicRow] -> t -> Bool -> IO [Layout]
-mkRuleRow sw row rows _       isLast = do
-  fld <- answerField sw row rows False isLast
-  return [fld, widget $ hrule 350 ]
-mkTermRow sw row rows isFirst isLast = do
-  fld <- answerField sw row rows isFirst isLast
-  return [ widget $ empty, fld ]
+{- mkRuleRow, mkTermRow :: (Form (Window a), Valued w) => Window a -> LogicRow-}
+{-           -> w [LogicRow] -> t -> Bool -> IO (TextCtrl (), [Layout])-}
+{- mkRuleRow sw row rows _       isLast = do-}
+{-   fld <- answerField sw row rows False isLast-}
+{-   return (fst fld, [ snd fld, widget $ hrule 350 ])-}
+{- mkTermRow sw row rows isFirst isLast = do-}
+{-   fld <- answerField sw row rows isFirst isLast-}
+{-   return (fst fld, [ widget $ empty, snd fld ])-}
 
-answerField :: (Form (Window a), Valued w) => Window a -> LogicRow
-            -> w [LogicRow] -> Bool -> Bool -> IO Layout
-answerField sw rw rows isFirst isLast = do
-  ok    <- mkBtnOK    sw rows
-  hint  <- mkBtnHint  sw rows
-  del   <- mkBtnDel   sw rows
-  fld   <- mkTxtFld   sw (lgText rw)
-  set ok    [enabled := isLast]
-  set hint  [enabled := isLast]
-  set del   [enabled := isLast]
-  set fld   [enabled := isLast]
-  return $ widget $ row 5  [ widget ok, widget hint
-                           , if isFirst
-                               then widget empty
-                               else widget del
-                           , widget fld ]
+{- answerField :: (Form (Window a), Valued w) => Window a -> LogicRow-}
+{-             -> w [LogicRow] -> IO (TextCtrl (), Layout)-}
+{- answerField sw rw rows  = do-}
+{-   ok    <- mkBtnOK    sw rows-}
+{-   hint  <- mkBtnHint  sw rows-}
+{-   del   <- mkBtnDel   sw rows-}
+{-   fld   <- mkTxtFld   sw (lgText rw)-}
+{-   return $ (fld, widget $ row 5  [ widget ok, widget hint-}
+{-                                  , widget del-}
+{-                                  , widget fld ])-}
 
 overGrid :: (Widget w1, Widget w3, Widget w5, Widget w4, Widget w2, Widget w)
          => w -> w1 -> w2 -> w3 -> w5 -> w4 -> Layout
