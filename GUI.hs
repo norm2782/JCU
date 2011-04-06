@@ -70,7 +70,7 @@ onAdd :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
 onAdd sw rows vlogic = do
   rws  <- get rows value
   mapM_ disableRow rws -- TODO: We don't need this for all of the rows, only for the first one.
-  nr   <- mkNewRow sw rows vlogic
+  nr   <- mkNewRow sw rows vlogic (length rws == 0)
   let  nrws = nr : rws
   set  rows [ value := nrws ]
   drawRows sw rows
@@ -99,19 +99,19 @@ lgText lr = do
   return val
 
 mkNewRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-         -> w [EnvTrace] -> IO LogicRow
-mkNewRow sw rows vlogic = do
+         -> w [EnvTrace] -> Bool -> IO LogicRow
+mkNewRow sw rows vlogic isFst = do
   lrs <- get rows value
   let ist = length lrs `mod` 2 == 0
   nrw <- if ist
-           then mkRow sw rows vlogic TermRow
-           else mkRow sw rows vlogic RuleRow
+           then mkRow sw rows vlogic TermRow isFst
+           else mkRow sw rows vlogic RuleRow isFst
   return nrw
 
 mkRow :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-      -> w [EnvTrace] -> RowType -> IO LogicRow
-mkRow sw rows vlogic rt = do
-  ctrls <- mkControls sw rows vlogic
+      -> w [EnvTrace] -> RowType -> Bool -> IO LogicRow
+mkRow sw rows vlogic rt isFst = do
+  ctrls <- mkControls sw rows vlogic isFst
   return $ LogicRow [] rt ctrls
 
 mkRowLayout ::  LogicRow -> [Layout]
@@ -125,12 +125,16 @@ mkControlLayout (RowControls t o h d) = widget $ row 5  [ widget o, widget h
                                                         , widget d, widget t ]
 
 mkControls :: (Form (Window a), Valued w) => Window a -> w [LogicRow]
-           -> w [EnvTrace] -> IO RowControls
-mkControls sw rows  vlogic = do
+           -> w [EnvTrace] -> Bool -> IO RowControls
+mkControls sw rows vlogic isFst = do
   fld   <- textEntry sw []
   ok    <- mkBtn sw "accept.png"  (doBtnOK    sw rows vlogic fld)
   hint  <- mkBtn sw "help.png"    (doBtnHint  sw rows vlogic fld)
   del   <- mkBtn sw "delete.png"  (doBtnDel   sw rows)
+  if isFst
+    then  do  set del   [visible := False]
+              set hint  [visible := False]
+    else  return ()
   return $ RowControls fld ok hint del
 
 mkBtn :: Window a -> FilePath -> IO () -> IO (BitmapButton ())
