@@ -7,7 +7,7 @@ build:
 	cd src && macosx-app ./GUI
 
 clean:
-	rm -rf src/GUI src/GUI.app/ src/*.hi src/*.o
+	rm -rf src/GUI src/GUI.app/ src/*.hi src/*.o dist
 
 run:
 	open src/GUI.app
