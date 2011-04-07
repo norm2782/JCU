@@ -31,7 +31,8 @@ Executable jcu
     text >= 0.11 && < 0.12,
     time >= 1.1 && < 1.3,
     xmlhtml == 0.1.*,
-    snap-auth == 0.1.*
+    snap-auth == 0.1.*,
+    snap-extension-mongodb == 0.3.3.*
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 
