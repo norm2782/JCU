@@ -6,15 +6,17 @@ information it requires.
 -}
 
 module Application
-  ( Application
-  , applicationInitializer
-  ) where
+  {- ( Application-}
+  {- , applicationInitializer-}
+  {- )-}
+ where
 
 import           Snap.Extension
 import           Snap.Extension.Heist.Impl
 import           Snap.Extension.Timer.Impl
 import           Snap.Extension.Session.CookieSession
 import           Snap.Auth
+import           Snap.Extension.DB.MongoDB
 import           Data.ByteString.Char8 (pack)
 
 ------------------------------------------------------------------------------
@@ -41,6 +43,8 @@ instance HasCookieSessionState ApplicationState where
 
 
 instance MonadAuth Application
+
+instance HasMongoDBState ApplicationState
 
 ------------------------------------------------------------------------------
 instance HasHeistState Application ApplicationState where

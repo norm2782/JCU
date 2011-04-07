@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings  #-}
 
 {-|
 
@@ -22,6 +22,7 @@ import           Text.Templating.Heist
 import           Snap.Auth
 import           Snap.Auth.Handlers
 import           Application
+import           Snap.Extension.DB.MongoDB
 
 data User = User
   { authUser :: AuthUser
@@ -33,8 +34,8 @@ data User = User
 -- The 'ifTop' is required to limit this to the top of a route.
 -- Otherwise, the way the route table is currently set up, this action
 -- would be given every request.
-index :: Application ()
-index = ifTop $ render "index"
+siteIndex :: Application ()
+siteIndex = ifTop $ render "index"
 
 
 ------------------------------------------------------------------------------
@@ -50,19 +51,20 @@ echo = do
 
 ------------------------------------------------------------------------------
 -- | Renders the login page
+newSessionH :: Application ()
 newSessionH = render "login"
 
---redirHome = redirect "/"
+redirHome = redirect "/"
 
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
---site :: Application ()
-site = route [ ("/",            index)
-             , ("/login",       method GET $ newSessionH)
---             , ("/login",       method POST $ loginHandler "password" newSessionH redirHome)
---             , ("/logout",      logoutHandler redirHome)
+site :: Application ()
+site = route [ ("/",            siteIndex)
+             , ("/login",       method GET newSessionH)
+             , ("/login",       method POST $ loginHandler "password" Nothing newSessionH redirHome)
+             , ("/logout",      logoutHandler redirHome)
              , ("/echo/:stuff", echo)
              ]
        <|> serveDirectory "resources/static"
