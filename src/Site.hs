@@ -19,9 +19,13 @@ import           Snap.Extension.Timer
 import           Snap.Util.FileServe
 import           Snap.Types
 import           Text.Templating.Heist
-
+import           Snap.Auth
+import           Snap.Auth.Handlers
 import           Application
 
+data User = User
+  { authUser :: AuthUser
+  }
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
@@ -46,16 +50,19 @@ echo = do
 
 ------------------------------------------------------------------------------
 -- | Renders the login page
-login :: Application ()
-login = render "login"
+newSessionH = render "login"
+
+--redirHome = redirect "/"
 
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
-site :: Application ()
+--site :: Application ()
 site = route [ ("/",            index)
-             , ("/login",       login)
+             , ("/login",       method GET $ newSessionH)
+--             , ("/login",       method POST $ loginHandler "password" newSessionH redirHome)
+--             , ("/logout",      logoutHandler redirHome)
              , ("/echo/:stuff", echo)
              ]
        <|> serveDirectory "resources/static"
