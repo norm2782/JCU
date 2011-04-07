@@ -15,7 +15,7 @@ Flag development
   Description: Whether to build the server in development (interpreted) mode
   Default: False
 
-Executable trunk
+Executable jcu
   hs-source-dirs: src
   main-is: Main.hs
 
