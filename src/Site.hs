@@ -30,12 +30,7 @@ import           Application
 -- Otherwise, the way the route table is currently set up, this action
 -- would be given every request.
 index :: Application ()
-index = ifTop $ heistLocal (bindSplices indexSplices) $ render "index"
-  where
-    indexSplices =
-        [ ("start-time",   startTimeSplice)
-        , ("current-time", currentTimeSplice)
-        ]
+index = ifTop $ render "index"
 
 
 ------------------------------------------------------------------------------
@@ -48,10 +43,19 @@ echo = do
     decodedParam p = fromMaybe "" <$> getParam p
 
 
+
+------------------------------------------------------------------------------
+-- | Renders the login page
+login :: Application ()
+login = render "login"
+
+------------------------------------------------------------------------------
+
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
 site :: Application ()
 site = route [ ("/",            index)
+             , ("/login",       login)
              , ("/echo/:stuff", echo)
              ]
        <|> serveDirectory "resources/static"

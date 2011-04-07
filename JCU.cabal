@@ -30,7 +30,8 @@ Executable jcu
     snap-server == 0.4.*,
     text >= 0.11 && < 0.12,
     time >= 1.1 && < 1.3,
-    xmlhtml == 0.1.*
+    xmlhtml == 0.1.*,
+    snap-auth == 0.1.*
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 
