@@ -14,6 +14,7 @@ import           Snap.Extension
 import           Snap.Extension.Heist.Impl
 import           Snap.Extension.Timer.Impl
 import           Snap.Extension.Session.CookieSession
+import           Snap.Auth
 import           Data.ByteString.Char8 (pack)
 
 ------------------------------------------------------------------------------
@@ -37,6 +38,9 @@ data ApplicationState = ApplicationState
 -- Instantiate your app as a MonadSession
 instance HasCookieSessionState ApplicationState where
   getCookieSessionState = appSessionSt
+
+
+instance MonadAuth Application
 
 ------------------------------------------------------------------------------
 instance HasHeistState Application ApplicationState where

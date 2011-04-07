@@ -8,7 +8,8 @@
       <td>Password</td><td><input type="password" name="password" /></td>
     </tr>
     <tr>
-      <td colspan="2"><input type="submit" text="Login" /></td>
+      <td><input type="submit" text="Login" /></td>
+      <td><input type="checkbox" name="remember" />Remember me?</td>
     </tr>
   </table>
 </apply>
