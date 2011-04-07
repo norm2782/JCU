@@ -1,0 +1,23 @@
+name:                  JCU
+version:               0.0.1
+synopsis:              JCU
+description:           JCU
+license:               BSD3
+license-file:          LICENSE
+category:              Compilers/Interpreters
+copyright:             (c) 2011 Utrecht University
+author:                Jurriën Stutterheim
+maintainer:            Jurriën Stutterheim
+stability:             provisional
+homepage:              http://www.cs.uu.nl/wiki/bin/view/Center/JCU
+tested-with:           GHC == 7.0.3
+build-type:            Simple
+cabal-version:         >= 1.2
+extra-source-files:    Makefile
+
+executable jcu
+  main-is:             GUI.hs
+  build-depends:       base >= 4.3 && < 5, wx >= 0.12, uu-parsinglib >= 2.7.1,
+                       wxcore >= 0.12
+  other-modules:       Prolog
+  hs-source-dirs:      src
