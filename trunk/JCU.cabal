@@ -32,7 +32,9 @@ Executable jcu
     time >= 1.1 && < 1.3,
     xmlhtml == 0.1.*,
     snap-auth == 0.1.*,
-    snap-extension-mongodb == 0.3.3.*
+    snap-extension-mongodb == 0.3.3.*,
+    mongoDB == 0.9.*,
+    bson == 0.1.3
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 
