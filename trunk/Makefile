@@ -1,13 +1,16 @@
 default:
-	make build && make run
+	make install
 
-build:
-	make clean
-	cd src && ghc --make GUI.hs
-	cd src && macosx-app ./GUI
+dist:
+	cabal check
+	cabal configure
+	cabal sdist
 
+install:
+	cabal install -fdevelopment
+	
 clean:
-	rm -rf src/GUI src/GUI.app/ src/*.hi src/*.o dist
+	cabal clean
 
 run:
-	open src/GUI.app
+	jcu

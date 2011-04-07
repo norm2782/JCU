@@ -13,7 +13,8 @@ module Application
 import           Snap.Extension
 import           Snap.Extension.Heist.Impl
 import           Snap.Extension.Timer.Impl
-
+import           Snap.Extension.Session.CookieSession
+import           Data.ByteString.Char8 (pack)
 
 ------------------------------------------------------------------------------
 -- | 'Application' is our application's monad. It uses 'SnapExtend' from
@@ -30,8 +31,12 @@ type Application = SnapExtend ApplicationState
 data ApplicationState = ApplicationState
     { templateState :: HeistState Application
     , timerState    :: TimerState
+    , appSessionSt  :: CookieSessionState
     }
 
+-- Instantiate your app as a MonadSession
+instance HasCookieSessionState ApplicationState where
+  getCookieSessionState = appSessionSt
 
 ------------------------------------------------------------------------------
 instance HasHeistState Application ApplicationState where
@@ -55,4 +60,7 @@ applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
     heist <- heistInitializer "resources/templates"
     timer <- timerInitializer
-    return $ ApplicationState heist timer
+    cs    <- cookieSessionStateInitializer $ defCookieSessionState
+             { csKeyPath    = "config/site-key.txt"
+             , csCookieName = pack "jcu-session" }
+    return $ ApplicationState heist timer cs
