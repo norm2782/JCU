@@ -18,6 +18,8 @@ import           Snap.Extension.Session.CookieSession
 import           Snap.Auth
 import           Snap.Extension.DB.MongoDB
 import           Data.ByteString.Char8 (pack)
+import           Database.MongoDB (host)
+import           Data.UString (u)
 
 ------------------------------------------------------------------------------
 -- | 'Application' is our application's monad. It uses 'SnapExtend' from
@@ -35,6 +37,7 @@ data ApplicationState = ApplicationState
     { templateState :: HeistState Application
     , timerState    :: TimerState
     , appSessionSt  :: CookieSessionState
+    , mongoDBState  :: MongoDBState
     }
 
 -- Instantiate your app as a MonadSession
@@ -44,7 +47,9 @@ instance HasCookieSessionState ApplicationState where
 
 instance MonadAuth Application
 
-instance HasMongoDBState ApplicationState
+instance HasMongoDBState ApplicationState where
+  getMongoDBState = mongoDBState
+  setMongoDBState s pa = pa { mongoDBState = s }
 
 ------------------------------------------------------------------------------
 instance HasHeistState Application ApplicationState where
@@ -71,4 +76,5 @@ applicationInitializer = do
     cs    <- cookieSessionStateInitializer $ defCookieSessionState
              { csKeyPath    = "config/site-key.txt"
              , csCookieName = pack "jcu-session" }
-    return $ ApplicationState heist timer cs
+    mng   <- mongoDBInitializer (host "localhost") 27017 (u "jcu")
+    return $ ApplicationState heist timer cs mng

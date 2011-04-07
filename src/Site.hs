@@ -23,6 +23,7 @@ import           Snap.Auth
 import           Snap.Auth.Handlers
 import           Application
 import           Snap.Extension.DB.MongoDB
+import           Snap.Extension (SnapExtend)
 
 data User = User
   { authUser :: AuthUser
@@ -54,6 +55,7 @@ echo = do
 newSessionH :: Application ()
 newSessionH = render "login"
 
+redirHome :: SnapExtend ApplicationState a
 redirHome = redirect "/"
 
 ------------------------------------------------------------------------------
