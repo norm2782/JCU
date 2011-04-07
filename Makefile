@@ -3,11 +3,11 @@ default:
 
 build:
 	make clean
-	ghc --make GUI.hs
-	macosx-app ./GUI
+	cd src && ghc --make GUI.hs
+	cd src && macosx-app ./GUI
 
 clean:
-	rm -rf GUI GUI.app/ *.hi *.o
+	rm -rf src/GUI src/GUI.app/ src/*.hi src/*.o
 
 run:
-	open ./GUI.app
+	open src/GUI.app

@@ -15,50 +15,50 @@ main = start gui
 -- TODO: Investigate using a Panel
 gui :: IO ()
 gui = do -- Application frame 
-    f        <- frame [text := "Prolog in Haskell"]
-    sw       <- scrolledWindow f  [ style       := wxVSCROLL
-                                  , scrollRate  := sz 20 20
-                                  , clientSize  := sz 800 500 ]
-    vlogic   <- variable [ value := [] ]
-    rows     <- variable [ value := [] ]
-    file     <- variable [ value := "" ]
-    rules    <- textCtrl   f   []
-    query    <- textEntry  f   [ text := "ouder(X,ama)" ]
-    output   <- textCtrl   f   []
-    rbox     <- singleListBox f []
-    -- TODO: Get rid of cvas completely. Figure out how the positioning stuff
-    -- works first.
-    cvas     <- panel      sw  [ clientSize  := sz 800 500 ]
-    mfile    <- menuPane   [text := "&File"]
-    mopen    <- menuItem   mfile  [  text        := "&Open\tCtrl+O"
-                                  ,  help        := "Open a Prolog file"
-                                  ,  on command  := onOpen f rules file ]
-    msave    <- menuItem   mfile  [  text        := "&Save\tCtrl+S"
-                                  ,  help        := "Save a Prolog file"
-                                  ,  on command  := onSave f rules file ]
-    msaveas  <- menuItem   mfile  [  text        := "&Save As\tCtrl+Shift+S"
-                                  ,  help        := "Save As a Prolog file"
-                                  ,  on command  := onSaveAs f rules file ]
-    mquit    <- menuQuit   mfile  [  text        := "&Quit"
-                                  ,  help        := "Quit the program"
-                                  ,  on command  := close f ]
-    mquery   <- menuPane   [text  := "Query" ]
-    mrun     <- menuItem   mquery  [  text        := "&Run\tCtrl+R"
-                                   ,  help        := "Run the query"
-                                   ,  on command  := onRun vlogic rules query output ]
-    addbtn   <- button     f       [  text        := "Add"
-                                   ,  on command  := onAdd sw rows vlogic
-                                   ]
-    run      <- button     f       [  text        := "Run!"
-                                   ,  on command  := onRun vlogic rules query output ]
-    set sw   [  layout      := column 5 [hfill $ widget cvas]
-             ,  clientSize  := sz 500 300 ]
-    set f    [  menuBar     := [mfile, mquery]
-             ,  layout      := column 5 [ boxed "Enter rules and queries, press Run and be amazed!"
-                                                (overGrid sw rules query output run rbox)
-                                        ]
-             ,  clientSize := sz 1000 700 ]
-    onAdd sw rows vlogic -- Adds initial text field
+  f        <- frame [text := "Prolog in Haskell"]
+  sw       <- scrolledWindow f  [ style       := wxVSCROLL
+                                , scrollRate  := sz 20 20
+                                , clientSize  := sz 800 500 ]
+  vlogic   <- variable [ value := [] ]
+  rows     <- variable [ value := [] ]
+  file     <- variable [ value := "" ]
+  rules    <- textCtrl   f []
+  query    <- textEntry  f [ text := "ouder(X,ama)" ]
+  output   <- textCtrl   f []
+  rbox     <- singleListBox f []
+  -- TODO: Get rid of cvas completely. Figure out how the positioning stuff
+  -- works first.
+  cvas     <- panel     sw  [ clientSize  := sz 800 500 ]
+  mfile    <- menuPane  [text := "&File"]
+  mopen    <- menuItem  mfile  [  text        := "&Open\tCtrl+O"
+                               ,  help        := "Open a Prolog file"
+                               ,  on command  := onOpen f rules file ]
+  msave    <- menuItem  mfile  [  text        := "&Save\tCtrl+S"
+                               ,  help        := "Save a Prolog file"
+                               ,  on command  := onSave f rules file ]
+  msaveas  <- menuItem  mfile  [  text        := "&Save As\tCtrl+Shift+S"
+                               ,  help        := "Save As a Prolog file"
+                               ,  on command  := onSaveAs f rules file ]
+  mquit    <- menuQuit  mfile  [  text        := "&Quit"
+                               ,  help        := "Quit the program"
+                               ,  on command  := close f ]
+  mquery   <- menuPane  [text  := "Query" ]
+  mrun     <- menuItem  mquery  [  text        := "&Run\tCtrl+R"
+                                ,  help        := "Run the query"
+                                ,  on command  := onRun vlogic rules query output ]
+  addbtn   <- button    f       [  text        := "Add"
+                                ,  on command  := onAdd sw rows vlogic
+                                ]
+  run      <- button    f       [  text        := "Run!"
+                                ,  on command  := onRun vlogic rules query output ]
+  set sw   [  layout      := column 5 [hfill $ widget cvas]
+           ,  clientSize  := sz 500 300 ]
+  set f    [  menuBar     := [mfile, mquery]
+           ,  layout      := column 5 [ boxed "Enter rules and queries, press Run and be amazed!"
+                                              (overGrid sw rules query output run rbox)
+                                      ]
+           ,  clientSize := sz 1000 700 ]
+  onAdd sw rows vlogic -- Adds initial text field
 
 drawRows :: (Form w1, Valued w, Dimensions w1) => w1 -> w [LogicRow] -> IO ()
 drawRows sw rows = do
@@ -78,10 +78,10 @@ onAdd sw rows vlogic = do
 
 disableRow :: LogicRow -> IO ()
 disableRow (LogicRow _  _ (RowControls t o h d)) = do
-  set t [enabled := False]
-  set o [enabled := False]
-  set h [enabled := False]
-  set d [enabled := False]
+  set t  [enabled := False]
+  set o  [enabled := False]
+  set h  [enabled := False]
+  set d  [enabled := False]
 
 data RowType = TermRow | RuleRow
 
@@ -168,17 +168,17 @@ popRow sw rows = do
 
 enableRow :: LogicRow -> IO ()
 enableRow (LogicRow _  _ (RowControls t o h d)) = do
-  set t [enabled := True]
-  set o [enabled := True]
-  set h [enabled := True]
-  set d [enabled := True]
+  set t  [enabled := True]
+  set o  [enabled := True]
+  set h  [enabled := True]
+  set d  [enabled := True]
 
 hideCtrls :: LogicRow -> IO ()
 hideCtrls (LogicRow _ _ (RowControls t o h d)) = do
-  set t [visible := False]
-  set o [visible := False]
-  set h [visible := False]
-  set d [visible := False]
+  set t  [visible := False]
+  set o  [visible := False]
+  set h  [visible := False]
+  set d  [visible := False]
 
 -- TODO: See if we can use container instead of widget for the inner bunch of
 -- fields. This might enable actual scrolling.
