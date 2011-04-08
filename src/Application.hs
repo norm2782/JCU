@@ -76,5 +76,5 @@ applicationInitializer = do
     cs    <- cookieSessionStateInitializer $ defCookieSessionState
              { csKeyPath    = "config/site-key.txt"
              , csCookieName = pack "jcu-session" }
-    mng   <- mongoDBInitializer (host "localhost") 27017 (u "jcu")
+    mng   <- mongoDBInitializer (host "127.0.0.1") 27017 (u "jcu")
     return $ ApplicationState heist timer cs mng
