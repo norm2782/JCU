@@ -24,9 +24,12 @@ import           Snap.Auth.Handlers
 import           Application
 import           Snap.Extension.DB.MongoDB
 import           Snap.Extension (SnapExtend)
+import           Snap.Extension.Session.CookieSession
+import           Data.ByteString.Char8 (ByteString, pack)
 
 data User = User
-  { authUser :: AuthUser
+  { authUser  :: AuthUser
+  , fldProlog :: ByteString
   }
 
 ------------------------------------------------------------------------------
@@ -55,9 +58,28 @@ echo = do
 newSessionH :: Application ()
 newSessionH = render "login"
 
+newSignupH :: Application ()
+newSignupH = render "signup"
+
 redirHome :: SnapExtend ApplicationState a
 redirHome = redirect "/"
 
+additionalUserFields :: User -> Document
+additionalUserFields u = [ "prolog" =: fldProlog u ]
+
+signupH :: Application ()
+signupH = do
+  ps <- getParams
+  let u = makeUser ps
+  au <- saveAuthUser (authUser u, additionalUserFields u)
+  case au of
+    Nothing  -> newSignupH
+    Just au' -> do setSessionUserId $ userId au'
+                   redirect "/"
+
+makeUser ps = User (emptyAuthUser { userPassword = Just $ ClearText $ pack "foo"
+                                  , userEmail    = Just $ pack "foo@bar.com"
+                                  }) (pack "")
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -67,6 +89,7 @@ site = route [ ("/",            siteIndex)
              , ("/login",       method GET newSessionH)
              , ("/login",       method POST $ loginHandler "password" Nothing newSessionH redirHome)
              , ("/logout",      logoutHandler redirHome)
-             , ("/echo/:stuff", echo)
+             , ("/signup",      method GET $ newSignupH)
+             , ("/signup",      method POST $ signupH)
              ]
        <|> serveDirectory "resources/static"
