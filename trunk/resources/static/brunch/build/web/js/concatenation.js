@@ -1,5 +1,5 @@
 (function() {
-  var HomeView, MainController, Rule, Rules, RulesListView, RulesTreeView;
+  var HomeView, MainController, Rule, RulesList, RulesListView, RulesTree, RulesTreeView;
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -16,8 +16,12 @@
   app.templates = {};
   $(document).ready(function() {
     app.initialize = function() {
+      app.collections.rulesList = new RulesList();
+      app.collections.rulesTree = new RulesTree();
       app.controllers.main = new MainController();
       app.views.home = new HomeView();
+      app.views.ruleList = new RulesListView();
+      app.views.ruleTree = new RulesTreeView();
       if (Backbone.history.getFragment() === '') {
         return Backbone.history.saveLocation("home");
       }
@@ -40,38 +44,65 @@
     };
     return Rule;
   })();
-  Rules = (function() {
-    function Rules() {
-      Rules.__super__.constructor.apply(this, arguments);
+  RulesList = (function() {
+    function RulesList() {
+      RulesList.__super__.constructor.apply(this, arguments);
     }
-    __extends(Rules, Backbone.Collection);
-    Rules.prototype.model = Rule;
-    Rules.prototype.initialize = function() {
-      return this.localStorage = new Store("rules");
-    };
-    Rules.prototype.done = function() {
+    __extends(RulesList, Backbone.Collection);
+    RulesList.prototype.model = Rule;
+    RulesList.prototype.done = function() {
       return this.filter(function(rule) {
         return rule.get('done');
       });
     };
-    Rules.prototype.remaining = function() {
+    RulesList.prototype.remaining = function() {
       return this.without.apply(this, this.done());
     };
-    Rules.prototype.nextOrder = function() {
+    RulesList.prototype.nextOrder = function() {
       if (!this.length) {
         return 1;
       }
       return this.last().get('order') + 1;
     };
-    Rules.prototype.comparator = function(rule) {
+    RulesList.prototype.comparator = function(rule) {
       return rule.get('order');
     };
-    Rules.prototype.clearCompleted = function() {
+    RulesList.prototype.clearCompleted = function() {
       return _.each(this.done(), function(rule) {
         return rule.clear();
       });
     };
-    return Rules;
+    return RulesList;
+  })();
+  RulesTree = (function() {
+    function RulesTree() {
+      RulesTree.__super__.constructor.apply(this, arguments);
+    }
+    __extends(RulesTree, Backbone.Collection);
+    RulesTree.prototype.model = Rule;
+    RulesTree.prototype.done = function() {
+      return this.filter(function(rule) {
+        return rule.get('done');
+      });
+    };
+    RulesTree.prototype.remaining = function() {
+      return this.without.apply(this, this.done());
+    };
+    RulesTree.prototype.nextOrder = function() {
+      if (!this.length) {
+        return 1;
+      }
+      return this.last().get('order') + 1;
+    };
+    RulesTree.prototype.comparator = function(rule) {
+      return rule.get('order');
+    };
+    RulesTree.prototype.clearCompleted = function() {
+      return _.each(this.done(), function(rule) {
+        return rule.clear();
+      });
+    };
+    return RulesTree;
   })();
   MainController = (function() {
     __extends(MainController, Backbone.Controller);
@@ -109,23 +140,23 @@
     __extends(RulesListView, Backbone.View);
     RulesListView.prototype.id = 'rules-list-view';
     RulesListView.prototype.initialize = function() {
-      app.collections.rules - list.bind('add', this.addOne);
-      app.collections.rules - list.bind('refresh', this.addAll);
-      return app.collections.rules - list.bind('all', this.renderStats);
+      app.collections.rulesList.bind('add', this.addOne);
+      app.collections.rulesList.bind('refresh', this.addAll);
+      return app.collections.rulesList.bind('all', this.renderStats);
     };
     RulesListView.prototype.render = function() {
-      $(this.el).html(app.templates.rules - list());
+      $(this.el).html(app.templates.rulesList());
       return this;
     };
     RulesListView.prototype.addOne = function(rule) {
       var view;
-      view = new RuleListView({
+      view = new RulesListView({
         model: rule
       });
       return $(this.el).find("#rules-list").append(view.render().el);
     };
     RulesListView.prototype.addAll = function() {
-      return app.collections.rules - list.each(this.addOne);
+      return app.collections.rulesList.each(this.addOne);
     };
     RulesListView.prototype.renderStats = function() {
       return app.views.stats.render();
@@ -141,23 +172,23 @@
     __extends(RulesTreeView, Backbone.View);
     RulesTreeView.prototype.id = 'rules-tree-view';
     RulesTreeView.prototype.initialize = function() {
-      app.collections.rules - tree.bind('add', this.addOne);
-      app.collections.rules - tree.bind('refresh', this.addAll);
-      return app.collections.rules - tree.bind('all', this.renderStats);
+      app.collections.rulesTree.bind('add', this.addOne);
+      app.collections.rulesTree.bind('refresh', this.addAll);
+      return app.collections.rulesTree.bind('all', this.renderStats);
     };
     RulesTreeView.prototype.render = function() {
-      $(this.el).html(app.templates.rules - tree());
+      $(this.el).html(app.templates.rulesTree());
       return this;
     };
     RulesTreeView.prototype.addOne = function(rule) {
       var view;
-      view = new RuleTreeView({
+      view = new RulesTreeView({
         model: rule
       });
       return $(this.el).find("#rules-tree").append(view.render().el);
     };
     RulesTreeView.prototype.addAll = function() {
-      return app.collections.rules - tree.each(this.addOne);
+      return app.collections.rulesTree.each(this.addOne);
     };
     RulesTreeView.prototype.renderStats = function() {
       return app.views.stats.render();
