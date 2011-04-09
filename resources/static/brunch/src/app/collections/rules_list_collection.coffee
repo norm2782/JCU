@@ -1,6 +1,7 @@
 class RulesList extends Backbone.Collection
 
   model: Rule
+  url: -> "#{@document.url()}/rules"
 
   done: ->
     return @filter( (rule) ->
