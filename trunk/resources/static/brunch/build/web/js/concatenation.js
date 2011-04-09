@@ -1,5 +1,5 @@
 (function() {
-  var HomeView, MainController, Rule, RulesList, RulesListView, RulesTree, RulesTreeView;
+  var HomeView, MainController, Rule, RuleListItemView, RuleTreeItemView, RulesList, RulesListView, RulesTree, RulesTreeView;
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -35,8 +35,7 @@
     }
     __extends(Rule, Backbone.Model);
     Rule.prototype.defaults = {
-      content: 'empty rule...',
-      isTerm: true
+      content: 'empty rule...'
     };
     Rule.prototype.clear = function() {
       this.destroy();
@@ -80,28 +79,6 @@
     }
     __extends(RulesTree, Backbone.Collection);
     RulesTree.prototype.model = Rule;
-    RulesTree.prototype.done = function() {
-      return this.filter(function(rule) {
-        return rule.get('done');
-      });
-    };
-    RulesTree.prototype.remaining = function() {
-      return this.without.apply(this, this.done());
-    };
-    RulesTree.prototype.nextOrder = function() {
-      if (!this.length) {
-        return 1;
-      }
-      return this.last().get('order') + 1;
-    };
-    RulesTree.prototype.comparator = function(rule) {
-      return rule.get('order');
-    };
-    RulesTree.prototype.clearCompleted = function() {
-      return _.each(this.done(), function(rule) {
-        return rule.clear();
-      });
-    };
     return RulesTree;
   })();
   MainController = (function() {
@@ -125,11 +102,61 @@
     HomeView.prototype.id = 'home-view';
     HomeView.prototype.render = function() {
       $(this.el).html(app.templates.home());
-      $(this.el).find('home-view').append(app.views.ruleTree.render().el);
-      $(this.el).find('home-view').append(app.views.ruleList.render().el);
+      $(this.el).find('#rules-tree-div').append(app.views.ruleTree.render().el);
+      $(this.el).find('#rules-list-div').append(app.views.ruleList.render().el);
       return this;
     };
     return HomeView;
+  })();
+  RuleListItemView = (function() {
+    function RuleListItemView() {
+      this.update = __bind(this.update, this);;
+      this.render = __bind(this.render, this);;      RuleListItemView.__super__.constructor.apply(this, arguments);
+    }
+    __extends(RuleListItemView, Backbone.View);
+    RuleListItemView.prototype.tagName = "li";
+    RuleListItemView.prototype.events = {
+      'click .check': 'toggleDone',
+      'dblclick .todo-content': 'edit',
+      'click .todo-destroy': 'clear',
+      'keypress .todo-input': 'updateOnEnter'
+    };
+    RuleListItemView.prototype.initialize = function() {
+      this.model.bind('change', this.render);
+      return this.model.view = this;
+    };
+    RuleListItemView.prototype.render = function() {
+      this.$(this.el).html(app.templates.todo({
+        todo: this.model.toJSON()
+      }));
+      this.$('.todo-input').bind('blur', this.update);
+      return this;
+    };
+    RuleListItemView.prototype.toggleDone = function() {
+      return this.model.toggle();
+    };
+    RuleListItemView.prototype.edit = function() {
+      this.$(this.el).addClass("editing");
+      return $('.todo-input').focus();
+    };
+    RuleListItemView.prototype.update = function() {
+      this.model.save({
+        content: this.$('.todo-input').val()
+      });
+      return this.$(this.el).removeClass("editing");
+    };
+    RuleListItemView.prototype.updateOnEnter = function(e) {
+      if (e.keyCode === $.ui.keyCode.ENTER) {
+        return this.update();
+      }
+    };
+    RuleListItemView.prototype.remove = function() {
+      return $(this.el).remove();
+    };
+    RuleListItemView.prototype.clear = function() {
+      return this.model.clear();
+    };
+    return RuleListItemView;
   })();
   RulesListView = (function() {
     function RulesListView() {
@@ -162,6 +189,56 @@
       return app.views.stats.render();
     };
     return RulesListView;
+  })();
+  RuleTreeItemView = (function() {
+    function RuleTreeItemView() {
+      this.update = __bind(this.update, this);;
+      this.render = __bind(this.render, this);;      RuleTreeItemView.__super__.constructor.apply(this, arguments);
+    }
+    __extends(RuleTreeItemView, Backbone.View);
+    RuleTreeItemView.prototype.tagName = "li";
+    RuleTreeItemView.prototype.events = {
+      'click .check': 'toggleDone',
+      'dblclick .todo-content': 'edit',
+      'click .todo-destroy': 'clear',
+      'keypress .todo-input': 'updateOnEnter'
+    };
+    RuleTreeItemView.prototype.initialize = function() {
+      this.model.bind('change', this.render);
+      return this.model.view = this;
+    };
+    RuleTreeItemView.prototype.render = function() {
+      this.$(this.el).html(app.templates.todo({
+        todo: this.model.toJSON()
+      }));
+      this.$('.todo-input').bind('blur', this.update);
+      return this;
+    };
+    RuleTreeItemView.prototype.toggleDone = function() {
+      return this.model.toggle();
+    };
+    RuleTreeItemView.prototype.edit = function() {
+      this.$(this.el).addClass("editing");
+      return $('.todo-input').focus();
+    };
+    RuleTreeItemView.prototype.update = function() {
+      this.model.save({
+        content: this.$('.todo-input').val()
+      });
+      return this.$(this.el).removeClass("editing");
+    };
+    RuleTreeItemView.prototype.updateOnEnter = function(e) {
+      if (e.keyCode === $.ui.keyCode.ENTER) {
+        return this.update();
+      }
+    };
+    RuleTreeItemView.prototype.remove = function() {
+      return $(this.el).remove();
+    };
+    RuleTreeItemView.prototype.clear = function() {
+      return this.model.clear();
+    };
+    return RuleTreeItemView;
   })();
   RulesTreeView = (function() {
     function RulesTreeView() {

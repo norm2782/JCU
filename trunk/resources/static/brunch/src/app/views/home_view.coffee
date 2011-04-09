@@ -3,6 +3,6 @@ class HomeView extends Backbone.View
 
   render: ->
     $(@.el).html app.templates.home()
-    $(@.el).find('home-view').append app.views.ruleTree.render().el
-    $(@.el).find('home-view').append app.views.ruleList.render().el
+    $(@.el).find('#rules-tree-div').append app.views.ruleTree.render().el
+    $(@.el).find('#rules-list-div').append app.views.ruleList.render().el
     @
