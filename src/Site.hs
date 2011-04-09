@@ -82,6 +82,10 @@ makeUser ps = User (emptyAuthUser  { userPassword  = Just $ ClearText $ pack "fo
                                    , userEmail     = Just $ pack "foo@bar.com"
                                    }) (pack "")
 ------------------------------------------------------------------------------
+-- | Functions for handling reading and saving per-person rules
+
+readRules = undefined
+updateRules = undefined
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
@@ -92,5 +96,8 @@ site =  route  [ ("/",        siteIndex)
                , ("/logout",  logoutHandler redirHome)
                , ("/signup",  method GET $ newSignupH)
                , ("/signup",  method POST $ signupH)
+               , ("/rules",   method GET $ readRules)
+               , ("/rules",   method PUT $ updateRules)
+               , (""
                ]
         <|> serveDirectory "resources/static"
