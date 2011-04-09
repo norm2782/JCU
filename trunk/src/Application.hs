@@ -1,3 +1,6 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+
 {-
 
 This module defines our application's monad and any application-specific
@@ -17,7 +20,6 @@ import            Snap.Extension.Session.CookieSession
 import            Snap.Auth
 import            Snap.Extension.DB.MongoDB
 import            Data.ByteString.Char8 (pack)
-import            Database.MongoDB (host)
 import            Data.UString (u)
 
 ------------------------------------------------------------------------------

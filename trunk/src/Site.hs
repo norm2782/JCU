@@ -25,14 +25,15 @@ import            Application
 import            Snap.Extension.DB.MongoDB
 import            Snap.Extension (SnapExtend)
 import            Snap.Extension.Session.CookieSession
-import            Data.ByteString.Char8 (ByteString, pack)
+import qualified  Data.ByteString as B
+import qualified  Data.ByteString.Lazy as BL
+import            JCU.Prolog
+import            Data.Aeson
 
 -- TODO: Get prolog field out of user? Though it can't hurt too much;
 -- there's not a lot of data we want to store anyway.
-data User = User
-  {  authUser   :: AuthUser
-  ,  fldProlog  :: ByteString
-  }
+data User = User  {  authUser     :: AuthUser
+                  ,  storedRules  :: B.ByteString }
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
@@ -50,8 +51,10 @@ echo :: Application ()
 echo = do
     message <- decodedParam "stuff"
     heistLocal (bindString "message" (T.decodeUtf8 message)) $ render "echo"
-  where
-    decodedParam p = fromMaybe "" <$> getParam p
+
+
+decodedParam :: MonadSnap m => B.ByteString -> m B.ByteString
+decodedParam p = fromMaybe "" <$> getParam p
 
 
 
@@ -66,38 +69,45 @@ newSignupH = render "signup"
 redirHome = redirect "/"
 
 additionalUserFields :: User -> Document
-additionalUserFields u = [ "prolog" =: fldProlog u ]
+additionalUserFields u = [ "storedRules"  =: storedRules u ]
 
 signupH :: Application ()
 signupH = do
-  ps <- getParams
+  ps  <- getParams
   let u = makeUser ps
-  au <- saveAuthUser (authUser u, additionalUserFields u)
+  au  <- saveAuthUser (authUser u, additionalUserFields u)
   case au of
     Nothing   -> newSignupH
     Just au'  -> do  setSessionUserId $ userId au'
                      redirect "/"
 
-makeUser ps = User (emptyAuthUser  { userPassword  = Just $ ClearText $ pack "foo"
-                                   , userEmail     = Just $ pack "foo@bar.com"
-                                   }) (pack "")
+makeUser ps = User emptyAuthUser ""
+
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
-readRules = undefined
-updateRules = undefined
+readStoredRulesH = undefined
+updateStoredRulesH = undefined
+hintRulesH = undefined
+
+checkRulesH = do
+  rules <- getParam "rules"
+  -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense.
+  writeBS . B.pack . BL.unpack $ encode True -- TODO: Sort out all this ByteString mess
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
 site :: Application ()
-site =  route  [ ("/",        siteIndex)
-               , ("/login",   method GET newSessionH)
-               , ("/login",   method POST $ loginHandler "password" Nothing newSessionH redirHome)
-               , ("/logout",  logoutHandler redirHome)
-               , ("/signup",  method GET $ newSignupH)
-               , ("/signup",  method POST $ signupH)
-               , ("/rules",   method GET $ readRules)
-               , ("/rules",   method PUT $ updateRules)
-               , (""
+site =  route  [  ("/",        siteIndex)
+               ,  ("/login",   method GET newSessionH)
+               ,  ("/login",   method POST  $  loginHandler "password"
+                                               Nothing newSessionH redirHome)
+               ,  ("/logout",  logoutHandler redirHome)
+               ,  ("/signup",  method GET   $ newSignupH)
+               ,  ("/signup",  method POST  $ signupH)
+               ,  ("/rules/stored",  method GET   $ readStoredRulesH)
+               ,  ("/rules/stored",  method POST  $ updateStoredRulesH)
+               ,  ("/rules/hint",    method POST  $ hintRulesH)
+               ,  ("/rules/check",   method POST  $ checkRulesH)
                ]
         <|> serveDirectory "resources/static"
