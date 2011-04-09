@@ -1,9 +1,6 @@
-class Rules extends Backbone.Collection
+class RulesList extends Backbone.Collection
 
   model: Rule
-
-  initialize: ->
-    @localStorage = new Store "rules"
 
   done: ->
     return @filter( (rule) ->

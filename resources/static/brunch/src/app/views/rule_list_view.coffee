@@ -3,20 +3,20 @@ class RulesListView extends Backbone.View
   id: 'rules-list-view'
 
   initialize: ->
-    app.collections.rules-list.bind 'add', @addOne
-    app.collections.rules-list.bind 'refresh', @addAll
-    app.collections.rules-list.bind 'all', @renderStats
+    app.collections.rulesList.bind 'add', @addOne
+    app.collections.rulesList.bind 'refresh', @addAll
+    app.collections.rulesList.bind 'all', @renderStats
 
   render: ->
-    $(@el).html app.templates.rules-list()
+    $(@el).html app.templates.rulesList()
     @
 
   addOne: (rule) =>
-    view = new RuleListView model: rule
+    view = new RulesListView model: rule
     $(@el).find("#rules-list").append view.render().el
 
   addAll: =>
-    app.collections.rules-list.each @addOne
+    app.collections.rulesList.each @addOne
 
   renderStats: =>
     app.views.stats.render()
