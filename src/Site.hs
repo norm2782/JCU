@@ -25,15 +25,14 @@ import            Application
 import            Snap.Extension.DB.MongoDB
 import            Snap.Extension (SnapExtend)
 import            Snap.Extension.Session.CookieSession
-import qualified  Data.ByteString as B
-import qualified  Data.ByteString.Lazy as BL
+import            Data.ByteString
 import            JCU.Prolog
-import            Data.Aeson
+import            Data.Aeson (encode)
 
 -- TODO: Get prolog field out of user? Though it can't hurt too much;
 -- there's not a lot of data we want to store anyway.
 data User = User  {  authUser     :: AuthUser
-                  ,  storedRules  :: B.ByteString }
+                  ,  storedRules  :: ByteString }
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
@@ -53,7 +52,7 @@ echo = do
     heistLocal (bindString "message" (T.decodeUtf8 message)) $ render "echo"
 
 
-decodedParam :: MonadSnap m => B.ByteString -> m B.ByteString
+decodedParam :: MonadSnap m => ByteString -> m ByteString
 decodedParam p = fromMaybe "" <$> getParam p
 
 
@@ -93,7 +92,7 @@ hintRulesH = undefined
 checkRulesH = do
   rules <- getParam "rules"
   -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense.
-  writeBS . B.pack . BL.unpack $ encode True -- TODO: Sort out all this ByteString mess
+  writeLBS $ encode True
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
