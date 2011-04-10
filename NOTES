@@ -1,0 +1,12 @@
+RESTful behavior:
+
+/rules/stored (rules in the side-bar, which can be reused):
+GET: Retrieve the list of stored rules. If no such list is available on the server, create it.
+PUT: Store the list of stored rules as is currently available on the client-side.
+
+
+/rules/hint
+POST: Submits all current rules used in a derivation to the server, which will calculate a set of next possible rules that can be applied.
+
+/rules/check
+POST: Submits all current rules used and checks if the derivation sequence is valid.
