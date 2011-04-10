@@ -2,8 +2,8 @@
 
 module JCU.Prolog.Types where
 
-import Data.List (intercalate)
 import Data.Aeson
+import Data.List (intercalate)
 
 type Ident  =  String
 

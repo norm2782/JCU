@@ -2,16 +2,16 @@
 
 module JCU.Web.Actions where
 
-import            Snap.Extension.Heist (render)
-import            Snap.Types
-import            Snap.Auth
-import            Snap.Auth.Handlers
 import            Application (Application)
-import            Snap.Extension.DB.MongoDB ((=:), Document)
-import            Snap.Extension.Session.CookieSession (setSessionUserId)
-import            JCU.Prolog.Prolog
 import            Data.Aeson (encode)
+import            JCU.Prolog.Prolog
 import            JCU.Web.Types
+import            Snap.Auth
+import            Snap.Auth.Handler
+import            Snap.Extension.DB.MongoDB ((=:), Document)
+import            Snap.Extension.Heist (render)
+import            Snap.Extension.Session.CookieSession (setSessionUserId)
+import            Snap.Types
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
