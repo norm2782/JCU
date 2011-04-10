@@ -4,6 +4,8 @@ module JCU.Web.Actions where
 
 import            Application (Application)
 import            Data.Aeson (encode)
+import            Data.Maybe (fromMaybe)
+import Debug.Trace
 import            JCU.Prolog.Prolog
 import            JCU.Web.Types
 import            Snap.Auth
@@ -46,15 +48,17 @@ additionalUserFields u = [ "storedRules"  =: storedRules u ]
 
 signupH :: Application ()
 signupH = do
-  ps  <- getParams
-  let u = makeUser ps
-  au  <- saveAuthUser (authUser u, additionalUserFields u)
+  email  <- getParam "email"
+  pwd    <- getParam "password"
+  let u = makeUser email pwd
+  au     <- saveAuthUser (authUser u, additionalUserFields u)
   case au of
     Nothing   -> newSignupH
     Just au'  -> do  setSessionUserId $ userId au'
                      redirect "/"
 
-makeUser ps = User emptyAuthUser ""
+makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap (ClearText$) pwd
+                                          , userEmail     = email }) ""
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules

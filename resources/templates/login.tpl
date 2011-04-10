@@ -1,9 +1,9 @@
 <apply template="layout">
   <h1>Please login</h1>
-  <form method="post" action="login">
+  <form method="post" action="/login">
   <table>
     <tr>
-      <td>Username</td><td><input type="text" name="email" /></td>
+      <td>Email</td><td><input type="text" name="email" /></td>
     </tr>
     <tr>
       <td>Password</td><td><input type="password" name="password" /></td>

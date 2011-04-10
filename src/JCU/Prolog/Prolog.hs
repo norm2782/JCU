@@ -6,17 +6,17 @@ import Debug.Trace (trace)
 import JCU.Prolog.Types
 
 lookUp :: Term -> Env -> Term
-lookUp  (Var x)  e   =  case lookup x e of
-                          Nothing   -> Var x
-                          Just res  -> lookUp res e
-lookUp  t        _   =  t
+lookUp  (Var x)  e   = case lookup x e of
+                         Nothing   -> Var x
+                         Just res  -> lookUp res e
+lookUp  t        _   = t
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
 unify _       Nothing       = Nothing
 unify (t, u)  env@(Just e)  = uni (lookUp t e) (lookUp u e)
-  where  uni (Var x) y        =  Just ((x, y): e)
-         uni x (Var y)        =  Just ((y, x): e)
-         uni (Con x) (Con y)  =  if x == y then env else Nothing
+  where  uni (Var x) y        = Just ((x, y): e)
+         uni x (Var y)        = Just ((y, x): e)
+         uni (Con x) (Con y)  = if x == y then env else Nothing
          uni (Fun x xs) (Fun y ys)
            | x == y && length xs == length ys  = foldr unify env (zip xs ys)
            | otherwise                         = Nothing
