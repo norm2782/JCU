@@ -43,7 +43,6 @@ data User = User  {  authUser     :: AuthUser
 siteIndex :: Application ()
 siteIndex = ifTop $ render "index"
 
-
 ------------------------------------------------------------------------------
 -- | Renders the echo page.
 echo :: Application ()
@@ -65,6 +64,7 @@ newSessionH = render "login"
 newSignupH :: Application ()
 newSignupH = render "signup"
 
+redirHome :: Application ()
 redirHome = redirect "/"
 
 additionalUserFields :: User -> Document
@@ -85,13 +85,19 @@ makeUser ps = User emptyAuthUser ""
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
+readStoredRulesH :: Application ()
 readStoredRulesH = undefined
+
+updateStoredRulesH :: Application ()
 updateStoredRulesH = undefined
+
+hintRulesH :: Application ()
 hintRulesH = undefined
 
+checkRulesH :: Application ()
 checkRulesH = do
   rules <- getParam "rules"
-  -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense.
+  -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense and return a Bool
   writeLBS $ encode True
 
 ------------------------------------------------------------------------------
@@ -108,5 +114,6 @@ site =  route  [  ("/",        siteIndex)
                ,  ("/rules/stored",  method POST  $ updateStoredRulesH)
                ,  ("/rules/hint",    method POST  $ hintRulesH)
                ,  ("/rules/check",   method POST  $ checkRulesH)
+               ,  ("/rules/check",   method GET  $ render "check") -- TODO: Remove after done testing
                ]
         <|> serveDirectory "resources/static"

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -19,8 +20,6 @@ import            Snap.Extension.Timer.Impl
 import            Snap.Extension.Session.CookieSession
 import            Snap.Auth
 import            Snap.Extension.DB.MongoDB
-import            Data.ByteString.Char8 (pack)
-import            Data.UString (u)
 
 ------------------------------------------------------------------------------
 -- | 'Application' is our application's monad. It uses 'SnapExtend' from
@@ -76,6 +75,6 @@ applicationInitializer = do
     timer  <- timerInitializer
     cs     <- cookieSessionStateInitializer $ defCookieSessionState
                 { csKeyPath    = "config/site-key.txt"
-                , csCookieName = pack "jcu-session" }
-    mng    <- mongoDBInitializer (host "127.0.0.1") 27017 (u "jcu")
+                , csCookieName = "jcu-session" }
+    mng    <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"
     return $ ApplicationState heist timer cs mng
