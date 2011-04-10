@@ -32,9 +32,9 @@ instance ToJSON Trace where
                                     ,  "terms"  .= map toJSON ts ]
 
 instance FromJSON Term where
-  parseJSON (Object t)  =  Con <$> t .: "number"
-                      <|>  Var <$> t .: "ident"
-                      <|>  Fun <$> t .: "ident" <*> t .: "terms"
+  parseJSON (Object t)  =  Con  <$> t .: "number"
+                      <|>  Var  <$> t .: "ident"
+                      <|>  Fun  <$> t .: "ident" <*> t .: "terms"
   parseJSON _           = mzero
 
 instance FromJSON Rule where
@@ -42,7 +42,7 @@ instance FromJSON Rule where
   parseJSON _           = mzero
 
 instance FromJSON Trace where
-  parseJSON (Object t)  = Trace  <$> t .: "goal" <*> t .: "unif" <*> t .: "env"
-                                 <*> t .: "terms"
+  parseJSON (Object t)  = Trace  <$>  t .: "goal" <*> t .: "unif"
+                                 <*>  t .: "env" <*> t .: "terms"
   parseJSON _           = mzero
 
