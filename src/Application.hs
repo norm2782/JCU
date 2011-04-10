@@ -14,12 +14,12 @@ module Application
   ,  applicationInitializer
   )  where
 
+import            Snap.Auth
 import            Snap.Extension
+import            Snap.Extension.DB.MongoDB
 import            Snap.Extension.Heist.Impl
 import            Snap.Extension.Timer.Impl
 import            Snap.Extension.Session.CookieSession
-import            Snap.Auth
-import            Snap.Extension.DB.MongoDB
 
 ------------------------------------------------------------------------------
 -- | 'Application' is our application's monad. It uses 'SnapExtend' from

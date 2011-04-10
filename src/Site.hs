@@ -11,12 +11,12 @@ module Site
   ( site
   ) where
 
+import            Application
 import            Control.Applicative
+import            JCU.Web.Actions
 import            Snap.Extension.Heist
 import            Snap.Util.FileServe
 import            Snap.Types
-import            Application
-import            JCU.Web.Actions
 
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
