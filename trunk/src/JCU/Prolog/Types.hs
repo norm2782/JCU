@@ -2,7 +2,6 @@
 
 module JCU.Prolog.Types where
 
-import Data.Aeson
 import Data.List (intercalate)
 
 type Ident  =  String
@@ -52,18 +51,3 @@ instance Taggable Term where
 instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
 
-instance ToJSON Term where
-  toJSON (Con number)       = object  [  "number"  .= number]
-  toJSON (Var ident)        = object  [  "ident"   .= ident]
-  toJSON (Fun ident terms)  = object  [  "ident"   .= ident
-                                      ,  "terms"   .= map toJSON terms ]
-
-instance ToJSON Rule where
-  toJSON (term :<-: terms) = object  [  "term"   .= toJSON term
-                                     ,  "terms"  .= map toJSON terms ]
-
-instance ToJSON Trace where
-  toJSON (Trace g u e ts) = object  [  "goal"   .= toJSON g
-                                    ,  "unif"   .= toJSON u
-                                    ,  "env"    .= toJSON e
-                                    ,  "terms"  .= map toJSON ts ]

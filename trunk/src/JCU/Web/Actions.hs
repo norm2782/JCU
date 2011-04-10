@@ -7,7 +7,7 @@ import            Data.Aeson (encode)
 import            JCU.Prolog.Prolog
 import            JCU.Web.Types
 import            Snap.Auth
-import            Snap.Auth.Handler
+import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB ((=:), Document)
 import            Snap.Extension.Heist (render)
 import            Snap.Extension.Session.CookieSession (setSessionUserId)
