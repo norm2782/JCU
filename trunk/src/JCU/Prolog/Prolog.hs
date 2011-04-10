@@ -1,9 +1,9 @@
-module JCU.Prolog where
+module JCU.Prolog.Prolog where
 
 import Data.Char (isUpper)
 import Data.List (intercalate)
 import Debug.Trace (trace)
-import JCU.Types
+import JCU.Prolog.Types
 
 lookUp :: Term -> Env -> Term
 lookUp  (Var x)  e   =  case lookup x e of

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module JCU.Types where
+module JCU.Prolog.Types where
 
 import Data.List (intercalate)
 import Data.Aeson

@@ -1,8 +1,8 @@
 {-# LANGUAGE Rank2Types, FlexibleContexts #-}
 
-module JCU.Parser where
+module JCU.Prolog.Parser where
 
-import JCU.Types
+import JCU.Prolog.Types
 import Text.ParserCombinators.UU
 import Text.ParserCombinators.UU.BasicInstances
 import Text.ParserCombinators.UU.Utils
