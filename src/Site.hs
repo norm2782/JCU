@@ -21,7 +21,8 @@ import            Snap.Types
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
 site :: Application ()
-site =  route  [  ("/",        siteIndex)
+site =  route  [  ("/",          siteIndex)
+               ,  ("/forbidden", forbiddenH)
                ,  ("/login",   method GET   newSessionH)
                ,  ("/login",   method POST  loginH)
                ,  ("/logout",  logoutH)
