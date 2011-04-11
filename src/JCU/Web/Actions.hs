@@ -57,7 +57,7 @@ signupH = do
     Just au'  -> do  setSessionUserId $ userId au'
                      redirect "/"
 
-makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap (ClearText$) pwd
+makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
                                           , userEmail     = email }) ""
 
 ------------------------------------------------------------------------------
