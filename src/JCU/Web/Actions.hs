@@ -18,17 +18,22 @@ import            Snap.Types
 
 --
 -- | Access control related actions
-restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b
-restrict action = do
+restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b -> m b
+restrict fail succ = do
   authed <- isLoggedIn
   case authed of
-    False -> redirect "/login"
-    True  -> action
+    False -> fail
+    True  -> succ
+
+loginRedir :: Application ()
+loginRedir = redirect "/login"
 
 forbiddenH :: Application ()
 forbiddenH = do 
   modifyResponse $ setResponseStatus 403 "Forbidden"
-  render "forbidden"
+  writeBS "403 forbidden"
+  r <- getResponse
+  finishWith r
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
@@ -37,7 +42,7 @@ forbiddenH = do
 -- Otherwise, the way the route table is currently set up, this action
 -- would be given every request.
 siteIndex :: Application ()
-siteIndex = restrict $ ifTop $ render "index"
+siteIndex = restrict loginRedir $ ifTop $ render "index"
 
 checkH :: Application ()
 checkH = render "check"
@@ -81,16 +86,16 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 -- | Functions for handling reading and saving per-person rules
 
 readStoredRulesH :: Application ()
-readStoredRulesH = restrict $ undefined
+readStoredRulesH = restrict forbiddenH $ undefined
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = restrict $ undefined
+updateStoredRulesH = restrict forbiddenH $ undefined
 
 hintRulesH :: Application ()
-hintRulesH = restrict $ undefined
+hintRulesH = restrict forbiddenH $ undefined
 
 checkRulesH :: Application ()
-checkRulesH = restrict $ do
+checkRulesH = restrict forbiddenH $ do
   rules <- getParam "rules"
   -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense and return a Bool
   writeLBS $ encode True
