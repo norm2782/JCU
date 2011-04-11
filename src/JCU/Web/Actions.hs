@@ -7,13 +7,12 @@ import            Data.Aeson (encode)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
 import            Data.Map
-import            Data.Maybe (fromMaybe)
-import            JCU.Prolog.Prolog
+import            JCU.Web.Prolog
 import            JCU.Web.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB ((=:), Document, MonadMongoDB)
-import            Snap.Extension.Heist (render)
+import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
@@ -23,11 +22,11 @@ import            Text.Email.Validate as E (isValid)
 --
 -- | Access control related actions
 restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b -> m b
-restrict fail succ = do
+restrict failH succH = do
   authed <- isLoggedIn
   case authed of
-    False  -> fail
-    True   -> succ
+    False  -> failH
+    True   -> succH
 
 loginRedir :: Application ()
 loginRedir = redirect "/login"
@@ -51,8 +50,10 @@ siteIndex = restrict loginRedir $ ifTop $ render "index"
 checkH :: Application ()
 checkH = render "check"
 
+loginH :: Application ()
 loginH = loginHandler "password" Nothing failedLogin redirHome
 
+logoutH :: Application ()
 logoutH = logoutHandler redirHome
 
 ------------------------------------------------------------------------------
@@ -60,6 +61,7 @@ logoutH = logoutHandler redirHome
 newSessionH :: Application ()
 newSessionH = render "login"
 
+failedLogin :: MonadHeist n m => AuthFailure -> m ()
 failedLogin ExternalIdFailure = render "signup"
 failedLogin PasswordFailure   = render "login"
 
@@ -78,6 +80,7 @@ data FormField = FormField  {  isRequired    :: Bool
 
 -- TODO: Add support for multiple parameters with the same name
 -- TODO: Add support for returning validation errors.
+-- TODO: See what the Digestive Functors can do for form validation...
 formValidator :: FormValidator
 formValidator =  [  ("email",     FormField True (\xs -> E.isValid $ unpack xs))
                  ,  ("password",  FormField True (\xs -> B.length xs > 6)) ]
@@ -90,8 +93,8 @@ valForm parms (fld, (FormField req val))  | fld `member` parms  = val $ head (pa
 signupH :: Application ()
 signupH = do
   parms  <- getParams
-  let isValid = and [ valForm parms p | p <- formValidator] -- TODO: Explicit conversion to list is ugly. Though, do we really need a map in the first place?
-  if isValid
+  let validated = and [ valForm parms p | p <- formValidator] -- TODO: Explicit conversion to list is ugly. Though, do we really need a map in the first place?
+  if validated
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
               let u = makeUser email pwd
@@ -102,6 +105,7 @@ signupH = do
                                  redirect "/"
     else  redirect "/signup" -- TODO: Better handling of invalid forms
 
+makeUser :: Maybe ByteString -> Maybe ByteString -> User
 makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
                                           , userEmail     = email }) ""
 
