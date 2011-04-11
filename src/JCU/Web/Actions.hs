@@ -5,6 +5,7 @@ module JCU.Web.Actions where
 import            Application (Application)
 import            Data.Aeson (encode)
 import            Data.ByteString as B (ByteString, length)
+import            Data.ByteString.Char8 as B (unpack)
 import            Data.Map
 import            Data.Maybe (fromMaybe)
 import            JCU.Prolog.Prolog
@@ -78,9 +79,10 @@ data FormField = FormField  {  isRequired    :: Bool
 -- TODO: Add support for multiple parameters with the same name
 -- TODO: Add support for returning validation errors.
 formValidator :: FormValidator
-formValidator =  [  ("email",     FormField True (\xs -> True)) -- TODO: Use E.isValid, but first find out how the bytestring mess works
+formValidator =  [  ("email",     FormField True (\xs -> E.isValid $ unpack xs))
                  ,  ("password",  FormField True (\xs -> B.length xs > 6)) ]
 
+valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
 valForm parms (fld, (FormField req val))  | fld `member` parms  = val $ head (parms ! fld)
                                           | otherwise           = not req
 
