@@ -1,6 +1,4 @@
-class RuleListItemView extends Backbone.View
-
-  tagName:  "li"
+class RulesListItemView extends Backbone.View
 
   events:
     'click .check'           : 'toggleDone'
@@ -9,11 +7,14 @@ class RuleListItemView extends Backbone.View
     'keypress .todo-input'   : 'updateOnEnter'
 
   initialize: ->
-    @model.bind('change', @render)
+    console.log "RulesListItemView.initialize"
+    # @model.bind('change', @render)
     @model.view = @
 
   render: =>
-    @$(@el).html(app.templates.todo(todo: @model.toJSON()))
+    console.log "RulesListItemView.render"
+    console.log app.templates.rulesListItem(content: @model.toJSON())
+    $(@el).html app.templates.rulesListItem(content: @model.toJSON())
     # Bind event directly to input, cause older browsers doesn't
     # support this event on several types of elements.
     # Originally, this event was only applicable to form elements.

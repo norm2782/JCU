@@ -1,4 +1,4 @@
-class RuleTreeItemView extends Backbone.View
+class RulesTreeItemView extends Backbone.View
 
   tagName:  "li"
 
