@@ -18,7 +18,6 @@ import            Snap.Auth
 import            Snap.Extension
 import            Snap.Extension.DB.MongoDB
 import            Snap.Extension.Heist.Impl
-import            Snap.Extension.Timer.Impl
 import            Snap.Extension.Session.CookieSession
 
 ------------------------------------------------------------------------------
@@ -35,7 +34,6 @@ type Application = SnapExtend ApplicationState
 -- between development and production modes.
 data ApplicationState = ApplicationState
     {  templateState  :: HeistState Application
-    ,  timerState     :: TimerState
     ,  appSessionSt   :: CookieSessionState
     ,  mongoDBState   :: MongoDBState
     }
@@ -58,12 +56,6 @@ instance HasHeistState Application ApplicationState where
 
 
 ------------------------------------------------------------------------------
-instance HasTimerState ApplicationState where
-    getTimerState      = timerState
-    setTimerState s a  = a { timerState = s }
-
-
-------------------------------------------------------------------------------
 -- | The 'Initializer' for ApplicationState. For more on 'Initializer's, see
 -- the documentation from the snap package. Briefly, this is used to
 -- generate the 'ApplicationState' needed for our application and will
@@ -72,9 +64,8 @@ instance HasTimerState ApplicationState where
 applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
     heist  <- heistInitializer "resources/templates"
-    timer  <- timerInitializer
     cs     <- cookieSessionStateInitializer $ defCookieSessionState
                 { csKeyPath    = "config/site-key.txt"
                 , csCookieName = "jcu-session" }
     mng    <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"
-    return $ ApplicationState heist timer cs mng
+    return $ ApplicationState heist cs mng
