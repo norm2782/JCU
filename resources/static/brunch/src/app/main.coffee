@@ -13,8 +13,8 @@ $(document).ready ->
 
     app.controllers.main = new MainController()
     app.views.home = new HomeView()
-    app.views.ruleList = new RulesListView()
-    app.views.ruleTree = new RulesTreeView()
+    app.views.rulesList = new RulesListView()
+    app.views.rulesTree = new RulesTreeView()
     Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
   app.initialize()
   Backbone.history.start()

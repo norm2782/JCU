@@ -6,7 +6,9 @@ import            Application (Application)
 import            Data.Aeson (encode)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
-import            Data.Map
+import            Data.Map (Map, member, (!))
+import            JCU.Prolog.Parser
+import            JCU.Prolog.Types
 import            JCU.Web.Prolog
 import            JCU.Web.Types
 import            Snap.Auth
@@ -89,11 +91,11 @@ valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
 valForm parms (fld, (FormField req val))  | fld `member` parms  = val $ head (parms ! fld)
                                           | otherwise           = not req
 
--- TODO: Add form validation
+-- TODO: Look at digestive-functors for form validation
 signupH :: Application ()
 signupH = do
   parms  <- getParams
-  let validated = and [ valForm parms p | p <- formValidator] -- TODO: Explicit conversion to list is ugly. Though, do we really need a map in the first place?
+  let validated = and [ valForm parms p | p <- formValidator]
   if validated
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
@@ -112,8 +114,14 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
+testRules = [ Fun "foo" [Var "bar"] :<-: []
+            , Fun "baz" [Var "bat", Var "quux"] :<-: []
+            , Fun "bla" [Con 1] :<-: [] ]
+
 readStoredRulesH :: Application ()
-readStoredRulesH = restrict forbiddenH $ undefined
+readStoredRulesH = do-- TODO restrict forbiddenH $ do
+  modifyResponse $ setContentType "application/json"
+  writeLBS $ encode testRules
 
 updateStoredRulesH :: Application ()
 updateStoredRulesH = restrict forbiddenH $ undefined

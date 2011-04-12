@@ -12,7 +12,7 @@ class RulesTreeView extends Backbone.View
     @
 
   addOne: (rule) =>
-    view = new RulesTreeView model: rule
+    view = new RulesTreeItemView model: rule
     $(@el).find("#rules-tree").append view.render().el
 
   addAll: =>

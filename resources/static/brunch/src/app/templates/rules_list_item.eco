@@ -1,1 +1,3 @@
-<li>Rules List Item</li>
+<li class="rule-list-item">
+  <%= content %> <input type="button" value="x" />
+</li>
