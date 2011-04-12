@@ -53,7 +53,7 @@ checkH :: Application ()
 checkH = render "check"
 
 loginH :: Application ()
-loginH = loginHandler "password" Nothing failedLogin redirHome
+loginH = loginHandler "password" (Just "remember") failedLogin redirHome
 
 logoutH :: Application ()
 logoutH = logoutHandler redirHome
