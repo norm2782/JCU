@@ -1,1 +1,2 @@
-<%= @content.rule %> <input type="button" value="x" />
+<span id="rule_<%= @content.rule %>"><%= @content.rule %></span>
+<input class="btnDelete" type="button" value="x" />
