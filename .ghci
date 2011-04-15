@@ -1,0 +1,8 @@
+:set -XOverloadedStrings
+:set -XGeneralizedNewtypeDeriving
+:set -XDeriveDataTypeable
+:set -XMultiParamTypeClasses
+:set -XFunctionalDependencies
+:set -Wall
+:set -isrc
+:set -itest/suite
