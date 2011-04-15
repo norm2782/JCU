@@ -5,7 +5,7 @@ class RulesListItemView extends Backbone.View
     @model.view = @
 
   render: =>
-    $(@el).html app.templates.rulesListItem(content: @model.toJSON().rule)
+    $(@el).html app.templates.rulesListItem(content: @model.toJSON())
     @
 
   remove: ->
