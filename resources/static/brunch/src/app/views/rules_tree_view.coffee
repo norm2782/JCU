@@ -1,22 +1,23 @@
 class RulesTreeView extends Backbone.View
 
   id: 'rules-tree-view'
+  tagName: 'ul'
 
   initialize: ->
+    _.bindAll(@, 'addOne', 'addAll', 'render')
+    console.log app.collections.rulesTree
     app.collections.rulesTree.bind 'add', @addOne
     app.collections.rulesTree.bind 'refresh', @addAll
-    app.collections.rulesTree.bind 'all', @renderStats
-
-  render: ->
-    $(@el).html app.templates.rulesTree()
-    @
+    app.collections.rulesTree.bind 'all', @renderList
+    app.collections.rulesTree.fetch()
 
   addOne: (rule) =>
     view = new RulesTreeItemView model: rule
-    $(@el).find("#rules-tree").append view.render().el
+    $(@el).append view.render().el
 
   addAll: =>
     app.collections.rulesTree.each @addOne
 
-  renderStats: =>
-    app.views.stats.render()
+  renderList: =>
+    app.views.rulesTree.render()
+
