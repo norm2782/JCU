@@ -64,7 +64,7 @@ instance HasHeistState Application ApplicationState where
 applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
     heist   <- heistInitializer "resources/templates"
-    cs      <- cookieSessionStateInitializer $ defCookieSessionState
+    cs      <- cookieSessionStateInitializer $ defCookieSessionState { csTimeout = Just $ 60 * 60 }
                  {  csKeyPath     = "config/site-key.txt"
                  ,  csCookieName  = "jcu-session" }
     mng     <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"

@@ -1,3 +1,11 @@
 .dropHover {
   background-color: lightgreen;
 }
+
+#rules-tree-div {
+  width: 500px;
+}
+
+#rules-list-div {
+  width: 250px;
+}

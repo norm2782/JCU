@@ -1,5 +1,9 @@
 <div id="content">
   <h1>JCU: Wiskunde D</h1>
-  <div id="rules-tree-div"></div>
-  <div id="rules-list-div"></div>
+  <table>
+    <tr>
+      <td id="rules-tree-div"></td>
+      <td id="rules-list-div"></td>
+    </tr>
+  </table>
 </div>
