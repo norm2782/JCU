@@ -2,6 +2,7 @@ class RulesTreeView extends Backbone.View
 
   id: 'rules-tree-view'
   tagName: 'ul'
+  isTerm: true
 
   initialize: ->
     _.bindAll(@, 'addOne', 'addAll', 'render')
@@ -12,7 +13,8 @@ class RulesTreeView extends Backbone.View
     app.collections.rulesTree.fetch()
 
   addOne: (rule) =>
-    view = new RulesTreeItemView model: rule
+    view = new RulesTreeItemView model: rule, isTerm: @isTerm
+    this.isTerm = !this.isTerm
     $(@el).append view.render().el
 
   addAll: =>

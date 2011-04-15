@@ -21,4 +21,4 @@ class RulesListView extends Backbone.View
   renderList: =>
     app.views.rulesList.render()
     $('.draggable').draggable({ revert: true
-                              , revertDuration: 200 })
+                              , revertDuration: 100 })
