@@ -21,17 +21,17 @@ import            Snap.Types
 ------------------------------------------------------------------------------
 -- | The main entry point handler.
 site :: Application ()
-site =  route  [  ("/",          siteIndex)
-               ,  ("/forbidden", forbiddenH)
+site =  route  [  ("/",           siteIndex)
+               ,  ("/forbidden",  forbiddenH)
                ,  ("/login",   method GET   newSessionH)
                ,  ("/login",   method POST  loginH)
                ,  ("/logout",  logoutH)
                ,  ("/signup",  method GET   newSignupH)
                ,  ("/signup",  method POST  signupH)
-               ,  ("/rules/stored",  method GET   $ readStoredRulesH)
-               ,  ("/rules/stored",  method POST  $ updateStoredRulesH)
-               ,  ("/rules/hint",    method POST  $ hintRulesH)
-               ,  ("/rules/check",   method POST  $ checkRulesH)
-               ,  ("/rules/check",   method GET   $ checkH) -- TODO: Remove after done testing
+               ,  ("/rules/stored",  method GET   readStoredRulesH)
+               ,  ("/rules/stored",  method POST  updateStoredRulesH)
+               ,  ("/rules/hint",    method POST  hintRulesH)
+               ,  ("/rules/check",   method POST  checkRulesH)
+               ,  ("/rules/check",   method GET   checkH) -- TODO: Remove after done testing
                ]
         <|> serveDirectory "resources/static"

@@ -63,9 +63,9 @@ instance HasHeistState Application ApplicationState where
 -- to worry about.
 applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
-    heist  <- heistInitializer "resources/templates"
-    cs     <- cookieSessionStateInitializer $ defCookieSessionState
-                { csKeyPath    = "config/site-key.txt"
-                , csCookieName = "jcu-session" }
-    mng    <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"
-    return $ ApplicationState heist cs mng
+    heist   <- heistInitializer "resources/templates"
+    cs      <- cookieSessionStateInitializer $ defCookieSessionState
+                 {  csKeyPath     = "config/site-key.txt"
+                 ,  csCookieName  = "jcu-session" }
+    mng     <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"
+    return  $ ApplicationState heist cs mng
