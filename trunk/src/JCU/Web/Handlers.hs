@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 
-module JCU.Web.Actions where
+module JCU.Web.Handlers where
 
 import            Application (Application)
 import            Data.Aeson (encode)
@@ -134,3 +134,12 @@ checkRulesH = restrict forbiddenH $ do
   rules <- getParam "rules"
   -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense and return a Bool
   writeLBS $ encode True
+
+
+readInUseRulesH :: Application ()
+readInUseRulesH =  do-- TODO restrict forbiddenH $ do
+  modifyResponse $ setContentType "application/json"
+  writeLBS $ encode testRules
+
+updateInUseRulesH :: Application ()
+updateInUseRulesH = restrict forbiddenH $ undefined
