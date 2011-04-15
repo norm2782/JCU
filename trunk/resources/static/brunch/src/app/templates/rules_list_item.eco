@@ -1,5 +1,0 @@
-<div id="rule_<%= @content.rule.replace /[^a-zA-Z0-9]+/g, "" %>"
-      class="draggable" style="width:200px;border:1px solid black">
-  <span class="rule-text"><%= @content.rule %></span>
-  <input class="btnDelete" type="button" value="x" />
-</div>

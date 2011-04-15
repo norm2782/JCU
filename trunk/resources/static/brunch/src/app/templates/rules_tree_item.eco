@@ -1,4 +1,0 @@
-<input class="btnOK" type="button" value="OK" />
-<input class="btnHint" type="button" value="Hint" />
-<input class="btnDelete" type="button" value="Delete" />
-<input type="text" class="droppable" name="tree_rules" />
