@@ -3,6 +3,7 @@ app.controllers = {}
 app.models = {}
 app.collections = {}
 app.views = {}
+app.styles = {}
 app.templates = {}
 
 # app bootstrapping on document ready

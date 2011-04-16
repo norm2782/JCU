@@ -1,9 +1,14 @@
-<div id="content">
-  <h1>JCU: Wiskunde D</h1>
-  <table>
-    <tr>
-      <td id="rules-tree-div"></td>
-      <td id="rules-list-div"></td>
-    </tr>
-  </table>
+<div id="doc" class="yui-t5">
+  <div id="hd" role="banner"><h1>JCU: Wiskunde D</h1></div>
+    <div id="bd" role="main">
+      <div id="yui-main">
+    <div class="yui-b">
+    <div class="yui-g" id="rules-tree-div"><!-- TREE GOES HERE --></div>
+  </div>
+  </div>
+    <div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>
+  </div>
+  <div id="ft" role="contentinfo">
+    <p>Utrecht University, Faculty of Science, Information and Computing Sciences</p>
+  </div>
 </div>
