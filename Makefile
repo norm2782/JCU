@@ -14,3 +14,6 @@ clean:
 
 run:
 	jcu
+
+debug:
+	DEBUG=1 jcu

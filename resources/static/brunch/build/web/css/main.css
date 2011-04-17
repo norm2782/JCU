@@ -1,0 +1,5 @@
+#rules-tree-view input[type=text]{width:300px}
+#rules-tree-view li,#rules-list-view li{height:25px}
+#rules-list-view .ui-draggable{width:300px;padding:5px;margin:10px;border:1px solid #000;background-color:#fff}
+#rules-tree-view .ui-droppable{padding:5px}
+.dropHover{background-color:#90ee90}

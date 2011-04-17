@@ -38,7 +38,8 @@ Executable jcu
     aeson >= 0.3,
     uu-parsinglib >= 2.7,
     email-validate >= 0.2,
-    containers >= 0.4
+    containers >= 0.4,
+    transformers >= 0.2
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 
@@ -62,4 +63,5 @@ Executable jcu
 Library
   Build-Depends:	  base >= 4.0 && < 5.0
   Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Prolog.Types, JCU.Prolog.Parser, JCU.Prolog.Prolog, JCU.Web.Actions, JCU.Web.Types
+  Exposed-modules:  JCU.Prolog.Types, JCU.Prolog.Parser, JCU.Prolog.Prolog,
+                    JCU.Web.Handlers, JCU.Web.Types

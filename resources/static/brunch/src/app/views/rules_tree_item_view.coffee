@@ -2,6 +2,13 @@ class RulesTreeItemView extends Backbone.View
 
   tagName: "li"
 
+  events:
+    "click .btnDeleteTree" : "deleteItem"
+
+  deleteItem: ->
+    @model.destroy()
+    $(@el).remove()
+
   initialize: ->
     @model.view = @
 
