@@ -5,7 +5,6 @@ class RulesListView extends Backbone.View
 
   initialize: ->
     _.bindAll(@, 'addOne', 'addAll', 'render')
-    console.log app.collections.rulesList
     app.collections.rulesList.bind 'add', @addOne
     app.collections.rulesList.bind 'refresh', @addAll
     app.collections.rulesList.bind 'all', @renderList

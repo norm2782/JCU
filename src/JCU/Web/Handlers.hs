@@ -3,10 +3,11 @@
 module JCU.Web.Handlers where
 
 import            Application (Application)
-import            Data.Aeson (encode)
+import            Data.Aeson (encode, fromJSON)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
-import            Data.Map (Map, member, (!))
+import            Data.Map (Map, member, (!), showTree, fromList)
+import            Debug.Trace (trace) -- TODO: Remove
 import            JCU.Prolog.Parser
 import            JCU.Prolog.Types
 import            JCU.Web.Prolog
@@ -34,7 +35,7 @@ loginRedir :: Application ()
 loginRedir = redirect "/login"
 
 forbiddenH :: Application ()
-forbiddenH = do 
+forbiddenH = do
   modifyResponse $ setResponseStatus 403 "Forbidden"
   writeBS "403 forbidden"
   r <- getResponse
@@ -109,7 +110,7 @@ signupH = do
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
 makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) ""
+                                          , userEmail     = email }) [] []
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
@@ -121,10 +122,21 @@ testRules = [ Fun "foo" [Var "bar"] :<-: []
 readStoredRulesH :: Application ()
 readStoredRulesH = do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  writeLBS $ encode testRules
+  trace (show testRules) (writeLBS $ encode testRules)
 
 updateStoredRulesH :: Application ()
 updateStoredRulesH = restrict forbiddenH $ undefined
+
+deleteStoredRuleH :: Application ()
+deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
+  rule <- getParam "id"
+  trace ("Delete stored rule: " ++ show rule) (return ())
+
+deleteInUseRuleH :: Application ()
+deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
+  rule <- getParam "id"
+  trace ("Delete in use rule: " ++ show rule) (return ())
+
 
 hintRulesH :: Application ()
 hintRulesH = restrict forbiddenH $ undefined
@@ -142,4 +154,8 @@ readInUseRulesH =  do-- TODO restrict forbiddenH $ do
   writeLBS $ encode testRules
 
 updateInUseRulesH :: Application ()
-updateInUseRulesH = restrict forbiddenH $ undefined
+updateInUseRulesH = do-- TODO restrict forbiddenH $ do
+  models <- getRequestBody
+  let dmods = models -- fromJSON models
+  trace ("Tree: " ++ show dmods) (return ())
+  return ()

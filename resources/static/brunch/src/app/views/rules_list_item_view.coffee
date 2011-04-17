@@ -1,6 +1,13 @@
 class RulesListItemView extends Backbone.View
   tagName: 'li'
 
+  events:
+    "click .btnDeleteList" : "deleteItem"
+
+  deleteItem: ->
+    @model.destroy()
+    $(@el).remove()
+
   initialize: ->
     @model.view = @
 

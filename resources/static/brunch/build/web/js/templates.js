@@ -37,7 +37,7 @@
   }
   (function() {
     (function() {
-      __out.push('<div id="doc" class="yui-t5">\n  <div id="hd" role="banner"><h1>JCU: Wiskunde D</h1></div>\n    <div id="bd" role="main">\n      <div id="yui-main">\n    <div class="yui-b">\n    <div class="yui-g" id="rules-tree-div"><!-- TREE GOES HERE --></div>\n  </div>\n  </div>\n    <div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>\n  </div>\n  <div id="ft" role="contentinfo">\n    <p>Utrecht University, Faculty of Science, Information and Computing Sciences</p>\n  </div>\n</div>\n');
+      __out.push('<div id="doc" class="yui-t5">\n  <div id="hd" role="banner"><h1>JCU: Wiskunde D</h1></div>\n    <div id="bd" role="main">\n      <div id="yui-main">\n    <div class="yui-b">\n    <div class="yui-g" id="rules-tree-div">\n      <div id="rules-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnAdd"   value="Add" />\n      <input type="button" id="btnCheck" value="Check" />\n      <input type="button" id="btnHint"  value="Hint" />\n    </div>\n  </div>\n  </div>\n    <div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>\n  </div>\n  <div id="ft" role="contentinfo">\n    <p>Utrecht University, Faculty of Science, Information and Computing Sciences</p>\n  </div>\n</div>\n');
     }).call(this);
     
   }).call(__obj);
@@ -86,7 +86,7 @@
       __out.push(__sanitize(this.content.rule.replace(/[^a-zA-Z0-9]+/g, "")));
       __out.push('" class="draggable">\n  <span class="rule-text">');
       __out.push(__sanitize(this.content.rule));
-      __out.push('</span>\n  <input class="btnDelete" type="button" value="x" />\n</div>\n');
+      __out.push('</span>\n  <input class="btnDeleteList" type="button" value="x" />\n</div>\n');
     }).call(this);
     
   }).call(__obj);
@@ -131,7 +131,7 @@
   }
   (function() {
     (function() {
-      __out.push('<input class="btnOK" type="button" value="OK" />\n<input class="btnHint" type="button" value="Hint" />\n<input class="btnDelete" type="button" value="Delete" />\n<input type="text" class="droppable" name="tree_rules" />\n');
+      __out.push('<input class="btnStore" type="button" value="Store" />\n<input class="btnDeleteTree" type="button" value="Delete" />\n<input type="text" class="droppable" name="tree_rules" />\n');
     }).call(this);
     
   }).call(__obj);

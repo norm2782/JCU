@@ -38,7 +38,8 @@ Executable jcu
     aeson >= 0.3,
     uu-parsinglib >= 2.7,
     email-validate >= 0.2,
-    containers >= 0.4
+    containers >= 0.4,
+    transformers >= 0.2
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 

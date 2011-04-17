@@ -11,6 +11,8 @@ $(document).ready ->
   app.initialize = ->
     app.collections.rulesList = new RulesList()
     app.collections.rulesTree = new RulesTree()
+    # m = {rule: "foo(bar)." }
+    # app.collections.rulesTree.create m
 
     app.controllers.main = new MainController()
     app.views.home = new HomeView()

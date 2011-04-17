@@ -35,6 +35,7 @@
       Rule.__super__.constructor.apply(this, arguments);
     }
     __extends(Rule, Backbone.Model);
+    Rule.prototype.rule = "";
     Rule.prototype.clear = function() {
       this.destroy();
       return this.view.remove();
@@ -96,6 +97,13 @@
     }
     __extends(RulesListItemView, Backbone.View);
     RulesListItemView.prototype.tagName = 'li';
+    RulesListItemView.prototype.events = {
+      "click .btnDeleteList": "deleteItem"
+    };
+    RulesListItemView.prototype.deleteItem = function() {
+      this.model.destroy();
+      return $(this.el).remove();
+    };
     RulesListItemView.prototype.initialize = function() {
       return this.model.view = this;
     };
@@ -124,7 +132,6 @@
     RulesListView.prototype.tagName = 'ul';
     RulesListView.prototype.initialize = function() {
       _.bindAll(this, 'addOne', 'addAll', 'render');
-      console.log(app.collections.rulesList);
       app.collections.rulesList.bind('add', this.addOne);
       app.collections.rulesList.bind('refresh', this.addAll);
       app.collections.rulesList.bind('all', this.renderList);
@@ -155,6 +162,13 @@
     }
     __extends(RulesTreeItemView, Backbone.View);
     RulesTreeItemView.prototype.tagName = "li";
+    RulesTreeItemView.prototype.events = {
+      "click .btnDeleteTree": "deleteItem"
+    };
+    RulesTreeItemView.prototype.deleteItem = function() {
+      this.model.destroy();
+      return $(this.el).remove();
+    };
     RulesTreeItemView.prototype.initialize = function() {
       return this.model.view = this;
     };
@@ -193,7 +207,6 @@
     RulesTreeView.prototype.isTerm = true;
     RulesTreeView.prototype.initialize = function() {
       _.bindAll(this, 'addOne', 'addAll', 'render');
-      console.log(app.collections.rulesTree);
       app.collections.rulesTree.bind('add', this.addOne);
       app.collections.rulesTree.bind('refresh', this.addAll);
       app.collections.rulesTree.bind('all', this.renderList);
