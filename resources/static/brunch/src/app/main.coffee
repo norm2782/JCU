@@ -6,6 +6,13 @@ app.views = {}
 app.styles = {}
 app.templates = {}
 
+RulesList = require('collections/rules_list_collection').RulesList
+RulesTree = require('collections/rules_tree_collection').RulesTree
+MainController = require('controllers/main_controller').MainController
+HomeView = require('views/home_view').HomeView
+RulesListView = require('views/rules_list_view').RulesListView
+RulesTreeView = require('views/rules_tree_view').RulesTreeView
+
 # app bootstrapping on document ready
 $(document).ready ->
   app.initialize = ->

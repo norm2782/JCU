@@ -1,4 +1,6 @@
-class RulesTreeView extends Backbone.View
+RulesTreeItemView = require('views/rules_tree_item_view').RulesTreeItemView
+
+class exports.RulesTreeView extends Backbone.View
 
   id: 'rules-tree-view'
   tagName: 'ul'
@@ -14,7 +16,7 @@ class RulesTreeView extends Backbone.View
   addOne: (rule) =>
     view = new RulesTreeItemView model: rule, isTerm: @isTerm
     this.isTerm = !this.isTerm
-    $(@el).append view.render().el
+    @$(@el).append view.render().el
 
   addAll: =>
     app.collections.rulesTree.each @addOne

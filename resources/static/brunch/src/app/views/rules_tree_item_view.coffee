@@ -1,4 +1,6 @@
-class RulesTreeItemView extends Backbone.View
+rulesTreeItemTemplate = require('templates/rules_tree_item')
+
+class exports.RulesTreeItemView extends Backbone.View
 
   tagName: "li"
 
@@ -7,14 +9,14 @@ class RulesTreeItemView extends Backbone.View
 
   deleteItem: ->
     @model.destroy()
-    $(@el).remove()
+    @$(@el).remove()
 
   initialize: ->
     @model.view = @
 
   render: =>
-    $(@el).html app.templates.rulesTreeItem content: @model.toJSON(), isTerm: @options.isTerm
-    $(@el).droppable {
+    @$(@el).html rulesTreeItemTemplate content: @model.toJSON(), isTerm: @options.isTerm
+    @$(@el).droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
           # TODO: This is ugly... find a better way. Manually selecting
@@ -26,7 +28,7 @@ class RulesTreeItemView extends Backbone.View
     @
 
   remove: ->
-    $(@el).remove()
+    @$(@el).remove()
 
   clear: ->
     @model.clear()

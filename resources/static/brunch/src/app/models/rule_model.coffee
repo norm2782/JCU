@@ -1,4 +1,4 @@
-class Rule extends Backbone.Model
+class exports.Rule extends Backbone.Model
   rule: ""
 
   clear: ->
