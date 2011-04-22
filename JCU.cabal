@@ -39,7 +39,8 @@ Executable jcu
     uu-parsinglib >= 2.7,
     email-validate >= 0.2,
     containers >= 0.4,
-    transformers >= 0.2
+    transformers >= 0.2,
+    attoparsec >= 0.8.5 && < 0.9
 
   extensions: TypeSynonymInstances MultiParamTypeClasses
 
