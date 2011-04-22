@@ -6,6 +6,7 @@ import JCU.Prolog.Types
 import Text.ParserCombinators.UU
 import Text.ParserCombinators.UU.BasicInstances
 import Text.ParserCombinators.UU.Utils
+import Data.ListLike.Base (ListLike)
 
 pRules :: Parser [Rule]
 pRules = pList pRule
@@ -23,8 +24,9 @@ pFun   =  Fun   <$>  (pIdentifier <* pSpaces) <*> (pParens pTerms `opt` [])
 pTerms :: Parser [Term]
 pTerms = pListSep pComma (pSpaces *> pTerm <* pSpaces)
 
-startParse :: Parser a -> String -> (a, [Error LineColPos])
-startParse p inp = parse ((,) <$> p <*> pEnd) $ createStr (LineColPos 0 0 0) inp
+startParse :: (ListLike s b, Show b) => P (Str b s LineColPos) a -> s -> (a, [Error LineColPos])
+startParse p inp = parse ((,) <$> p <*> pEnd) 
+                 $ createStr (LineColPos 0 0 0) inp
 
 pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)

@@ -151,10 +151,9 @@ checkRulesH = do-- TODO restrict forbiddenH $ do
   rules <- getRequestBody
   case L.parse json rules of
     (Done _ r)  -> do
-      case fromJSON r :: AE.Result [JSRule] of
+      case fromJSON r :: AE.Result [Rule] of
         (Success a)  -> do
-          let txtRules = toText a -- These can now be parsed with uu-parsinglib
-          trace ("checkRulesH: ") (writeLBS $ encode True)
+          trace ("checkRulesH: " ++ show a) (writeLBS $ encode True)
         _            -> do500
     _           -> do500
   where do500 = do

@@ -9,7 +9,6 @@ import            Data.Aeson
 import            Data.ByteString (ByteString)
 import            Snap.Auth (AuthUser)
 import            JCU.Prolog.Types (Rule(..))
-import            Text.ParserCombinators.UU.Core (parse)
 import            JCU.Prolog.Parser
 
 
@@ -32,9 +31,7 @@ instance FromJSON Rule where
                                  <*> o .: "rule"
   parseJSON _           = mzero
 
-mkRule :: ByteString -> ByteString -> Rule
+-- TODO: Something with errors
+mkRule :: String -> String -> Rule
 mkRule _ r = a
-  where (a, e) = parse pRule r
-
-toText :: [JSRule] -> String
-toText = concatMap (\(JSRule _ r) -> r ++ "\n")
+  where (a, e) = startParse pRule r
