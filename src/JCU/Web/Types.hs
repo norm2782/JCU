@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
 module JCU.Web.Types where
@@ -8,6 +9,9 @@ import            Data.Aeson
 import            Data.ByteString (ByteString)
 import            Snap.Auth (AuthUser)
 import            JCU.Prolog.Types (Rule(..))
+import            Text.ParserCombinators.UU.Core (parse)
+import            JCU.Prolog.Parser
+
 
 -- TODO: Get prolog field out of user? Though it can't hurt too much;
 -- there's not a lot of data we want to store anyway.
@@ -23,10 +27,14 @@ instance ToJSON Rule where
 data JSRule = JSRule String String
             deriving Show
 
-instance FromJSON JSRule where
-  parseJSON (Object o)  = JSRule <$> o .: "id"
+instance FromJSON Rule where
+  parseJSON (Object o)  = mkRule <$> o .: "id"
                                  <*> o .: "rule"
   parseJSON _           = mzero
+
+mkRule :: ByteString -> ByteString -> Rule
+mkRule _ r = a
+  where (a, e) = parse pRule r
 
 toText :: [JSRule] -> String
 toText = concatMap (\(JSRule _ r) -> r ++ "\n")
