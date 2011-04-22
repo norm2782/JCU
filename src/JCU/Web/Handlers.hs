@@ -3,14 +3,15 @@
 module JCU.Web.Handlers where
 
 import            Application (Application)
-import            Data.Aeson (encode, fromJSON, parseJSON, json)
+import            Data.Aeson (encode, fromJSON, json)
+import            Data.Aeson.Types as AE (Result(..))
+import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
-import            Data.Map (Map, member, (!), showTree, fromList)
+import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
+import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
-import            JCU.Prolog.Parser
 import            JCU.Prolog.Types
-import            JCU.Web.Prolog
 import            JCU.Web.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
@@ -19,11 +20,6 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
-
-import  Data.Attoparsec.Lazy as L (Result(..))
-import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.Attoparsec.Lazy as L
-import Data.Aeson.Types as AE (Result(..), Value(..))
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -120,6 +116,7 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
+testRules :: [Rule]
 testRules = [ Fun "foo" [Var "bar"] :<-: []
             , Fun "baz" [Var "bat", Var "quux"] :<-: []
             , Fun "bla" [Con 1] :<-: [] ]
@@ -148,12 +145,15 @@ hintRulesH = restrict forbiddenH $ undefined
 
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
-  rules <- getRequestBody
-  case L.parse json rules of
+  rules <- mkRules =<< getRequestBody
+  trace ("checkRulesH: " ++ show rules) (writeLBS $ encode True)
+
+mkRules :: L.ByteString -> Application [Rule]
+mkRules raw = do
+  case L.parse json raw of
     (Done _ r)  -> do
       case fromJSON r :: AE.Result [Rule] of
-        (Success a)  -> do
-          trace ("checkRulesH: " ++ show a) (writeLBS $ encode True)
+        (Success a)  -> return a
         _            -> do500
     _           -> do500
   where do500 = do
