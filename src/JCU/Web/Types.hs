@@ -23,9 +23,6 @@ instance ToJSON Rule where
              in   object  [  "rule"  .= txt
                           ,  "id"    .= txt]
 
-data JSRule = JSRule String String
-            deriving Show
-
 instance FromJSON Rule where
   parseJSON (Object o)  = mkRule <$> o .: "id"
                                  <*> o .: "rule"
