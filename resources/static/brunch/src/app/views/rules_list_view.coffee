@@ -1,4 +1,6 @@
-class RulesListView extends Backbone.View
+RulesListItemView = require('views/rules_list_item_view').RulesListItemView
+
+class exports.RulesListView extends Backbone.View
 
   id: 'rules-list-view'
   tagName: 'ul'
@@ -12,12 +14,12 @@ class RulesListView extends Backbone.View
 
   addOne: (rule) =>
     view = new RulesListItemView model: rule
-    $(@el).append view.render().el
+    @$(@el).append view.render().el
 
   addAll: =>
     app.collections.rulesList.each @addOne
 
   renderList: =>
     app.views.rulesList.render()
-    $('.draggable').draggable({ revert: true
-                              , revertDuration: 100 })
+    @$('.draggable').draggable({ revert: true
+                               , revertDuration: 100 })

@@ -7,12 +7,8 @@
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/base/base-min.css">
     <link rel="stylesheet" href="web/css/main.css" type="text/css"
     media="screen" />
-    <script src="web/js/vendor/underscore-1.1.5.js"></script>
-    <script src="web/js/vendor/jquery-1.5.2.js"></script>
-    <script src="web/js/vendor/jquery-ui-1.8.11.custom.min.js"></script>
-    <script src="web/js/vendor/backbone-0.3.3.js"></script>
-    <script src="web/js/concatenation.js"></script>
-    <script src="web/js/templates.js"></script>
+    <script src="web/js/app.js"></script>
+    <script>require('main');</script>
   </head>
   <body>
     <div id="doc4" class="yui-t5">

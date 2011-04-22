@@ -1,4 +1,6 @@
-class RulesListItemView extends Backbone.View
+rulesListItemTemplate = require('templates/rules_list_item')
+
+class exports.RulesListItemView extends Backbone.View
   tagName: 'li'
 
   events:
@@ -6,17 +8,17 @@ class RulesListItemView extends Backbone.View
 
   deleteItem: ->
     @model.destroy()
-    $(@el).remove()
+    @$(@el).remove()
 
   initialize: ->
     @model.view = @
 
   render: =>
-    $(@el).html app.templates.rulesListItem content: @model.toJSON()
+    @$(@el).html rulesListItemTemplate content: @model.toJSON()
     @
 
   remove: ->
-    $(@el).remove()
+    @$(@el).remove()
 
   clear: ->
     @model.clear()
