@@ -3,7 +3,7 @@
 module JCU.Web.Handlers where
 
 import            Application (Application)
-import            Data.Aeson (encode, fromJSON)
+import            Data.Aeson (encode, fromJSON, parseJSON, json)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
 import            Data.Map (Map, member, (!), showTree, fromList)
@@ -19,6 +19,11 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
+
+import  Data.Attoparsec.Lazy as L (Result(..))
+import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Attoparsec.Lazy as L
+import Data.Aeson.Types as AE (Result(..), Value(..))
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -122,7 +127,7 @@ testRules = [ Fun "foo" [Var "bar"] :<-: []
 readStoredRulesH :: Application ()
 readStoredRulesH = do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  trace (show testRules) (writeLBS $ encode testRules)
+  trace ("readStoredRulesH: " ++ show testRules) (writeLBS $ encode testRules)
 
 updateStoredRulesH :: Application ()
 updateStoredRulesH = restrict forbiddenH $ undefined
@@ -130,23 +135,33 @@ updateStoredRulesH = restrict forbiddenH $ undefined
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getParam "id"
-  trace ("Delete stored rule: " ++ show rule) (return ())
+  trace ("deleteStoredRuleH: " ++ show rule) (return ())
 
 deleteInUseRuleH :: Application ()
 deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getParam "id"
-  trace ("Delete in use rule: " ++ show rule) (return ())
+  trace ("deleteInUseRuleH: " ++ show rule) (return ())
 
 
 hintRulesH :: Application ()
 hintRulesH = restrict forbiddenH $ undefined
 
 checkRulesH :: Application ()
-checkRulesH = restrict forbiddenH $ do
-  rules <- getParam "rules"
-  -- TODO: Grab the rules, parse them to something useful and then verify that the rules so far make sense and return a Bool
-  writeLBS $ encode True
-
+checkRulesH = do-- TODO restrict forbiddenH $ do
+  rules <- getRequestBody
+  case L.parse json rules of
+    (Done _ r)  -> do
+      case fromJSON r :: AE.Result [JSRule] of
+        (Success a)  -> do
+          let txtRules = toText a -- These can now be parsed with uu-parsinglib
+          trace ("checkRulesH: ") (writeLBS $ encode True)
+        _            -> do500
+    _           -> do500
+  where do500 = do
+          modifyResponse $ setResponseStatus 500 "Internal server error"
+          writeBS "500 internal server error"
+          r <- getResponse
+          finishWith r
 
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
@@ -157,5 +172,5 @@ updateInUseRulesH :: Application ()
 updateInUseRulesH = do-- TODO restrict forbiddenH $ do
   models <- getRequestBody
   let dmods = models -- fromJSON models
-  trace ("Tree: " ++ show dmods) (return ())
+  trace ("updateInUseRulesH: " ++ show dmods) (return ())
   return ()
