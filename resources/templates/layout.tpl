@@ -7,8 +7,7 @@
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/base/base-min.css">
     <link rel="stylesheet" href="web/css/main.css" type="text/css"
     media="screen" />
-    <script src="web/js/app.js"></script>
-    <script>require('main');</script>
+    <header/>
   </head>
   <body>
     <div id="doc4" class="yui-t5">
