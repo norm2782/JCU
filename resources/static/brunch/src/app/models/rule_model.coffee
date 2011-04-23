@@ -1,8 +1,7 @@
 class exports.Rule extends Backbone.Model
   validate: (str) ->
     token    = "\\s*\\w+\\s*"
-    opttoken = "(," + token + ")?"
-    rule     = "\\w+\\(" + token + opttoken + "\\)"
+    rule     = token + "\\(" + token + "(," + token + ")*\\)\\s*"
     regex    = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)")
     regex.test str
 
