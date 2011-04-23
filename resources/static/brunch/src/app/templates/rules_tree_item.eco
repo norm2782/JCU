@@ -1,3 +1,3 @@
 <input type="button" value="Store" class="btnStore" />
 <input type="button" value="Delete" class="btnDeleteTree" />
-<input type="text" name="tree_rules" class="droppable" />
+<input type="text" name="tree_rules" class="droppable" value="<%= @content.rule %>" />

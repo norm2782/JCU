@@ -12,7 +12,6 @@ class exports.RulesTreeItemView extends Backbone.View
     @$(@el).remove()
 
   initialize: ->
-    @model.rule = 'foo'
     @model.view = @
 
   render: =>

@@ -10694,7 +10694,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<input type="button" value="Store" class="btnStore" />\n<input type="button" value="Delete" class="btnDeleteTree" />\n<input type="text" name="tree_rules" class="droppable" />\n'));
+      _print(_safe('<input type="button" value="Store" class="btnStore" />\n<input type="button" value="Delete" class="btnDeleteTree" />\n<input type="text" name="tree_rules" class="droppable" value="'));
+      _print(this.content.rule);
+      _print(_safe('" />\n'));
     }).call(this);
     
     return __out.join('');
@@ -10877,7 +10879,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.$(this.el).remove();
     };
     RulesTreeItemView.prototype.initialize = function() {
-      this.model.rule = 'foo';
       return this.model.view = this;
     };
     RulesTreeItemView.prototype.render = function() {
