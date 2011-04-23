@@ -7,6 +7,8 @@ class exports.RulesTreeItemView extends Backbone.View
   events:
     "click .btnDeleteTree" : "deleteItem"
     "blur  .droppable"     : "checkRuleSyntax"
+    "change input[type='text']" : "updateModel"
+
 
   checkRuleSyntax: ->
     fld = @$(@el).find("input[type='text']")
@@ -44,3 +46,5 @@ class exports.RulesTreeItemView extends Backbone.View
   clear: ->
     @model.clear()
 
+  updateModel: ->
+    @model.set {rule: @$(@el).find("input[type='text']").val()}
