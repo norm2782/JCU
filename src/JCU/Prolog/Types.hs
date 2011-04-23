@@ -12,18 +12,21 @@ data Term   =  Con Int
             deriving Eq
 
 data Rule   =  Term   :<-: [Term]
+            deriving Eq
+
 data Trace  =  Trace  { goal   :: Term
                       , unif   :: Rule
-                      , env    :: Env
+                      , trEnv  :: Env
                       , terms  :: [Term] }
+            deriving Eq
 
 type Env       = [(Ident, Term)]
 type EnvTrace  = (Env, [Trace])
 
 instance Show Term where
-  show (Con  i)     = show  i
-  show (Var  i)     =       i
-  show (Fun  i [])  =       i
+  show (Con  i)     = show i
+  show (Var  i)     = i
+  show (Fun  i [])  = i
   show (Fun  i ts)  = i ++ "(" ++ showCommas ts ++ ")"
 
 instance Show Rule where
@@ -44,7 +47,7 @@ class Taggable a where
   tag :: Int -> a -> a
 
 instance Taggable Term where
-  tag n (Con  x)     = Con  x
+  tag _ (Con  x)     = Con  x
   tag n (Var  x)     = Var  (x ++ show n)
   tag n (Fun  x xs)  = Fun  x (map (tag n) xs)
 

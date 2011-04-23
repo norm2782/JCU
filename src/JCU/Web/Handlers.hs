@@ -9,9 +9,11 @@ import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
+import            Data.List as DL (length)
 import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
 import            JCU.Prolog.Types
+import            JCU.Prolog.Prolog (solve, unify)
 import            JCU.Web.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
@@ -138,12 +140,34 @@ deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
 hintRulesH :: Application ()
 hintRulesH = do -- TODO restrict forbiddenH $ do
   rules <- mkRules =<< getRequestBody
-  trace ("hintRulesH: " ++ show rules) (writeLBS $ encode True)
+  trace ("hintRulesH: " ++ show rules)
+        (writeLBS $ encode True)
 
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
   rules <- mkRules =<< getRequestBody
-  trace ("checkRulesH: " ++ show rules) (writeLBS $ encode True)
+  let (t :<-: _:_)  = rules
+  let solutions     = solve testStoredRules [t] [] 0
+  let checked       = checkRules rules solutions
+  trace ("checkRulesH: " ++ show rules)
+        (writeLBS $ encode checked)
+
+checkRules :: [Rule] -> [EnvTrace] -> [Bool]
+checkRules rules = foldr comp [] . map checkRules'
+  where checkRules' (env, trcs) = [ or $ map (cmpRuleTrace env r) trcs
+                                  | r <- rules ]
+
+comp :: [Bool] -> [Bool] -> [Bool]
+comp lst highest | l lst > l highest = lst
+                 | otherwise         = highest
+  where l = DL.length . takeWhile (== True)
+
+-- TODO: Is this right? Also, do we need r == u?
+-- TODO: Take the conclusion into account
+-- TODO: Send data from client from text fields, not from collection...
+cmpRuleTrace :: Env -> Rule -> Trace -> Bool
+cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
+  (unify (t, g) (Just env) /= Nothing) || r == u
 
 mkRules :: L.ByteString -> Application [Rule]
 mkRules raw = do
@@ -191,10 +215,12 @@ testStoredRules =  [ Fun "ma"    [Var "mien", Var "juul"] :<-: []
                                                                , Fun "voor"  [Var "Z", Var "Y"] ] ]
 
 testInUseRules :: [Rule]
-testInUseRules = [ Fun "pa"    [Var "alex", Var "ama"]  :<-: []
-                 , Fun "pa"    [Var "X",    Var "ama"]  :<-: []
-                 , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "pa" [Var "X", Var "Y"] ]
-                 , Fun "ouder" [Var "X",    Var "ama"]  :<-: [] ]
+testInUseRules = [ Fun "ouder" [Var "X",    Var "ama"] :<-: []
+                 , Fun "ouder" [Var "X",    Var "Y"]   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
+                 , Fun "pa"    [Var "X",    Var "ama"] :<-: []
+                 , Fun "pa"    [Var "alex", Var "ama"] :<-: []
+                 , Fun "alex"  []                      :<-: []
+                 ]
 
 
 {-

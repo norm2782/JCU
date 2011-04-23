@@ -6,9 +6,9 @@ class exports.RulesTreeItemView extends Backbone.View
 
   events:
     "click .btnDeleteTree" : "deleteItem"
-    "blur  .droppable" : "checkItem"
+    "blur  .droppable"     : "checkRuleSyntax"
 
-  checkItem: ->
+  checkRuleSyntax: ->
     fld = @$(@el).find("input[type='text']")
 
     if !@model.validate fld.val()
