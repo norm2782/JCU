@@ -84,7 +84,8 @@ data FormField = FormField  {  isRequired    :: Bool
 
 -- TODO: Add support for multiple parameters with the same name
 -- TODO: Add support for returning validation errors.
--- TODO: See what the Digestive Functors can do for form validation...
+-- TODO: See what the Digestive Functors can do for form validation... it is
+-- much better suited for validation than this...
 formValidator :: FormValidator
 formValidator =  [  ("email",     FormField True (\xs -> E.isValid $ unpack xs))
                  ,  ("password",  FormField True (\xs -> B.length xs > 6)) ]
@@ -116,18 +117,13 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
-testRules :: [Rule]
-testRules = [ Fun "foo" [Var "bar"] :<-: []
-            , Fun "baz" [Var "bat", Var "quux"] :<-: []
-            , Fun "bla" [Con 1] :<-: [] ]
-
 readStoredRulesH :: Application ()
 readStoredRulesH = do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  trace ("readStoredRulesH: " ++ show testRules) (writeLBS $ encode testRules)
+  trace ("readStoredRulesH: " ++ show testStoredRules) (writeLBS $ encode testStoredRules)
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = restrict forbiddenH $ undefined
+updateStoredRulesH = do undefined -- TODO restrict forbiddenH $ do
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
@@ -139,9 +135,10 @@ deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getParam "id"
   trace ("deleteInUseRuleH: " ++ show rule) (return ())
 
-
 hintRulesH :: Application ()
-hintRulesH = restrict forbiddenH $ undefined
+hintRulesH = do -- TODO restrict forbiddenH $ do
+  rules <- mkRules =<< getRequestBody
+  trace ("hintRulesH: " ++ show rules) (writeLBS $ encode True)
 
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
@@ -165,7 +162,7 @@ mkRules raw = do
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  writeLBS $ encode testRules
+  writeLBS $ encode testInUseRules
 
 updateInUseRulesH :: Application ()
 updateInUseRulesH = do-- TODO restrict forbiddenH $ do
@@ -173,3 +170,44 @@ updateInUseRulesH = do-- TODO restrict forbiddenH $ do
   let dmods = models -- fromJSON models
   trace ("updateInUseRulesH: " ++ show dmods) (return ())
   return ()
+
+testStoredRules :: [Rule]
+testStoredRules =  [ Fun "ma"    [Var "mien", Var "juul"] :<-: []
+                   , Fun "ma"    [Var "juul", Var "bea"]  :<-: []
+                   , Fun "ma"    [Var "bea",  Var "alex"] :<-: []
+                   , Fun "ma"    [Var "bea",  Var "cons"] :<-: []
+                   , Fun "ma"    [Var "max",  Var "ale"]  :<-: []
+                   , Fun "ma"    [Var "max",  Var "ama"]  :<-: []
+                   , Fun "ma"    [Var "max",  Var "ari"]  :<-: []
+                   , Fun "oma"   [Var "X",    Var "Z"]    :<-: [ Fun "ma"    [Var "X", Var "Y"]
+                                                               , Fun "ouder" [Var "Y", Var "Z"] ]
+                   , Fun "pa"    [Var "alex", Var "ale"]  :<-: []
+                   , Fun "pa"    [Var "alex", Var "ama"]  :<-: []
+                   , Fun "pa"    [Var "alex", Var "ari"]  :<-: []
+                   , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "pa"    [Var "X", Var "Y"] ]
+                   , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "ma"    [Var "X", Var "Y"] ]
+                   , Fun "voor"  [Var "X",    Var "Y"]    :<-: [ Fun "ouder" [Var "X", Var "Y"] ]
+                   , Fun "voor"  [Var "X",    Var "Y"]    :<-: [ Fun "ouder" [Var "X", Var "Z"]
+                                                               , Fun "voor"  [Var "Z", Var "Y"] ] ]
+
+testInUseRules :: [Rule]
+testInUseRules = [ Fun "pa"    [Var "alex", Var "ama"]  :<-: []
+                 , Fun "pa"    [Var "X",    Var "ama"]  :<-: []
+                 , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "pa" [Var "X", Var "Y"] ]
+                 , Fun "ouder" [Var "X",    Var "ama"]  :<-: [] ]
+
+
+{-
+alex
+------------ pa(alex, ama).
+pa(X, ama).
+------------ ouder(X, Y) :- pa(X, Y).
+ouder(X, ama).
+
+
+max
+------------ ma(max, ama).
+ma(X, ama).
+------------ ouder(X, Y) :- ma(X, Y).
+ouder(X, ama).
+-}
