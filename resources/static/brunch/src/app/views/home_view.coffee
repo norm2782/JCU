@@ -18,7 +18,7 @@ class exports.HomeView extends Backbone.View
   addRule: -> alert "addRule"
 
   checkRules: ->
-    callback = (data) -> alert ("callback" + data)
+    callback = (data) -> alert ("callback: " + data)
     $.ajax
       url:  '/rules/check'
       type: 'POST'
