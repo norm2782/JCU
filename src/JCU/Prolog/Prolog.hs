@@ -2,14 +2,13 @@ module JCU.Prolog.Prolog where
 
 import Data.Char (isUpper)
 import Data.List (intercalate)
-import Debug.Trace (trace)
 import JCU.Prolog.Types
 
 lookUp :: Term -> Env -> Term
-lookUp  (Var x)  e   = case lookup x e of
-                         Nothing   -> Var x
-                         Just res  -> lookUp res e
-lookUp  t        _   = t
+lookUp (Var x)  e   = case lookup x e of
+                        Nothing   -> Var x
+                        Just res  -> lookUp res e
+lookUp t        _   = t
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
 unify _       Nothing       = Nothing
@@ -23,13 +22,13 @@ unify (t, u)  env@(Just e)  = uni (lookUp t e) (lookUp u e)
          uni _ _              =  Nothing
 
 solve :: [Rule] -> [Term] -> Env -> Int -> [EnvTrace]
-solve rules []      e _  = [(e, [])]
+solve _     []      e _  = [(e, [])]
 solve rules (t:ts)  e n  =
     [  (sol, trc:trace)
-    |  tm@(c :<-: cs)   <- map (tag n) rules
-    ,  Just r           <- [unify (t, c) (Just e)]
+    |  tm@(c :<-: cs)  <- map (tag n) rules
+    ,  Just r          <- [unify (t, c) (Just e)]
     ,  let trc = Trace t tm r (cs ++ ts)
-    ,  (sol, trace)     <- solve rules (cs ++ ts) r (n+1)
+    ,  (sol, trace)    <- solve rules (cs ++ ts) r (n+1)
     ]
 
 -- Solving individual rules:
@@ -47,7 +46,7 @@ showBdg bs (x, t)  | isShowable  = x ++ " = " ++ showTerm t ++ "\n"
   where  isShowable = isUpper (head x) && length x == 1
          showTerm :: Term -> String
          showTerm (Con n)     = show n
-         showTerm t@(Var _)   = showTerm (lookUp t bs) 
+         showTerm v@(Var _)   = showTerm (lookUp v bs)
          showTerm (Fun f [])  = f
          showTerm (Fun f ts)  = f ++ "(" ++ intercalate ", " (map showTerm ts)
                                   ++ ")"
