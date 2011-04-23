@@ -1,4 +1,5 @@
 <apply template="layout">
+  <bind tag="header"></bind>
   <h1>Please login</h1>
   <form method="post" action="/login">
   <table>
