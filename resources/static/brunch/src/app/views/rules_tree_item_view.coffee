@@ -6,6 +6,17 @@ class exports.RulesTreeItemView extends Backbone.View
 
   events:
     "click .btnDeleteTree" : "deleteItem"
+    "blur  .droppable" : "checkItem"
+
+  checkItem: ->
+    fld = @$(@el).find("input[type='text']")
+
+    if !@model.validate fld.val()
+      bgc = "#faa"
+    else
+      bgc = "#fff"
+
+    fld.css "background-color", bgc
 
   deleteItem: ->
     @model.destroy()
