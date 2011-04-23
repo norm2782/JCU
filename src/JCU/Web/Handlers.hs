@@ -191,10 +191,11 @@ testStoredRules =  [ Fun "ma"    [Var "mien", Var "juul"] :<-: []
                                                                , Fun "voor"  [Var "Z", Var "Y"] ] ]
 
 testInUseRules :: [Rule]
-testInUseRules = [ Fun "pa"    [Var "alex", Var "ama"]  :<-: []
-                 , Fun "pa"    [Var "X",    Var "ama"]  :<-: []
-                 , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "pa" [Var "X", Var "Y"] ]
-                 , Fun "ouder" [Var "X",    Var "ama"]  :<-: [] ]
+testInUseRules = [ Fun "ouder" [Var "X",    Var "ama"] :<-: [] 
+                 , Fun "ouder" [Var "X",    Var "Y"]   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
+                 , Fun "pa"    [Var "X",    Var "ama"] :<-: []
+                 , Fun "pa"    [Var "alex", Var "ama"] :<-: []
+                 ]
 
 
 {-
