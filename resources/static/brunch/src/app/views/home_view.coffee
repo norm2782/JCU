@@ -15,19 +15,17 @@ class exports.HomeView extends Backbone.View
     @$(@.el).find('#rules-list-div').append app.views.rulesList.render().el
     @
 
-  addRule: -> alert "addRule"
+  addRule: ->
+    app.collections.rulesTree.add {}
 
   checkRules: ->
+    # TODO: Clicking check right after add doesn't color the added text field
+    # Do we really want all of this here? Or do we want to delegate parts of
+    # it all to the individual models?
     callback = (data) ->
       flds = $('#rules-tree-div input[type="text"]')
       if _.and data
-        dial = $("#dialog")
-        dial.html("That's correct!")
-        dial.dialog
-          title: "That's correct!",
-          modal: true
-          buttons:
-            Ok: => dial.dialog("close")
+        alert "That's correct!"
         flds.each( -> $(this).css "background-color", "#fff")
       else
         flds.each(
@@ -37,13 +35,22 @@ class exports.HomeView extends Backbone.View
                $(this).css "background-color", "#faa"
         )
 
-    $.ajax
-      url:  '/rules/check'
-      type: 'POST'
-      contentType: 'application/json'
-      dataType: 'json'
-      data:     JSON.stringify app.collections.rulesTree
-      success:  callback
+    invalids = app.collections.rulesTree.any(
+      (x) ->
+        rule = x.get "rule"
+        !rule? || !(x.validate rule)
+    )
+
+    if invalids
+      alert "All fields must contain a valid expression before you can check them for correctness."
+    else
+      $.ajax
+        url:  '/rules/check'
+        type: 'POST'
+        contentType: 'application/json'
+        dataType: 'json'
+        data:     JSON.stringify app.collections.rulesTree
+        success:  callback
 
   getHint: -> alert "getHint"
 

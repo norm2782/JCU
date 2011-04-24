@@ -122,7 +122,8 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 readStoredRulesH :: Application ()
 readStoredRulesH = do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  trace ("readStoredRulesH: " ++ show testStoredRules) (writeLBS $ encode testStoredRules)
+  trace ("readStoredRulesH: " ++ show testStoredRules)
+        (writeLBS $ encode testStoredRules)
 
 updateStoredRulesH :: Application ()
 updateStoredRulesH = undefined -- TODO restrict forbiddenH $ do
