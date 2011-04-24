@@ -18,7 +18,17 @@ class exports.HomeView extends Backbone.View
   addRule: -> alert "addRule"
 
   checkRules: ->
-    callback = (data) -> alert ("callback: " + data)
+    callback = (data) ->
+      f = (x, xs) -> x && xs
+      r = _.foldr data, f, true
+      if r
+        $("#dialog").html("That's correct!")
+        $("#dialog").dialog
+          title: "That's correct!",
+          modal: true
+          buttons:
+            Ok: => $("#dialog").dialog("close")
+
     $.ajax
       url:  '/rules/check'
       type: 'POST'
