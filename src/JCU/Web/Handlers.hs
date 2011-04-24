@@ -167,7 +167,11 @@ comp lst highest | l lst > l highest = lst
 -- TODO: Send data from client from text fields, not from collection...
 cmpRuleTrace :: Env -> Rule -> Trace -> Bool
 cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
-  (unify (t, g) (Just env) /= Nothing) || r == u
+  trace ("env: " ++ show env ++ "\n" ++
+         "rterm: " ++ show r ++ "\n" ++
+         "traceg: " ++ show g ++ "\n" ++
+         "traceu: " ++ show u ++ "\n")
+        unify (t, g) (Just env) /= Nothing || r == u
 
 mkRules :: L.ByteString -> Application [Rule]
 mkRules raw = do
@@ -219,7 +223,7 @@ testInUseRules = [ Fun "ouder" [Var "X",    Var "ama"] :<-: []
                  , Fun "ouder" [Var "X",    Var "Y"]   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
                  , Fun "pa"    [Var "X",    Var "ama"] :<-: []
                  , Fun "pa"    [Var "alex", Var "ama"] :<-: []
-                 , Fun "alex"  []                      :<-: []
+                 {- , Fun "alex"  []                      :<-: []-}
                  ]
 
 
