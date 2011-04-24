@@ -10,8 +10,8 @@
     <header/>
   </head>
   <body>
-    <div id="doc" class="yui-t5">
-      <div id="hd" role="banner"> 
+    <div id="doc2" class="yui-t6">
+      <div id="hd" role="banner">
         <span id="header">
           <img src="/img/jculogo-64.png" /> Module Functional Programming
         </span>
