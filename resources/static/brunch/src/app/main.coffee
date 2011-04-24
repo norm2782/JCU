@@ -19,6 +19,12 @@ $(document).ready ->
     app.collections.rulesList = new RulesList()
     app.collections.rulesTree = new RulesTree()
 
+    # _.and :: [Bool] -> Bool
+    _.mixin {and: (xs) -> _.all xs, _.identity}
+
+    # _.or  :: [Bool] -> Bool
+    _.mixin {or:  (xs) -> _.any xs, _.identity}
+
     app.controllers.main = new MainController()
     app.views.home = new HomeView()
     app.views.rulesList = new RulesListView()

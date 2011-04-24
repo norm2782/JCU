@@ -30,9 +30,9 @@ import            Text.Email.Validate as E (isValid)
 restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b -> m b
 restrict failH succH = do
   authed <- isLoggedIn
-  case authed of
-    False  -> failH
-    True   -> succH
+  if authed
+    then succH
+    else failH
 
 loginRedir :: Application ()
 loginRedir = redirect "/login"
@@ -82,19 +82,19 @@ additionalUserFields u = [ "storedRules"  =: storedRules u ]
 
 type FormValidator = [(ByteString, FormField)]
 data FormField = FormField  {  isRequired    :: Bool
-                            ,  fldValidator  :: (ByteString -> Bool) }
+                            ,  fldValidator  :: ByteString -> Bool }
 
 -- TODO: Add support for multiple parameters with the same name
 -- TODO: Add support for returning validation errors.
 -- TODO: See what the Digestive Functors can do for form validation... it is
 -- much better suited for validation than this...
 formValidator :: FormValidator
-formValidator =  [  ("email",     FormField True (\xs -> E.isValid $ unpack xs))
+formValidator =  [  ("email",     FormField True (E.isValid . unpack))
                  ,  ("password",  FormField True (\xs -> B.length xs > 6)) ]
 
 valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
-valForm parms (fld, (FormField req val))  | fld `member` parms  = val $ head (parms ! fld)
-                                          | otherwise           = not req
+valForm parms (fld, FormField req val)  | fld `member` parms  = val $ head (parms ! fld)
+                                        | otherwise           = not req
 
 -- TODO: Look at digestive-functors for form validation
 signupH :: Application ()
@@ -122,10 +122,11 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 readStoredRulesH :: Application ()
 readStoredRulesH = do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  trace ("readStoredRulesH: " ++ show testStoredRules) (writeLBS $ encode testStoredRules)
+  trace ("readStoredRulesH: " ++ show testStoredRules)
+        (writeLBS $ encode testStoredRules)
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = do undefined -- TODO restrict forbiddenH $ do
+updateStoredRulesH = undefined -- TODO restrict forbiddenH $ do
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
@@ -153,8 +154,8 @@ checkRulesH = do-- TODO restrict forbiddenH $ do
         (writeLBS $ encode checked)
 
 checkRules :: [Rule] -> [EnvTrace] -> [Bool]
-checkRules rules = foldr comp [] . map checkRules'
-  where checkRules' (env, trcs) = [ or $ map (cmpRuleTrace env r) trcs
+checkRules rules = foldr (comp . checkRules') []
+  where checkRules' (env, trcs) = [ any (cmpRuleTrace env r) trcs
                                   | r <- rules ]
 
 comp :: [Bool] -> [Bool] -> [Bool]
@@ -174,9 +175,9 @@ cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
         unify (t, g) (Just env) /= Nothing || r == u
 
 mkRules :: L.ByteString -> Application [Rule]
-mkRules raw = do
+mkRules raw =
   case L.parse json raw of
-    (Done _ r)  -> do
+    (Done _ r)  ->
       case fromJSON r :: AE.Result [Rule] of
         (Success a)  -> return a
         _            -> do500
