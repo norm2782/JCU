@@ -1,8 +1,5 @@
-<div id="doc" class="yui-t5">
-  <div id="hd" role="banner"><h1>JCU: Module Functional Programming</h1></div>
-    <div id="bd" role="main">
-      <div id="yui-main">
-    <div class="yui-b">
+<div id="yui-main">
+  <div class="yui-b">
     <div class="yui-g" id="rules-tree-div">
       <div id="dialog"></div>
       <div id="rules-tree-div"><!-- TREE GOES HERE --></div>
@@ -11,16 +8,5 @@
       <input type="button" id="btnHint"  value="Hint" />
     </div>
   </div>
-  </div>
-    <div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>
-  </div>
-  <div id="ft" role="contentinfo">
-    <p>
-      <img src="/img/uulogo.png" />
-      <span id="faccompsci">
-        <span class="uured">[</span>Faculty of Science<br />
-        <span class="uured">Information and Computing Sciences]</span>
-      </span>
-    </p>
-  </div>
-</div> 
+</div>
+<div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>
