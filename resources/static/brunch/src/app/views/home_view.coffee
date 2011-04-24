@@ -19,8 +19,7 @@ class exports.HomeView extends Backbone.View
 
   checkRules: ->
     callback = (data) ->
-      f = (x, xs) -> x && xs
-      if _.foldr data, f, true
+      if _.all data, _.identity
         $("#dialog").html("That's correct!")
         $("#dialog").dialog
           title: "That's correct!",
