@@ -19,16 +19,18 @@ class exports.HomeView extends Backbone.View
 
   checkRules: ->
     callback = (data) ->
-      f = (x, xs) -> x && xs
-      if _.foldr data, f, true
-        $("#dialog").html("That's correct!")
-        $("#dialog").dialog
+      flds = $('#rules-tree-div input[type="text"]')
+      if _.all data, _.identity
+        dial = $("#dialog")
+        dial.html("That's correct!")
+        dial.dialog
           title: "That's correct!",
           modal: true
           buttons:
-            Ok: => $("#dialog").dialog("close")
+            Ok: => dial.dialog("close")
+        flds.each( -> $(this).css "background-color", "#fff")
       else
-        $('#rules-tree-div input[type="text"]').each(
+        flds.each(
           -> if data.shift()
                $(this).css "background-color", "#afa"
              else
