@@ -20,7 +20,7 @@ class exports.HomeView extends Backbone.View
   checkRules: ->
     callback = (data) ->
       flds = $('#rules-tree-div input[type="text"]')
-      if _.all data, _.identity
+      if _.and data
         dial = $("#dialog")
         dial.html("That's correct!")
         dial.dialog
