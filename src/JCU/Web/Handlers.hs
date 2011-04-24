@@ -51,7 +51,7 @@ forbiddenH = do
 -- Otherwise, the way the route table is currently set up, this action
 -- would be given every request.
 siteIndex :: Application ()
-siteIndex = restrict loginRedir $ ifTop $ render "index"
+siteIndex = ifTop $ restrict loginRedir $ render "index"
 
 checkH :: Application ()
 checkH = render "check"
