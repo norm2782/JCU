@@ -32,9 +32,9 @@ class exports.RulesTreeItemView extends Backbone.View
     @$(@el).droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
-          # TODO: Update collection after drop
-          newVal = ui.draggable.find(".rule-text").html()
-          $(this).find("input[type='text']").val newVal
+          elem = $(this).find("input[type='text']")
+          elem.val ui.draggable.find(".rule-text").html()
+          elem.trigger('change')
       }
     @
 
