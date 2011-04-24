@@ -1,5 +1,5 @@
 <div id="doc" class="yui-t5">
-  <div id="hd" role="banner"><h1>JCU: Wiskunde D</h1></div>
+  <div id="hd" role="banner"><h1>JCU: Module Functional Programming</h1></div>
     <div id="bd" role="main">
       <div id="yui-main">
     <div class="yui-b">
@@ -15,6 +15,12 @@
     <div class="yui-b" id="rules-list-div"><!-- LIST GOES HERE --></div>
   </div>
   <div id="ft" role="contentinfo">
-    <p>Utrecht University, Faculty of Science, Information and Computing Sciences</p>
+    <p>
+      <img src="/img/uulogo.png" />
+      <span id="faccompsci">
+        <span class="uured">[</span>Faculty of Science<br />
+        <span class="uured">Information and Computing Sciences]</span>
+      </span>
+    </p>
   </div>
-</div>
+</div> 
