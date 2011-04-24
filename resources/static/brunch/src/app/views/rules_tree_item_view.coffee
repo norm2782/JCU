@@ -32,11 +32,9 @@ class exports.RulesTreeItemView extends Backbone.View
     @$(@el).droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
-          # TODO: This is ugly... find a better way. Manually selecting
-          # the first element and ditching all jQuery goodness should not
-          # be necessary
-          ruleSpan = ui.draggable.find(".rule-text")[0]
-          $(this).find("input[type='text']").val ruleSpan.innerHTML
+          elem = $(this).find("input[type='text']")
+          elem.val ui.draggable.find(".rule-text").html()
+          elem.trigger('change')
       }
     @
 
