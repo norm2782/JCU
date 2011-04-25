@@ -24,7 +24,7 @@ class exports.HomeView extends Backbone.View
     txtVal = txtAddRule.val()
 
     # TODO: Make this actually work
-    newRule = new Rule({rule: txtVal})
+    newRule = new Rule({id: "", rule: txtVal})
 
     if newRule.validate()
       res = app.collections.rulesList.find(
