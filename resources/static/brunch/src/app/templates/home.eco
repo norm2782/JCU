@@ -1,6 +1,6 @@
-<div id="yui-main">
-  <div class="yui-b">
-    <div class="yui-g" id="rules-tree-div">
+<div class="yui3-g">
+  <div class="yui3-u-2-3">
+    <div class="content" id="rules-tree-div">
       <h2>Derivation Tree</h2>
       <div id="rules-tree-div"><!-- TREE GOES HERE --></div>
       <input type="button" id="btnAdd"   value="Add" />
@@ -8,10 +8,13 @@
       <input type="button" id="btnHint"  value="Hint" />
     </div>
   </div>
-</div>
-<div class="yui-b">
-  <h2>Stored Rules</h2>
-  <div id="rules-list-div">
-    <!-- LIST GOES HERE -->
+
+  <div class="yui3-u-1-3">
+    <div class="content">
+      <h2>Stored Rules</h2>
+      <div id="rules-list-div">
+        <!-- LIST GOES HERE -->
+      </div>
+    </div>
   </div>
 </div>
