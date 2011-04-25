@@ -144,6 +144,12 @@ hintRulesH = do -- TODO restrict forbiddenH $ do
   trace ("hintRulesH: " ++ show rules)
         (writeLBS $ encode True)
 
+addStoredRuleH :: Application ()
+addStoredRuleH = do-- TODO restrict forbiddenH $ do
+  rule <- getRequestBody
+  trace ("addStoredRuleH: " ++ show rule)
+        (writeLBS "{}")
+
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
   rules <- mkRules =<< getRequestBody
