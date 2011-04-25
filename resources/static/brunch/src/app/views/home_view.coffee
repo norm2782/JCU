@@ -1,22 +1,45 @@
 homeTemplate = require('templates/home')
-
+Rule = require('models/rule_model').Rule
 
 class exports.HomeView extends Backbone.View
   id: 'home-view'
 
   events:
-    'click #btnAdd'   : 'addRule'
-    'click #btnCheck' : 'checkRules'
-    'click #btnHint'  : 'getHint'
+    'click #btnAdd'     : 'addTreeRule'
+    'click #btnCheck'   : 'checkRules'
+    'click #btnHint'    : 'getHint'
+    'click #btnAddRule' : 'addStoreRule'
 
   render: ->
     @$(@.el).html homeTemplate
-    @$(@.el).find('#rules-tree-div').append app.views.rulesTree.render().el
-    @$(@.el).find('#rules-list-div').append app.views.rulesList.render().el
+    @$('#rules-tree-div').append app.views.rulesTree.render().el
+    @$('#rules-list-div').append app.views.rulesList.render().el
     @
 
-  addRule: ->
+  addTreeRule: ->
     app.collections.rulesTree.add {}
+
+  addStoreRule: ->
+    txtAddRule = @$('#txtAddRule')
+    txtVal = txtAddRule.val()
+
+    # TODO: Make this actually work
+    newRule = new Rule({rule: txtVal})
+
+    if newRule.validate()
+      res = app.collections.rulesList.find(
+        (x) ->
+          r = (x.get "rule")
+          r == txtVal
+      )
+
+      if !res?
+        app.collections.rulesList.create newRule
+      color = "#fff"
+    else
+      color = "#faa"
+
+    txtAddRule.css "background-color", color
 
   checkRules: ->
     # TODO: Clicking check right after add doesn't color the added text field
@@ -36,9 +59,7 @@ class exports.HomeView extends Backbone.View
         )
 
     invalids = app.collections.rulesTree.any(
-      (x) ->
-        rule = x.get "rule"
-        !rule? || !(x.validate rule)
+      (rule) -> !rule? || !x.validate
     )
 
     if invalids

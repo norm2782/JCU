@@ -24,7 +24,7 @@ instance ToJSON Rule where
                           ,  "id"    .= txt]
 
 instance FromJSON Rule where
-  parseJSON (Object o)  = mkRule <$> o .: "id"
+  parseJSON (Object o)  = mkRule <$> (o .: "id" <|> pure "") -- id is optional
                                  <*> o .: "rule"
   parseJSON _           = mzero
 
