@@ -23,13 +23,11 @@
     </div>
 
     <div id="ft">
-      <p>
-        <img src="/img/uulogo.png" />
+        <img src="/img/uulogo.png" id="uulogo" />
         <span id="faccompsci">
           <span class="uured">[</span>Faculty of Science<br />
           <span class="uured">Information and Computing Sciences]</span>
         </span>
-      </p>
     </div>
   </body>
 </html>

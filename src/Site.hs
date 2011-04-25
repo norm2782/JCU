@@ -30,6 +30,7 @@ site =  route  [  ("/",           siteIndex)
                ,  ("/signup",  method POST  signupH)
                ,  ("/rules/stored",  method GET   readStoredRulesH)
                ,  ("/rules/stored",  method PUT   updateStoredRulesH)
+               ,  ("/rules/stored",  method POST   addStoredRuleH) -- TODO: For adding individual rule. See if this is the desired approach
                ,  ("/rules/stored/:id",  method DELETE  deleteStoredRuleH)
                ,  ("/rules/inuse",   method GET   readInUseRulesH)
                ,  ("/rules/inuse",   method POST  updateInUseRulesH)

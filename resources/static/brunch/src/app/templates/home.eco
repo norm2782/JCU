@@ -15,6 +15,9 @@
       <div id="rules-list-div">
         <!-- LIST GOES HERE -->
       </div>
+      <div id="divListAdd">
+        <input type="text" id="txtAddRule" /> <input type="button" value="Add" id="btnAddRule" />
+      </div>
     </div>
   </div>
 </div>
