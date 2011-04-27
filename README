@@ -1,1 +1,73 @@
 Prolog for JCU
+
+
+Installation instructions:
+==========================
+
+This software has been tested with Haskell Platform 2011.2.0.1, 32-bit on Mac
+OS X 10.6.7, using MongoDB 1.8.1. MongoDB was installed using Homebrew.
+
+* Install MongoDB *
+To install MongoDB using Homebrew, issue the following command:
+
+brew install mongodb
+
+When the installation is finished, follow the instructions on the screen.
+The application assumes that MongoDB listens on localhost:27017.
+
+* Install the JCU package *
+To install the JCU package in development mode, issue a 'make' command in the
+project root. To install it in production mode, just issue cabal install in the
+project root.
+
+
+Usage instructions:
+===================
+Before you can use the application, you have to start it and register an
+account.
+
+* Starting *
+After installation, just issue the
+
+jcu
+
+command. If you want to run the application in development mode, you should
+issue this command in the root directory of the project.
+
+* Accessing *
+The application can be viewed from your browser on the following address:
+
+http://localhost:8000/
+
+* Registering *
+Before you can use the application, you have to register an account. This
+can be done at
+
+http://localhost:8000/signup
+
+Your username must be a valid email address and your password needs to be at
+least six characters long.
+
+* Logging in *
+After signup, you can log in at
+
+http://localhost:8000/login
+
+using the credentials you have just entered during registration.
+
+* Using *
+After logging in, the main screen is visible. It is divided in two sections.
+On the left-hand side we have the derivation tree and on the right-hand side
+the list of rules. The derivation tree grows from top to bottom, where the top
+element is the original query the user enters. The list shows all stored rules
+in the environment. These rules can be dragged to textfields for convenience.
+The current iteration of the application is rather limited in what it can do.
+It only supports a fixed set of prolog rules and support for adding more rows
+to your derivation "tree" is limited. By default, a valid derivation is shown.
+Pressing the check button will verify whether the derivation is correct. The
+rules entered in the fields must be well-formed, otherwise they are not
+accepted.
+The hint button is currently not wired up to an action. Eventually, pressing it
+would spawn a popup with valid next steps in the derivation sequence, to aid
+users when they are really stuck. It can be argued that this feature would
+promote cheating and that student assistence should play this role.
