@@ -17,6 +17,7 @@ import            JCU.Prolog.Parser
 data User = User  {  authUser     :: AuthUser
                   ,  storedRules  :: [ByteString]
                   ,  inuseRules   :: [ByteString] }
+          deriving Show
 
 instance ToJSON Rule where
   toJSON t = let  txt = show t
