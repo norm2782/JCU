@@ -90,7 +90,7 @@ data FormField = FormField  {  isRequired    :: Bool
 -- much better suited for validation than this...
 formValidator :: FormValidator
 formValidator =  [  ("email",     FormField True (E.isValid . unpack))
-                 ,  ("password",  FormField True (\xs -> B.length xs > 6)) ]
+                 ,  ("password",  FormField True (\xs -> B.length xs >= 6)) ]
 
 valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
 valForm parms (fld, FormField req val)  | fld `member` parms  = val $ head (parms ! fld)
@@ -105,6 +105,7 @@ signupH = do
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
               let u = makeUser email pwd
+              trace (show u) (return ())
               au     <- saveAuthUser (authUser u, additionalUserFields u)
               case au of
                 Nothing   -> newSignupH
@@ -148,7 +149,7 @@ addStoredRuleH :: Application ()
 addStoredRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getRequestBody
   trace ("addStoredRuleH: " ++ show rule)
-        (writeLBS "{}")
+        (writeLBS "")
 
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do

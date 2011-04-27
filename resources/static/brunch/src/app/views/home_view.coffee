@@ -23,7 +23,6 @@ class exports.HomeView extends Backbone.View
     txtAddRule = @$('#txtAddRule')
     txtVal = txtAddRule.val()
 
-    # TODO: Make this actually work
     newRule = new Rule({id: "", rule: txtVal})
 
     if newRule.validate()
