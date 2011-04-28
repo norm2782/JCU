@@ -58,7 +58,7 @@ class exports.HomeView extends Backbone.View
         )
 
     invalids = app.collections.rulesTree.any(
-      (rule) -> !rule? || !x.validate
+      (rule) -> !rule? || !rule.validate
     )
 
     if invalids
