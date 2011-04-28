@@ -1,0 +1,19 @@
+#doc{margin:auto;width:970px}
+#hd,.yui3-g .content,#ft{border:5px solid #ccc;margin-right:10px}
+#hd{height:64px}
+#ft{height:51px}
+#bd li{list-style-type:none}
+#rules-tree-view input[type=text]{width:350px}
+#rules-tree-view ol,ul,dl,#rules-list-view ol,ul,dl{margin:0 0 20px 0}
+#rules-list-view li{height:30px}
+#rules-list-view .ui-draggable{width:290px;padding:5px;margin:0;border:1px solid #000;background-color:#fff}
+#rules-tree-view .ui-droppable{padding:5px}
+.dropHover{background-color:#90ee90}
+.btnDeleteList{float:right}
+#faccompsci{text-align:right;float:right;font-weight:bold}
+.uured{color:#921525}
+#header{font-size:29px}
+#header img{vertical-align:middle}
+#txtAddRule{width:250px}
+#divListAdd{margin-bottom:20px}
+#uulogo,#faccompsci{vertical-align:middle}
