@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.3.0/build/cssbase/base-min.css">
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.3.0/build/cssfonts/fonts-min.css">
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.3.0/build/cssgrids/grids-min.css">
-    <link rel="stylesheet" href="web/css/main.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="brunch/build/web/css/main.css" type="text/css" media="screen" />
     <link rel="icon" type="image/png" href="img/jculogo-16.png" />
     <header/>
   </head>
