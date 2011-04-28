@@ -20,6 +20,11 @@ To install the JCU package in development mode, issue a 'make' command in the
 project root. To install it in production mode, just issue cabal install in the
 project root.
 
+* If the CSS and JS fail to load *
+Make sure you have a symlink in resources/static called 'web', which points to
+'resources/static/brunch/build/web'. This will need to change somehow in the
+final product.
+
 
 Usage instructions:
 ===================
