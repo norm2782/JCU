@@ -1,4 +1,3 @@
 .DS_Store
 .gitignore
-resources/static/brunch/build/web/*
 log/*
