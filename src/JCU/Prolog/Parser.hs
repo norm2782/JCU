@@ -12,23 +12,21 @@ pRules :: Parser [Rule]
 pRules = pList pRule
 
 pRule :: Parser Rule
-pRule = (:<-:) <$> pFun  <*> ((pSpaces *> pToken ":-" <* pSpaces *> pTerms) `opt` [])
-                         <* pSpaces <* pDot
+pRule = (:<-:) <$> pFun  <*>  (pSymbol ":-" *> pTerms `opt` []) <* pDot
 
 pTerm, pCon, pVar, pFun :: Parser Term
 pTerm  =  pCon  <|>  pVar <|> pFun
-pCon   =  Con   <$>  pNatural <* pSpaces
-pVar   =  Var   <$>  pList1 pUpper <* pSpaces
-pFun   =  Fun   <$>  (pIdentifier <* pSpaces) <*> (pParens pTerms `opt` [])
+pCon   =  Con   <$>  pNatural
+pVar   =  Var   <$>  lexeme (pList1 pUpper)
+pFun   =  Fun   <$>  pIdentifier  <*> (pParens pTerms `opt` [])
 
 pTerms :: Parser [Term]
-pTerms = pListSep pComma (pSpaces *> pTerm <* pSpaces)
+pTerms = pListSep pComma  pTerm 
 
 startParse :: (ListLike s b, Show b) => P (Str b s LineColPos) a -> s -> (a, [Error LineColPos])
 startParse p inp = parse ((,) <$> p <*> pEnd) 
                  $ createStr (LineColPos 0 0 0) inp
 
 pIdentifier :: Parser String
-pIdentifier = (:) <$> pLower <*> pList (pLower <|> pUpper <|> pDigit)
-                             <* pSpaces
+pIdentifier = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
 
