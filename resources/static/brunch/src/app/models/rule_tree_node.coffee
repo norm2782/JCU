@@ -10,7 +10,6 @@ class exports.RuleTreeNode extends Backbone.Model
     @get('rule')?
 
   addRule: ->
-    console.log "RuleTreeNode.addRule()"
     @get('childRules').add (new RuleTreeNode())
     @change()
 

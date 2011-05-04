@@ -29,9 +29,12 @@ class exports.RulesTreeNodeView extends Backbone.View
     @$(@el).remove()
 
   render: =>
-    console.log "RulesTreeNodeView.render()"
+    newNode = (e) ->
+      model = e.data
+      model.addRule()
+
     btn = $('<input type="button" value="+" />')
-    btn.click @model, @newNode
+    btn.click @model, newNode
 
     @$(@el).html btn
 
@@ -59,8 +62,3 @@ class exports.RulesTreeNodeView extends Backbone.View
 
   updateModel: ->
     @model.set {rule: @$(@el).find("input[type='text']").val()}
-
-  newNode: (e) ->
-    console.log "RulesTreeNodeView.newNode()"
-    model = e.data
-    model.addRule()

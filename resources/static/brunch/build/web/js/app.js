@@ -10644,7 +10644,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.get('rule') != null;
     };
     RuleTreeNode.prototype.addRule = function() {
-      console.log("RuleTreeNode.addRule()");
       this.get('childRules').add(new RuleTreeNode());
       return this.change();
     };
@@ -11010,10 +11009,14 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.$(this.el).remove();
     };
     RulesTreeNodeView.prototype.render = function() {
-      var btn;
-      console.log("RulesTreeNodeView.render()");
+      var btn, newNode;
+      newNode = function(e) {
+        var model;
+        model = e.data;
+        return model.addRule();
+      };
       btn = $('<input type="button" value="+" />');
-      btn.click(this.model, this.newNode);
+      btn.click(this.model, newNode);
       this.$(this.el).html(btn);
       this.$(this.el).append(rulesTreeItemTemplate({
         content: this.model.toJSON()
@@ -11048,12 +11051,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         rule: this.$(this.el).find("input[type='text']").val()
       });
     };
-    RulesTreeNodeView.prototype.newNode = function(e) {
-      var model;
-      console.log("RulesTreeNodeView.newNode()");
-      model = e.data;
-      return model.addRule();
-    };
     return RulesTreeNodeView;
   })();
 }).call(this);
@@ -11084,7 +11081,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       view = new RulesTreeNodeView({
         model: this.model.get('root')
       });
-      console.log("RulesTreeView.render()");
       return this.$(this.el).html(view.render().el);
     };
     return RulesTreeView;

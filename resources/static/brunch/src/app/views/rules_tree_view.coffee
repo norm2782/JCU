@@ -11,5 +11,4 @@ class exports.RulesTreeView extends Backbone.View
 
   render: ->
     view = new RulesTreeNodeView model: @model.get('root')
-    console.log "RulesTreeView.render()"
     @$(@el).html view.render().el
