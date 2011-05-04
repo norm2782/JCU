@@ -7,7 +7,7 @@ app.styles = {}
 app.templates = {}
 
 RulesList = require('collections/rules_list_collection').RulesList
-RulesTree = require('collections/rules_tree_collection').RulesTree
+RuleTree = require('models/rule_tree').RuleTree
 MainController = require('controllers/main_controller').MainController
 HomeView = require('views/home_view').HomeView
 RulesListView = require('views/rules_list_view').RulesListView
@@ -17,7 +17,6 @@ RulesTreeView = require('views/rules_tree_view').RulesTreeView
 $(document).ready ->
   app.initialize = ->
     app.collections.rulesList = new RulesList()
-    app.collections.rulesTree = new RulesTree()
 
     # _.and :: [Bool] -> Bool
     _.mixin {and: (xs) -> _.all xs, _.identity}
@@ -26,9 +25,13 @@ $(document).ready ->
     _.mixin {or:  (xs) -> _.any xs, _.identity}
 
     app.controllers.main = new MainController()
+
+    app.models.tree = new RuleTree()
+
     app.views.home = new HomeView()
     app.views.rulesList = new RulesListView()
-    app.views.rulesTree = new RulesTreeView()
+    app.views.rulesTree = new RulesTreeView({model: app.models.tree})
+
     Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
   app.initialize()
   Backbone.history.start()

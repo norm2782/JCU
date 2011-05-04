@@ -1,22 +1,19 @@
 <div class="yui3-g">
   <div class="yui3-u-2-3">
-    <div class="content" id="rules-tree-div">
+    <div class="content">
       <h2>Derivation Tree</h2>
       <div id="rules-tree-div"><!-- TREE GOES HERE --></div>
-      <input type="button" id="btnAdd"   value="Add" />
       <input type="button" id="btnCheck" value="Check" />
-      <input type="button" id="btnHint"  value="Hint" />
     </div>
   </div>
 
   <div class="yui3-u-1-3">
     <div class="content">
       <h2>Stored Rules</h2>
-      <div id="rules-list-div">
-        <!-- LIST GOES HERE -->
-      </div>
+      <div id="rules-list-div"><!-- LIST GOES HERE --></div>
       <div id="divListAdd">
-        <input type="text" id="txtAddRule" /> <input type="button" value="Add" id="btnAddRule" />
+        <input type="text" id="txtAddRule" />
+        <input type="button" value="Add" id="btnAddRule" />
       </div>
     </div>
   </div>
