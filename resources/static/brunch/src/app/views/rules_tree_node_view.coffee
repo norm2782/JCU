@@ -4,6 +4,7 @@ RulesTreeNodeView = require('views/rules_tree_node_view').RulesTreeNodeView
 class exports.RulesTreeNodeView extends Backbone.View
 
   tagName: "li"
+  tmpUl: null
 
   events:
     "click .btnDeleteTree"      : "deleteItem"
@@ -47,12 +48,15 @@ class exports.RulesTreeNodeView extends Backbone.View
           elem.trigger('change')
       }
 
+    @tmpUl = $('<ul></ul>')
     @model.get('childRules').each @renderNode
+    @$(@el).append @tmpUl
+    @tmpUl = null
     @
 
   renderNode: (node) =>
     view = new RulesTreeNodeView model: node
-    @$(@el).append view.render().el
+    @tmpUl.append view.render().el
 
   remove: ->
     @$(@el).remove()
