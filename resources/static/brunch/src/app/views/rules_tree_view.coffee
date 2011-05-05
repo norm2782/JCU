@@ -4,6 +4,7 @@ class exports.RulesTreeView extends Backbone.View
 
   id: 'rules-tree-view'
   tagName: 'ul'
+  className: 'tree'
 
   initialize: ->
     _.bindAll(this, "render")
