@@ -40,7 +40,7 @@ class exports.RulesTreeNodeView extends Backbone.View
     @$(@el).html btn
 
     @$(@el).append rulesTreeItemTemplate content: @model.toJSON()
-    @$(@el).droppable {
+    @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
           elem = $(this).find("input[type='text']")
