@@ -267,14 +267,6 @@
       return this;
     },
 
-    checkResponse : function(resp) {
-      var ty = typeof(resp);
-      if (ty && ty != "object") {
-        throw 'Invalid response received from server. Expected an object, but received a ' + ty;
-      }
-      return resp;
-    },
-
     // Fetch the model from the server. If the server's representation of the
     // model differs from its current attributes, they will be overriden,
     // triggering a `"change"` event.
@@ -283,7 +275,7 @@
       var model = this;
       var success = options.success;
       options.success = function(resp, status, xhr) {
-        if (!model.set(model.checkResponse(model.parse(resp, xhr), options))) return false;
+        if (!model.set(model.parse(resp, xhr), options)) return false;
         if (success) success(model, resp);
       };
       options.error = wrapError(options.error, model, options);
@@ -299,7 +291,7 @@
       var model = this;
       var success = options.success;
       options.success = function(resp, status, xhr) {
-        if (!model.set(model.checkResponse(model.parse(resp, xhr), options))) return false;
+        if (!model.set(model.parse(resp, xhr), options)) return false;
         if (success) success(model, resp, xhr);
       };
       options.error = wrapError(options.error, model, options);
@@ -994,7 +986,6 @@
     // Default JSON-request options.
     var params = _.extend({
       type:         type,
-      contentType:  'application/json',
       dataType:     'json',
       processData:  false
     }, options);
@@ -1006,6 +997,7 @@
 
     // Ensure that we have the appropriate request data.
     if (!params.data && model && (method == 'create' || method == 'update')) {
+      params.contentType = 'application/json';
       params.data = JSON.stringify(model.toJSON());
     }
 
@@ -1106,3 +1098,4 @@
   };
 
 }).call(this);
+
