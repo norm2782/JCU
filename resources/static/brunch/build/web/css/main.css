@@ -17,7 +17,7 @@
 #txtAddRule{width:250px}
 #divListAdd{margin-bottom:20px}
 #uulogo,#faccompsci{vertical-align:middle}
-ul#tree,ul#tree ul{list-style-type:none;background:url("vline.png") repeat-y;margin:0;padding:0}
-ul#tree ul{margin-left:10px}
-ul#tree li{margin:0;padding:0 12px;line-height:20px;background:url("node.png") no-repeat;color:#369;font-weight:bold}
-ul#tree li:last-child{background:#fff url("lastnode.png") no-repeat}
+ul.tree,ul.tree ul{list-style-type:none;background:url("/img/vline.png") repeat-y;margin:0;padding:0}
+ul.tree ul{margin-left:10px}
+ul.tree li{margin:0;padding:0 12px;line-height:20px;background:url("/img/node.png") no-repeat;color:#369;font-weight:bold}
+ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}

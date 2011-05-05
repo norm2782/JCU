@@ -11572,6 +11572,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     __extends(RulesTreeView, Backbone.View);
     RulesTreeView.prototype.id = 'rules-tree-view';
     RulesTreeView.prototype.tagName = 'ul';
+    RulesTreeView.prototype.className = 'tree';
     RulesTreeView.prototype.initialize = function() {
       _.bindAll(this, "render");
       return this.model.bind("change", this.render);
