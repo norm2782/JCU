@@ -152,7 +152,7 @@ addStoredRuleH = do-- TODO restrict forbiddenH $ do
         (writeLBS "")
 
 checkRulesH :: Application ()
-checkRulesH = do-- TODO restrict forbiddenH $ doi
+checkRulesH = do-- TODO restrict forbiddenH $ do
   rules <- mkRules =<< getRequestBody
   {- let (t :<-: _:_)  = rules-}
   {- let solutions     = solve testStoredRules [t] [] 0-}

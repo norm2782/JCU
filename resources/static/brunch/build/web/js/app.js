@@ -11255,9 +11255,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<input type="text" name="tree_rules" class="droppable" value="'));
+      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_rules" class="droppable" value="'));
       _print(this.content.rule);
-      _print(_safe('" />\n<input type="button" value="X" class="btnDeleteTree" />\n'));
+      _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
     }).call(this);
     
     return __out.join('');
@@ -11518,7 +11518,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.$(this.el).append(rulesTreeItemTemplate({
         content: this.model.toJSON()
       }));
-      this.$(this.el).droppable({
+      this.$(this.el).find(".dropzone").droppable({
         hoverClass: 'dropHover',
         drop: function(event, ui) {
           var elem;
