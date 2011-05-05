@@ -30,7 +30,12 @@ class exports.RulesTreeNodeView extends Backbone.View
 
   render: =>
     console.log "RulesTreeNodeView.render()"
-    @$(@el).html rulesTreeItemTemplate content: @model.toJSON()
+    btn = $('<input type="button" value="+" />')
+    btn.click @model, @newNode
+
+    @$(@el).html btn
+
+    @$(@el).append rulesTreeItemTemplate content: @model.toJSON()
     @$(@el).droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
@@ -40,10 +45,6 @@ class exports.RulesTreeNodeView extends Backbone.View
       }
 
     @model.get('childRules').each @renderNode
-    btn = $('<input type="button" value="New Field" />')
-    btn.click @model, @newNode
-
-    @$(@el).append btn
     @
 
   renderNode: (node) =>

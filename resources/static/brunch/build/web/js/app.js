@@ -11012,7 +11012,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     RulesTreeNodeView.prototype.render = function() {
       var btn;
       console.log("RulesTreeNodeView.render()");
-      this.$(this.el).html(rulesTreeItemTemplate({
+      btn = $('<input type="button" value="+" />');
+      btn.click(this.model, this.newNode);
+      this.$(this.el).html(btn);
+      this.$(this.el).append(rulesTreeItemTemplate({
         content: this.model.toJSON()
       }));
       this.$(this.el).droppable({
@@ -11025,9 +11028,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
       });
       this.model.get('childRules').each(this.renderNode);
-      btn = $('<input type="button" value="New Field" />');
-      btn.click(this.model, this.newNode);
-      this.$(this.el).append(btn);
       return this;
     };
     RulesTreeNodeView.prototype.renderNode = function(node) {
