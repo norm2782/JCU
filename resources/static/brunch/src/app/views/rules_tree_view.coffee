@@ -1,26 +1,15 @@
-RulesTreeItemView = require('views/rules_tree_item_view').RulesTreeItemView
+RulesTreeNodeView = require('views/rules_tree_node_view').RulesTreeNodeView
 
 class exports.RulesTreeView extends Backbone.View
 
   id: 'rules-tree-view'
   tagName: 'ul'
-  isTerm: true
 
   initialize: ->
-    _.bindAll(@, 'addOne', 'addAll', 'render')
-    app.collections.rulesTree.bind 'add', @addOne
-    app.collections.rulesTree.bind 'refresh', @addAll
-    app.collections.rulesTree.bind 'all', @renderList
-    app.collections.rulesTree.fetch()
+    _.bindAll(this, "render")
+    @model.bind("change", @render)
 
-  addOne: (rule) =>
-    view = new RulesTreeItemView model: rule, isTerm: @isTerm
-    this.isTerm = !this.isTerm
-    @$(@el).append view.render().el
-
-  addAll: =>
-    app.collections.rulesTree.each @addOne
-
-  renderList: =>
-    app.views.rulesTree.render()
-
+  render: ->
+    view = new RulesTreeNodeView model: @model.get('root')
+    console.log "RulesTreeView.render()"
+    @$(@el).html view.render().el

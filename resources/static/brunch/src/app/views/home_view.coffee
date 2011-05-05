@@ -7,12 +7,11 @@ class exports.HomeView extends Backbone.View
   events:
     'click #btnAdd'     : 'addTreeRule'
     'click #btnCheck'   : 'checkRules'
-    'click #btnHint'    : 'getHint'
     'click #btnAddRule' : 'addStoreRule'
 
   render: ->
     @$(@.el).html homeTemplate
-    @$('#rules-tree-div').append app.views.rulesTree.render().el
+    @$('#rules-tree-div').append app.views.rulesTree.render()
     @$('#rules-list-div').append app.views.rulesList.render().el
     @
 
@@ -71,6 +70,3 @@ class exports.HomeView extends Backbone.View
         dataType: 'json'
         data:     JSON.stringify app.collections.rulesTree
         success:  callback
-
-  getHint: -> alert "getHint"
-
