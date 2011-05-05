@@ -56,11 +56,7 @@ class exports.HomeView extends Backbone.View
                $(this).css "background-color", "#faa"
         )
 
-    invalids = app.collections.rulesTree.any(
-      (rule) -> !rule? || !rule.validate
-    )
-
-    if invalids
+    if false # TODO: app.models.tree.allValid()
       alert "All fields must contain a valid expression before you can check them for correctness."
     else
       $.ajax
@@ -68,5 +64,5 @@ class exports.HomeView extends Backbone.View
         type: 'POST'
         contentType: 'application/json'
         dataType: 'json'
-        data:     JSON.stringify app.collections.rulesTree
+        data:     JSON.stringify app.models.tree.get('root')
         success:  callback

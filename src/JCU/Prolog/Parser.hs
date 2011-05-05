@@ -25,7 +25,7 @@ pTerms = pListSep pComma pTerm
 
 startParse :: (ListLike s b, Show b) => P (Str b s LineColPos) a -> s
                                      -> (a, [Error LineColPos])
-startParse p inp = parse ((,) <$> p <*> pEnd) 
+startParse p inp = parse ((,) <$> p <*> pEnd)
                  $ createStr (LineColPos 0 0 0) inp
 
 pIdentifier :: Parser String
