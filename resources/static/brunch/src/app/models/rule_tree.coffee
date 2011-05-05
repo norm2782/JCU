@@ -8,5 +8,5 @@ class exports.RuleTree extends Backbone.Model
   initialize: ->
     @set {root: new RuleTreeNode()}
 
-  save: ->
-
+  allValid: ->
+    @get('root').isValid()

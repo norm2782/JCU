@@ -152,13 +152,28 @@ addStoredRuleH = do-- TODO restrict forbiddenH $ do
         (writeLBS "")
 
 checkRulesH :: Application ()
-checkRulesH = do-- TODO restrict forbiddenH $ do
+checkRulesH = do-- TODO restrict forbiddenH $ doi
   rules <- mkRules =<< getRequestBody
-  let (t :<-: _:_)  = rules
-  let solutions     = solve testStoredRules [t] [] 0
-  let checked       = checkRules rules solutions
+  {- let (t :<-: _:_)  = rules-}
+  {- let solutions     = solve testStoredRules [t] [] 0-}
+  let checked       = True -- TODO: checkRules rules solutions
   trace ("checkRulesH: " ++ show rules)
         (writeLBS $ encode checked)
+
+mkRules :: L.ByteString -> Application RuleTree
+mkRules raw =
+  case L.parse json raw of
+    (Done _ r)  ->
+      case fromJSON r :: AE.Result RuleTree of
+        (Success a)  -> return a
+        _            -> do500
+    _           -> do500
+  where do500 = do
+          modifyResponse $ setResponseStatus 500 "Internal server error"
+          writeBS "500 internal server error"
+          r <- getResponse
+          finishWith r
+
 
 checkRules :: [Rule] -> [EnvTrace] -> [Bool]
 checkRules rules = foldr (comp . checkRules') []
@@ -180,20 +195,6 @@ cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
          "traceg: " ++ show g ++ "\n" ++
          "traceu: " ++ show u ++ "\n")
         unify (t, g) (Just env) /= Nothing || r == u
-
-mkRules :: L.ByteString -> Application [Rule]
-mkRules raw =
-  case L.parse json raw of
-    (Done _ r)  ->
-      case fromJSON r :: AE.Result [Rule] of
-        (Success a)  -> return a
-        _            -> do500
-    _           -> do500
-  where do500 = do
-          modifyResponse $ setResponseStatus 500 "Internal server error"
-          writeBS "500 internal server error"
-          r <- getResponse
-          finishWith r
 
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do

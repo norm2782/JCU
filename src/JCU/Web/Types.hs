@@ -19,17 +19,27 @@ data User = User  {  authUser     :: AuthUser
                   ,  inuseRules   :: [ByteString] }
           deriving Show
 
-instance ToJSON Rule where
-  toJSON t = let  txt = show t
-             in   object  [  "rule"  .= txt
-                          ,  "id"    .= txt]
+data RuleTree = RuleTree Rule [RuleTree]
+              deriving Show
 
+instance ToJSON Rule where
+  toJSON t = object [ "rule" .= show t ]
+
+-- TODO: Do we still need this?
 instance FromJSON Rule where
-  parseJSON (Object o)  = mkRule <$> (o .: "id" <|> pure "") -- id is optional
-                                 <*> o .: "rule"
+  parseJSON (Object o)  = mkRule <$> o .: "rule"
   parseJSON _           = mzero
 
+instance FromJSON RuleTree where
+  parseJSON (Object o) = mkRuleTree <$> o .: "rule" <*> o .: "childRules"
+
+mkRuleTree :: String -> Value -> RuleTree
+mkRuleTree r rts = RuleTree (mkRule r) mkRuleTrees
+  where mkRuleTrees = case fromJSON rts :: Result [RuleTree] of
+                        (Success a) -> a
+                        _           -> error "failed!"
+
 -- TODO: Something with errors
-mkRule :: String -> String -> Rule
-mkRule _ r = a
+mkRule :: String -> Rule
+mkRule r = a
   where (a, e) = startParse pRule r

@@ -11105,7 +11105,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         root: new RuleTreeNode()
       });
     };
-    RuleTree.prototype.save = function() {};
+    RuleTree.prototype.allValid = function() {
+      return this.get('root').isValid();
+    };
     return RuleTree;
   })();
 }).call(this);
@@ -11134,6 +11136,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     RuleTreeNode.prototype.addRule = function() {
       this.get('childRules').add(new RuleTreeNode());
       return this.change();
+    };
+    RuleTreeNode.prototype.isValid = function() {
+      return true;
+      if (!this.hasRule()) {
+        return false;
+      }
+      return this.get('rule').validate() && this.get('childRules').all(function(x) {
+        return x.isValid();
+      });
     };
     RuleTreeNode.prototype.clear = function() {
       return this.destroy();
@@ -11320,7 +11331,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return txtAddRule.css("background-color", color);
     };
     HomeView.prototype.checkRules = function() {
-      var callback, invalids;
+      var callback;
       callback = function(data) {
         var flds;
         flds = $('#rules-tree-div input[type="text"]');
@@ -11339,10 +11350,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           });
         }
       };
-      invalids = app.collections.rulesTree.any(function(rule) {
-        return !(rule != null) || !rule.validate;
-      });
-      if (invalids) {
+      if (false) {
         return alert("All fields must contain a valid expression before you can check them for correctness.");
       } else {
         return $.ajax({
@@ -11350,7 +11358,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           type: 'POST',
           contentType: 'application/json',
           dataType: 'json',
-          data: JSON.stringify(app.collections.rulesTree),
+          data: JSON.stringify(app.models.tree.get('root')),
           success: callback
         });
       }
