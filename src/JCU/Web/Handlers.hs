@@ -153,18 +153,20 @@ addStoredRuleH = do-- TODO restrict forbiddenH $ do
 
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
-  rules <- mkRules =<< getRequestBody
+  r <- getRequestBody
+  trace ("checkRulesH1: " ++ (show r)) (return ())
+  rules <- mkRules r -- =<< getRequestBody
   {- let (t :<-: _:_)  = rules-}
   {- let solutions     = solve testStoredRules [t] [] 0-}
   let checked       = True -- TODO: checkRules rules solutions
   trace ("checkRulesH: " ++ show rules)
         (writeLBS $ encode checked)
 
-mkRules :: L.ByteString -> Application RuleTree
+mkRules :: L.ByteString -> Application Proof
 mkRules raw =
   case L.parse json raw of
     (Done _ r)  ->
-      case fromJSON r :: AE.Result RuleTree of
+      case fromJSON r :: AE.Result Proof of
         (Success a)  -> return a
         _            -> do500
     _           -> do500
@@ -199,7 +201,8 @@ cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  writeLBS $ encode testInUseRules
+  trace ("readInUseRulesH: " ++ (show $ encode voorBeaAmaProof))
+        (writeLBS $ encode voorBeaAmaProof)
 
 updateInUseRulesH :: Application ()
 updateInUseRulesH = do-- TODO restrict forbiddenH $ do
@@ -229,13 +232,24 @@ testStoredRules =  [ Fun "ma"    [cnst "mien", cnst "juul"] :<-: []
                                                                , Fun "voor"  [Var "Z", Var "Y"] ] ]
 
 testInUseRules :: [Rule]
-testInUseRules = [ Fun "ouder" [Var "X",    cnst "ama"] :<-: []
-                 , Fun "ouder" [Var "X",    Var "Y"]   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
+testInUseRules = [ Fun "voor"  [cnst "bea",    cnst "ama"] :<-: []
+                 , Fun "" []   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
                  , Fun "pa"    [Var "X"    , cnst "ama"] :<-: []
                  , Fun "pa"    [cnst "alex", cnst "ama"] :<-: []
                  {- , Fun "alex"  []                      :<-: []-}
                  ]
 
+voorBeaAmaProof :: Proof
+voorBeaAmaProof = Proof (Fun "voor" [cnst "bea",  cnst "ama"])
+                    [ Proof (Fun "ouder" [cnst "bea",  cnst "alex"]) [
+                        Proof (Fun "ma" [cnst "bea",  cnst "alex"]) []
+                      ]
+                    , Proof (Fun "voor"  [cnst "alex", cnst "ama"]) [
+                        Proof (Fun "ouder" [cnst "alex", cnst "ama"]) [
+                          Proof (Fun "pa" [cnst "alex", cnst "ama"]) []
+                        ]
+                      ]
+                    ]
 
 {-
 alex

@@ -7,11 +7,11 @@ app.styles = {}
 app.templates = {}
 
 RulesList = require('collections/rules_list_collection').RulesList
-RuleTree = require('models/rule_tree').RuleTree
+ProofTree = require('models/proof_tree').ProofTree
 MainController = require('controllers/main_controller').MainController
 HomeView = require('views/home_view').HomeView
 RulesListView = require('views/rules_list_view').RulesListView
-RulesTreeView = require('views/rules_tree_view').RulesTreeView
+ProofTreeView = require('views/proof_tree_view').ProofTreeView
 
 # app bootstrapping on document ready
 $(document).ready ->
@@ -26,11 +26,11 @@ $(document).ready ->
 
     app.controllers.main = new MainController()
 
-    app.models.tree = new RuleTree()
+    app.models.tree = new ProofTree()
 
     app.views.home = new HomeView()
     app.views.rulesList = new RulesListView()
-    app.views.rulesTree = new RulesTreeView({model: app.models.tree})
+    app.views.proofTree = new ProofTreeView({model: app.models.tree})
 
     Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
   app.initialize()

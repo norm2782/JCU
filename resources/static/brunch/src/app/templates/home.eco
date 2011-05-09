@@ -2,7 +2,7 @@
   <div class="yui3-u-2-3">
     <div class="content">
       <h2>Derivation Tree</h2>
-      <div id="rules-tree-div"><!-- TREE GOES HERE --></div>
+      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
       <input type="button" id="btnCheck" value="Check" />
     </div>
   </div>

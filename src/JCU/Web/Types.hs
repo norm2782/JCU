@@ -8,7 +8,7 @@ import            Control.Monad
 import            Data.Aeson
 import            Data.ByteString (ByteString)
 import            Snap.Auth (AuthUser)
-import            JCU.Prolog.Types (Rule(..))
+import            JCU.Prolog.Types (Rule(..), Term(..))
 import            JCU.Prolog.Parser
 
 
@@ -19,27 +19,31 @@ data User = User  {  authUser     :: AuthUser
                   ,  inuseRules   :: [ByteString] }
           deriving Show
 
-data RuleTree = RuleTree Rule [RuleTree]
-              deriving Show
+data Proof = Proof Term [Proof]
+           deriving Show
 
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]
 
 -- TODO: Do we still need this?
-instance FromJSON Rule where
-  parseJSON (Object o)  = mkRule <$> o .: "rule"
-  parseJSON _           = mzero
+{- instance FromJSON Rule where-}
+{-   parseJSON (Object o)  = mkRule <$> o .: "rule"-}
+{-   parseJSON _           = mzero-}
 
-instance FromJSON RuleTree where
-  parseJSON (Object o) = mkRuleTree <$> o .: "rule" <*> o .: "childRules"
+instance FromJSON Proof where
+  parseJSON (Object o) = mkProofTree <$> o .: "term" <*> o .: "childTerms"
 
-mkRuleTree :: String -> Value -> RuleTree
-mkRuleTree r rts = RuleTree (mkRule r) mkRuleTrees
-  where mkRuleTrees = case fromJSON rts :: Result [RuleTree] of
-                        (Success a) -> a
-                        _           -> error "failed!"
+instance ToJSON Proof where
+  toJSON (Proof t ps) = object  [  "term"        .= show t
+                                ,  "childTerms"  .= toJSON ps ]
+
+mkProofTree :: String -> Value -> Proof
+mkProofTree r rts = Proof (mkTerm r) mkProofTrees
+  where mkProofTrees = case fromJSON rts :: Result [Proof] of
+                         (Success a)  -> a
+                         _            -> error "failed!"
 
 -- TODO: Something with errors
-mkRule :: String -> Rule
-mkRule r = a
-  where (a, e) = startParse pRule r
+mkTerm :: String -> Term
+mkTerm r = a
+  where (a, e) = startParse pTerm r
