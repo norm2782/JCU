@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module JCU.Prolog.Types where
+module JCU.Types where
 
-import Data.List (intercalate)
+import            Data.ByteString (ByteString)
+import            Data.List (intercalate)
+import            Data.Tree (Tree(..))
+import            Snap.Auth (AuthUser)
 
 type Ident  =  String
 
@@ -20,8 +23,7 @@ data Trace  =  Trace  { goal   :: Term
                       , terms  :: [Term] }
             deriving Eq
 
-type Env       = [(Ident, Term)]
-type EnvTrace  = (Env, [Trace])
+type Env    = [(Ident, Term)]
 
 instance Show Term where
   show (Con  i)     = show i
@@ -54,3 +56,12 @@ instance Taggable Term where
 instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
 
+-- TODO: Get prolog field out of user? Though it can't hurt too much;
+-- there's not a lot of data we want to store anyway.
+data User = User  {  authUser     :: AuthUser
+                  ,  storedRules  :: [ByteString]
+                  ,  inuseRules   :: [ByteString] }
+          deriving Show
+
+type Proof   = Tree Term
+type PCheck  = Tree Bool

@@ -3,7 +3,8 @@ class exports.ProofTreeNode extends Backbone.Model
   # term :: Term
   # childTerms :: BackBone.Collection
 
-  initialize: (attrs) ->
+  initialize: ->
+    # console.log attrs
     @set {childTerms: new Backbone.Collection()}
 
   hasTerm: ->

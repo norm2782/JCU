@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 
-module JCU.Web.Handlers where
+module JCU.Handlers where
 
 import            Application (Application)
 import            Data.Aeson (encode, fromJSON, json)
@@ -12,9 +12,9 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (length)
 import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
-import            JCU.Prolog.Types
-import            JCU.Prolog.Prolog (solve, unify)
-import            JCU.Web.Types
+import            JCU.Parser
+import            JCU.Prolog
+import            JCU.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB ((=:), Document, MonadMongoDB)
@@ -176,27 +176,27 @@ mkRules raw =
           r <- getResponse
           finishWith r
 
+-- TODO: Still needed?
+{- checkRules :: [Rule] -> [Env] -> [Bool]-}
+{- checkRules rules = foldr (comp . checkRules') []-}
+{-   where checkRules' (env, trcs) = [ any (cmpRuleTrace env r) trcs-}
+{-                                   | r <- rules ]-}
 
-checkRules :: [Rule] -> [EnvTrace] -> [Bool]
-checkRules rules = foldr (comp . checkRules') []
-  where checkRules' (env, trcs) = [ any (cmpRuleTrace env r) trcs
-                                  | r <- rules ]
+{- comp :: [Bool] -> [Bool] -> [Bool]-}
+{- comp lst highest | l lst > l highest = lst-}
+{-                  | otherwise         = highest-}
+{-   where l = DL.length . takeWhile (== True)-}
 
-comp :: [Bool] -> [Bool] -> [Bool]
-comp lst highest | l lst > l highest = lst
-                 | otherwise         = highest
-  where l = DL.length . takeWhile (== True)
-
--- TODO: Is this right? Also, do we need r == u?
--- TODO: Take the conclusion into account
--- TODO: Send data from client from text fields, not from collection...
-cmpRuleTrace :: Env -> Rule -> Trace -> Bool
-cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =
-  trace ("env: " ++ show env ++ "\n" ++
-         "rterm: " ++ show r ++ "\n" ++
-         "traceg: " ++ show g ++ "\n" ++
-         "traceu: " ++ show u ++ "\n")
-        unify (t, g) (Just env) /= Nothing || r == u
+{- -- TODO: Is this right? Also, do we need r == u?-}
+{- -- TODO: Take the conclusion into account-}
+{- -- TODO: Send data from client from text fields, not from collection...-}
+{- cmpRuleTrace :: Env -> Rule -> Trace -> Bool-}
+{- cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =-}
+{-   trace ("env: " ++ show env ++ "\n" ++-}
+{-          "rterm: " ++ show r ++ "\n" ++-}
+{-          "traceg: " ++ show g ++ "\n" ++-}
+{-          "traceu: " ++ show u ++ "\n")-}
+{-         unify (t, g) (Just env) /= Nothing || r == u-}
 
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
@@ -211,45 +211,6 @@ updateInUseRulesH = do-- TODO restrict forbiddenH $ do
   trace ("updateInUseRulesH: " ++ show dmods) (return ())
   return ()
 
-cnst s = Fun s []
-testStoredRules :: [Rule]
-testStoredRules =  [ Fun "ma"    [cnst "mien", cnst "juul"] :<-: []
-                   , Fun "ma"    [cnst "juul", cnst "bea"]  :<-: []
-                   , Fun "ma"    [cnst "bea" , cnst "alex"] :<-: []
-                   , Fun "ma"    [cnst "bea" , cnst "cons"] :<-: []
-                   , Fun "ma"    [cnst "max" , cnst "ale"]  :<-: []
-                   , Fun "ma"    [cnst "max" , cnst "ama"]  :<-: []
-                   , Fun "ma"    [cnst "max" , cnst "ari"]  :<-: []
-                   , Fun "oma"   [Var  "X"   ,  Var "Z"]    :<-: [ Fun "ma"    [Var "X", Var "Y"]
-                                                               , Fun "ouder" [Var "Y", Var "Z"] ]
-                   , Fun "pa"    [cnst "alex", cnst "ale"]  :<-: []
-                   , Fun "pa"    [cnst "alex", cnst "ama"]  :<-: []
-                   , Fun "pa"    [cnst "alex", cnst "ari"]  :<-: []
-                   , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "pa"    [Var "X", Var "Y"] ]
-                   , Fun "ouder" [Var "X",    Var "Y"]    :<-: [ Fun "ma"    [Var "X", Var "Y"] ]
-                   , Fun "voor"  [Var "X",    Var "Y"]    :<-: [ Fun "ouder" [Var "X", Var "Y"] ]
-                   , Fun "voor"  [Var "X",    Var "Y"]    :<-: [ Fun "ouder" [Var "X", Var "Z"]
-                                                               , Fun "voor"  [Var "Z", Var "Y"] ] ]
-
-testInUseRules :: [Rule]
-testInUseRules = [ Fun "voor"  [cnst "bea",    cnst "ama"] :<-: []
-                 , Fun "" []   :<-: [ Fun "pa" [Var "X", Var "Y"] ]
-                 , Fun "pa"    [Var "X"    , cnst "ama"] :<-: []
-                 , Fun "pa"    [cnst "alex", cnst "ama"] :<-: []
-                 {- , Fun "alex"  []                      :<-: []-}
-                 ]
-
-voorBeaAmaProof :: Proof
-voorBeaAmaProof = Proof (Fun "voor" [cnst "bea",  cnst "ama"])
-                    [ Proof (Fun "ouder" [cnst "bea",  cnst "alex"]) [
-                        Proof (Fun "ma" [cnst "bea",  cnst "alex"]) []
-                      ]
-                    , Proof (Fun "voor"  [cnst "alex", cnst "ama"]) [
-                        Proof (Fun "ouder" [cnst "alex", cnst "ama"]) [
-                          Proof (Fun "pa" [cnst "alex", cnst "ama"]) []
-                        ]
-                      ]
-                    ]
 
 {-
 alex

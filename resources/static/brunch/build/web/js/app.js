@@ -11069,11 +11069,36 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTree.prototype.url = function() {
       return '/rules/inuse';
     };
-    ProofTree.prototype.initialize = function() {
-      this.set({
-        root: new ProofTreeNode()
+    ProofTree.prototype.mkTree = function(raw, t) {
+      var cs, ct, node, _i, _len, _ref;
+      node = new ProofTreeNode();
+      node.set({
+        term: raw.term
       });
-      return this.fetch();
+      cs = new Backbone.Collection(cs);
+      _ref = raw.childTerms;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ct = _ref[_i];
+        cs.add(t.mkTree(ct, t));
+      }
+      node.set({
+        childTerms: cs
+      });
+      return node;
+    };
+    ProofTree.prototype.initialize = function() {
+      var model, options;
+      model = this;
+      options = {};
+      options.success = function(resp, status, xhr) {
+        var r;
+        r = model.mkTree(resp, model);
+        console.log(r);
+        return model.set({
+          root: r
+        });
+      };
+      return Backbone.sync.call(this, 'read', this, options);
     };
     ProofTree.prototype.allValid = function() {
       return this.get('root').isValid();
@@ -11095,7 +11120,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       ProofTreeNode.__super__.constructor.apply(this, arguments);
     }
     __extends(ProofTreeNode, Backbone.Model);
-    ProofTreeNode.prototype.initialize = function(attrs) {
+    ProofTreeNode.prototype.initialize = function() {
       return this.set({
         childTerms: new Backbone.Collection()
       });
@@ -11205,7 +11230,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Derivation Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');

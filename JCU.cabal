@@ -42,6 +42,7 @@ Executable jcu
     transformers >= 0.2,
     attoparsec >= 0.8.5 && < 0.9,
     ListLike >= 3.1 && < 3.2,
+    containers >= 0.4 && < 0.5,
 
     -- For Snap stuff, until it hits Hackage
     cereal >= 0.3 && < 0.4,
@@ -88,5 +89,4 @@ Library
 
   Build-Depends:	  base >= 4.0 && < 5.0
   Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Prolog.Types, JCU.Prolog.Parser, JCU.Prolog.Prolog,
-                    JCU.Web.Handlers, JCU.Web.Types
+  Exposed-modules:  JCU.Types, JCU.Parser, JCU.Prolog, JCU.Handlers

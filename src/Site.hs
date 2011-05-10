@@ -13,7 +13,7 @@ module Site
 
 import            Application
 import            Control.Applicative
-import            JCU.Web.Handlers
+import            JCU.Handlers
 import            Snap.Extension.Heist
 import            Snap.Util.FileServe
 import            Snap.Types
