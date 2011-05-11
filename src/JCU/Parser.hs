@@ -1,4 +1,7 @@
-{-# LANGUAGE Rank2Types, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module JCU.Parser where
 
@@ -46,13 +49,13 @@ instance ToJSON Proof where
                                ,  "childTerms"  .= toJSON ps ]
 
 mkProofTree :: String -> Value -> Proof
-mkProofTree r rts = Node (mkTerm r) mkProofTrees
+mkProofTree r rts = Node (mkTerms r) mkProofTrees
   where mkProofTrees = case fromJSON rts :: Result [Proof] of
                          (Success a)  -> a
                          _            -> error "failed!"
 
 -- TODO: Something with errors
-mkTerm :: String -> Term
-mkTerm r = a
-  where (a, e) = startParse pTerm r
+mkTerms :: String -> [Term]
+mkTerms r = a
+  where (a, e) = startParse pTerms r
 

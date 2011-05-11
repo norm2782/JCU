@@ -29,16 +29,27 @@ solve rules (t:ts)  e n  =
     ,  sol          <- solve rules (cs ++ ts) r (n+1)
     ]
 
+-- FIXME: This is not right yet. testWrong is marked as correct. 
 checkProof :: [Rule] -> Env -> Int -> Proof -> PCheck
 checkProof rules e n (Node lbl sub) = Node unified children
-  where unified   = (not . null) children
-        children  = case solve rules [lbl] e n of
-                      []       -> []
-                      trEnv:_  -> map (checkProof rules trEnv (n+1)) sub
+  where (unified, children) = case solve rules lbl e n of
+                                []     -> (False,  map mkTr sub)
+                                [[]]   -> (True,   [])
+                                env:_  -> (True,   map (checkProof rules env (n+1)) sub)
 
+mkTr :: Proof -> PCheck
+mkTr (Node _ cs) = Node False (map mkTr cs)
 
+testSimpleRight :: [Env]
+testSimpleRight = solve testStoredRules [(Fun "ma" [cnst "mien", cnst "juul"])] [] 0
+testSimpleWrong :: [Env]
+testSimpleWrong = solve testStoredRules [(Fun "ma" [cnst "miesn", cnst "juul"])] [] 0
+
+testRight ::  PCheck
 testRight = checkProof testStoredRules [] 0 voorBeaAmaProof
+testWrong ::  PCheck
 testWrong = checkProof testStoredRules [] 0 voorBeaAmaWrong
+
 
 {-
 Need to unify ouder(alex, ama). with ouder(X,Y) :- pa(X,Y). somehow.
@@ -54,6 +65,7 @@ When this is working, we can expand the PCheck tree to include whole
 environments which can be passed to the client.
 -}
 
+cnst ::  Ident -> Term
 cnst s = Fun s []
 testStoredRules :: [Rule]
 testStoredRules =  [ Fun "ma"    [cnst "mien", cnst "juul"] :<-: []
@@ -82,25 +94,24 @@ testInUseRules = [ Fun "voor"  [cnst "bea",    cnst "ama"] :<-: []
                  ]
 
 voorBeaAmaProof :: Proof
-voorBeaAmaProof = Node (Fun "voor" [cnst "bea",  cnst "ama"])
-                    [ Node (Fun "ouder" [cnst "bea",  cnst "alex"]) [
-                        Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
-                      ]
-                    , Node (Fun "voor"  [cnst "alex", cnst "ama"]) [
-                        Node (Fun "ouder" [cnst "alex", cnst "ama"]) [
-                          Node (Fun "pa" [cnst "alex", cnst "ama"]) []
+voorBeaAmaProof = Node [Fun "voor" [cnst "bea",  cnst "ama"]]
+                    [ Node [ Fun "ouder" [cnst "bea",  cnst "alex"]
+                           , Fun "voor"  [cnst "alex", cnst "ama"]
+                           ]
+                        [ Node [Fun "ma" [cnst "bea",  cnst "alex"]] []
+                        , Node [Fun "ouder" [cnst "alex", cnst "ama"]]
+                            [ Node [Fun "pa" [cnst "alex", cnst "ama"]] []
+                            ]
                         ]
-                      ]
                     ]
-
 voorBeaAmaWrong :: Proof
-voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])
-                    [ Node (Fun "ouder" [cnst "bea",  cnst "alex"]) [
-                        Node (Fun "pa" [cnst "bea",  cnst "alex"]) []
-                      ]
-                    , Node (Fun "voor"  [cnst "alex", cnst "ama"]) [
-                        Node (Fun "ouder" [cnst "alex", cnst "ama"]) [
-                          Node (Fun "pa" [cnst "alex", cnst "ama"]) []
+voorBeaAmaWrong = Node [Fun "voor" [cnst "bea",  cnst "ama"]]
+                    [ Node [ Fun "ouder" [cnst "bea",  cnst "alex"]
+                           , Fun "voor"  [cnst "alex", cnst "ama"]
+                           ]
+                        [ Node [Fun "ma" [cnst "bea",  cnst "alex"]] []
+                        , Node [Fun "ouder" [cnst "max", cnst "ama"]]
+                            [ Node [Fun "pa" [cnst "alex", cnst "ama"]] []
+                            ]
                         ]
-                      ]
                     ]
