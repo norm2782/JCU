@@ -7,17 +7,23 @@ import            Data.List (intercalate)
 import            Data.Tree (Tree(..))
 import            Snap.Auth (AuthUser)
 
-type Ident  =  String
+data User    =  User  {  authUser     :: AuthUser
+                      ,  storedRules  :: [ByteString]
+                      ,  inuseRules   :: [ByteString] }
+             deriving Show
 
-data Term   =  Con Int
-            |  Var Ident
-            |  Fun Ident [Term]
-            deriving Eq
+data Term    =  Con Int
+             |  Var Ident
+             |  Fun Ident [Term]
+             deriving Eq
 
-data Rule   =  Term   :<-: [Term]
-            deriving Eq
+data Rule    =  Term :<-: [Term]
+             deriving Eq
 
-type Env    = [(Ident, Term)]
+type Ident   =  String
+type Env     =  [(Ident, Term)]
+type Proof   =  Tree [Term]
+type PCheck  =  Tree Bool
 
 instance Show Term where
   show (Con  i)     = show i
@@ -26,8 +32,8 @@ instance Show Term where
   show (Fun  i ts)  = i ++ "(" ++ showCommas ts ++ ")"
 
 instance Show Rule where
-  show (t :<-: []) = show t ++ "."
-  show (t :<-: ts) = show t ++ ":-" ++ showCommas ts ++ "."
+  show (t :<-: [])  = show t ++ "."
+  show (t :<-: ts)  = show t ++ ":-" ++ showCommas ts ++ "."
 
 showCommas :: Show a => [a] -> String
 showCommas l = intercalate ", " (map show l)
@@ -42,12 +48,3 @@ instance Taggable Term where
 
 instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
-
--- there's not a lot of data we want to store anyway.
-data User = User  {  authUser     :: AuthUser
-                  ,  storedRules  :: [ByteString]
-                  ,  inuseRules   :: [ByteString] }
-          deriving Show
-
-type Proof   = Tree [Term]
-type PCheck  = Tree Bool
