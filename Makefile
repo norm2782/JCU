@@ -19,10 +19,4 @@ debug:
 	DEBUG=1 jcu
 
 deps:
-	git clone https://github.com/snapframework/snap-auth.git
-	cd snap-auth
-	cabal install
-	git clone https://github.com/ozataman/snap-extension-mongodb.git
-	cd snap-extension-mongodb
-	cabal install
-	cd ..
+	mkdir deps && cd deps && git clone https://github.com/snapframework/snap-auth.git && cd snap-auth && cabal install && cd .. && git clone https://github.com/ozataman/snap-extension-mongodb.git && cd snap-extension-mongodb && cabal install && cd ../..
