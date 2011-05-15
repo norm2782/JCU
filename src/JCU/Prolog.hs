@@ -76,10 +76,15 @@ work and it is definitely simple.
 -- We might not even need the Env here...
 check :: [Rule] -> Env -> Proof -> Bool
 check _      _  (Node _      [])    = True
-check rules  e  (Node terms  subs)  = any match terms && all (check rules e) subs
+check rules  e  (Node terms  subs)  = any matched terms &&
+                                      all (check rules e) subs
   where -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
         -- | Gather all right-hand sides of all terms in the current node
-        match = isJust . find (\(ts, env) -> tseq ts subs env) . (rhss rules e)
+        matched  ::  Term -> Bool
+        matched  =   isJust . find (\(ts, env) -> tseq ts subs env) . rhss
+        rhss     ::  Term -> [([Term], Env)]
+        rhss t   =   [(cs, env)  |  (c :<-: cs)  <- rules
+                                 ,  Just env     <- [unify (t, c) (Just e)]]
 
 tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
 tseq terms subs env = let ans = any (matches . rootLabel) subs in
@@ -100,9 +105,7 @@ tseq terms subs env = let ans = any (matches . rootLabel) subs in
 -- right-hand side of the rule(s) with which the provided term unifies.
 --
 -- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
-rhss :: [Rule] -> Env -> Term -> [([Term], Env)]
-rhss rules e t = [(cs, r)  |  (c :<-: cs)  <- rules
-                           ,  Just r       <- [unify (t, c) (Just e)]]
+
 
 
 checkProof :: [Rule] -> Env -> Proof -> PCheck
