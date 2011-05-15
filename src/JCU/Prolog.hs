@@ -3,7 +3,7 @@ module JCU.Prolog where
 import            Data.List (find, permutations)
 import            Data.Maybe (isJust, isNothing)
 import            Data.Tree (Tree(..))
-import            Debug.Trace
+import Debug.Trace (trace)
 import            JCU.Types
 
 lookUp :: Term -> Env -> Term
@@ -31,45 +31,6 @@ solve rules e n  (t:ts)  =
   ,  Just r       <- [unify (t, c) (Just e)]
   ,  sol          <- solve rules r (n+1) (cs ++ ts)
   ]
-
-
-check :: [Rule] -> Env -> Int -> Proof -> Bool
-check _      e _  (Node _      [])    = True
-check rules  e n  (Node terms  subs)  = bla && all (check rules e (n+1)) subs
-  where  rhsss :: [[([Term], Env)]]
-         rhsss = map (rhss rules e) terms -- | Gather all right-hand sides of all terms in the current node
-  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
-         iser asol = isNothing $ find (\(ts, env) -> tseq ts subs env) asol
-         bla = or [iser a | a <- rhsss ]
-
-tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
-tseq terms subs env = any (matches . rootLabel) subs
-  where  matches :: [Term] -> Bool
-         matches sts    = or [termperm `match` sts | termperm <- permutations terms]
-         match :: [Term] -> [Term] -> Bool
-         match ts1 ts2  = and [isJust $ unify tp (Just env) | tp <- zip ts1 ts2]
-
-   -- any (subsEqs subs . snd) sols
-{-  where  -- | Are there as many solutions as terms?
-         sols     :: [[Term]]
-          -- Do all terms lead to a solution? This eliminates terms for which there is no solution.
-         sols     = concatMap (rhss rules e) terms
-         bla :: [Tree [Term]]
-         bla = subs-}
-
--- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
--- van de unify'de resultaten uit rhss
-
--- subs moet unifyen met 1 [Term] uit de resultaten van rhss!
---
--- If the t and c unify, we know that there is a term in the rules with which
--- the current term under consideration unifies. As a result, we return the
--- right-hand side of the rule(s) with which the provided term unifies.
---
--- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
-rhss :: [Rule] -> Env -> Term -> [([Term], Env)]
-rhss rules e t = [(cs, r)  |  (c :<-: cs)  <- rules
-                           ,  Just r       <- [unify (t, c) (Just e)]]
 
 {-
  pa(alex,ama).
@@ -113,10 +74,40 @@ work and it is definitely simple.
 -- children. This means that all non-root and non-leaf nodes are checked twice,
 -- in essence.
 -- We might not even need the Env here...
-checkProof :: [Rule] -> Env -> Int -> Proof -> PCheck
-checkProof rules e n nd@(Node _ sub)
-  | check rules e n nd  = Node True $ map (checkProof rules e (n+1)) sub
-  | otherwise           = fmap (\_ -> False) nd
+check :: [Rule] -> Env -> Proof -> Bool
+check _      _ (Node _      [])    = True
+check rules  e (Node terms  subs)  = match && all (check rules e) subs
+  where  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
+         -- | Gather all right-hand sides of all terms in the current node
+         match = any (isJust . find (\(ts, env) -> tseq ts subs env)) (map (rhss rules e) terms)
+
+tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
+tseq terms subs env = let ans = any (matches . rootLabel) subs in
+  trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++ "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans
+  where  matches :: [Term] -> Bool
+         matches sts    = any (match sts) (permutations terms)
+         match :: [Term] -> [Term] -> Bool
+         match ts1 ts2  = all (\tp -> isJust $ unify tp (Just env)) (zip ts1 ts2)
+
+-- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
+-- van de unify'de resultaten uit rhss
+
+-- subs moet unifyen met 1 [Term] uit de resultaten van rhss!
+--
+-- If the t and c unify, we know that there is a term in the rules with which
+-- the current term under consideration unifies. As a result, we return the
+-- right-hand side of the rule(s) with which the provided term unifies.
+--
+-- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
+rhss :: [Rule] -> Env -> Term -> [([Term], Env)]
+rhss rules e t = [(cs, r)  |  (c :<-: cs)  <- rules
+                           ,  Just r       <- [unify (t, c) (Just e)]]
+
+
+checkProof :: [Rule] -> Env -> Proof -> PCheck
+checkProof rules e nd@(Node _ sub)
+  | check rules e nd  = Node True $ map (checkProof rules e) sub
+  | otherwise         = fmap (\_ -> False) nd
 
 testSimpleRight :: [Env]
 testSimpleRight = solve testStoredRules [] 0 [Fun "ma" [cnst "mien", cnst "juul"]]
@@ -125,9 +116,9 @@ testSimpleWrong = solve testStoredRules [] 0 [Fun "ma" [cnst "miesn", cnst "juul
 
 
 testRight ::  PCheck
-testRight = checkProof testStoredRules [] 0 voorBeaAmaProof
+testRight = checkProof testStoredRules [] voorBeaAmaProof
 testWrong :: PCheck
-testWrong = checkProof testStoredRules [] 0 voorBeaAmaWrong
+testWrong = checkProof testStoredRules [] voorBeaAmaWrong
 
 
 {-
@@ -189,7 +180,7 @@ voorBeaAmaWrong = Node [Fun "voor" [cnst "bea",  cnst "ama"]]
                            , Fun "voor"  [cnst "alex", cnst "ama"]
                            ]
                         [ Node [Fun "ma" [cnst "bea",  cnst "alex"]] []
-                        , Node [Fun "ouder" [cnst "max", cnst "ama"]]
+                        , Node [Fun "ouder" [cnst "fout!", cnst "ama"]]
                             [ Node [Fun "pa" [cnst "alex", cnst "ama"]] []
                             ]
                         ]
