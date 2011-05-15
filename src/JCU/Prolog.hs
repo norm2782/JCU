@@ -1,5 +1,7 @@
 module JCU.Prolog where
 
+import            Data.List (find, permutations)
+import            Data.Maybe (isJust, isNothing)
 import            Data.Tree (Tree(..))
 import            Debug.Trace
 import            JCU.Types
@@ -31,21 +33,24 @@ solve rules e n  (t:ts)  =
   ]
 
 
-check :: [Rule] -> Proof -> Env -> Int -> Bool
-check _      (Node _      [])    e _ = True
-check rules  (Node terms  subs)  e n
-  | not unifies   = False
-  | otherwise     = undefined
-  where foo = bla terms subs
+check :: [Rule] -> Env -> Int -> Proof -> Bool
+check _      e _  (Node _      [])    = True
+check rules  e n  (Node terms  subs)  = bla && all (check rules e (n+1)) subs
+  where  rhsss :: [[([Term], Env)]]
+         rhsss = map (rhss rules e) terms -- | Gather all right-hand sides of all terms in the current node
+  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
+         iser asol = isNothing $ find (\(ts, env) -> tseq ts subs env) asol
+         bla = or [iser a | a <- rhsss ]
 
-unifies = undefined
-
-bla :: [Term] -> [Tree [Term]] -> Bool -- [Term]
-bla terms subs = or [tseq terms sts | (Node sts _) <- subs]
-tseq = undefined
+tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
+tseq terms subs env = any (matches . rootLabel) subs
+  where  matches :: [Term] -> Bool
+         matches sts    = or [termperm `match` sts | termperm <- permutations terms]
+         match :: [Term] -> [Term] -> Bool
+         match ts1 ts2  = and [isJust $ unify tp (Just env) | tp <- zip ts1 ts2]
 
    -- any (subsEqs subs . snd) sols
-{-  where  unifies  = length terms == length sols -- | Are there as many solutions as terms?
+{-  where  -- | Are there as many solutions as terms?
          sols     :: [[Term]]
           -- Do all terms lead to a solution? This eliminates terms for which there is no solution.
          sols     = concatMap (rhss rules e) terms
@@ -62,10 +67,15 @@ tseq = undefined
 -- right-hand side of the rule(s) with which the provided term unifies.
 --
 -- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
-rhss :: [Rule] -> Env -> Term -> [[Term]]
-rhss rules e t = [cs  |  (c :<-: cs)  <- rules
-                      ,  Just _       <- [unify (t, c) (Just e)]]
+rhss :: [Rule] -> Env -> Term -> [([Term], Env)]
+rhss rules e t = [(cs, r)  |  (c :<-: cs)  <- rules
+                           ,  Just r       <- [unify (t, c) (Just e)]]
 
+{-
+ pa(alex,ama).
+----------------
+ouder(alex,ama).
+-}
 
 {-
                         pa(alex,ama). (5)
@@ -105,7 +115,7 @@ work and it is definitely simple.
 -- We might not even need the Env here...
 checkProof :: [Rule] -> Env -> Int -> Proof -> PCheck
 checkProof rules e n nd@(Node _ sub)
-  | check rules nd e n  = Node True $ map (checkProof rules e (n+1)) sub
+  | check rules e n nd  = Node True $ map (checkProof rules e (n+1)) sub
   | otherwise           = fmap (\_ -> False) nd
 
 testSimpleRight :: [Env]
