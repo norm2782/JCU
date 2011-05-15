@@ -139,20 +139,17 @@ deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getParam "id"
   trace ("deleteInUseRuleH: " ++ show rule) (return ())
 
-hintRulesH :: Application ()
-hintRulesH = do -- TODO restrict forbiddenH $ do
-  rules <- mkRules =<< getRequestBody
-  trace ("hintRulesH: " ++ show rules)
-        (writeLBS $ encode True)
-
 addStoredRuleH :: Application ()
 addStoredRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getRequestBody
   trace ("addStoredRuleH: " ++ show rule)
         (writeLBS "")
 
+-- | Check the proof from the client. Since the checking could potentially
+-- shoot into an inifinite recursion, a timeout is in place.
 checkRulesH :: Application ()
 checkRulesH = do-- TODO restrict forbiddenH $ do
+  setTimeout 15
   r <- getRequestBody
   trace ("checkRulesH1: " ++ (show r)) (return ())
   rules <- mkRules r -- =<< getRequestBody

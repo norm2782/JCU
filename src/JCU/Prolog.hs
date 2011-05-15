@@ -1,7 +1,8 @@
 module JCU.Prolog where
 
-import            JCU.Types
 import            Data.Tree (Tree(..))
+import            Debug.Trace
+import            JCU.Types
 
 lookUp :: Term -> Env -> Term
 lookUp (Var x)  e   = case lookup x e of
@@ -20,34 +21,102 @@ unify (t, u)  env@(Just e)  = uni (lookUp t e) (lookUp u e)
            | otherwise                         = Nothing
          uni _ _              =  Nothing
 
-solve :: [Rule] -> [Term] -> Env -> Int -> [Env]
-solve _     []      e _  = [e]
-solve rules (t:ts)  e n  =
-    [  sol
-    |  (c :<-: cs)  <- map (tag n) rules
-    ,  Just r       <- [unify (t, c) (Just e)]
-    ,  sol          <- solve rules (cs ++ ts) r (n+1)
-    ]
+solve :: [Rule] -> Env -> Int -> [Term] -> [Env]
+solve _     e _  []      = [e]
+solve rules e n  (t:ts)  =
+  [  sol
+  |  (c :<-: cs)  <- map (tag n) rules
+  ,  Just r       <- [unify (t, c) (Just e)]
+  ,  sol          <- solve rules r (n+1) (cs ++ ts)
+  ]
 
--- FIXME: This is not right yet. testWrong is marked as correct. 
+
+check :: [Rule] -> Proof -> Env -> Int -> Bool
+check _      (Node _      [])    e _ = True
+check rules  (Node terms  subs)  e n
+  | not unifies   = False
+  | otherwise     = undefined
+  where foo = bla terms subs
+
+unifies = undefined
+
+bla :: [Term] -> [Tree [Term]] -> Bool -- [Term]
+bla terms subs = or [tseq terms sts | (Node sts _) <- subs]
+tseq = undefined
+
+   -- any (subsEqs subs . snd) sols
+{-  where  unifies  = length terms == length sols -- | Are there as many solutions as terms?
+         sols     :: [[Term]]
+          -- Do all terms lead to a solution? This eliminates terms for which there is no solution.
+         sols     = concatMap (rhss rules e) terms
+         bla :: [Tree [Term]]
+         bla = subs-}
+
+-- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
+-- van de unify'de resultaten uit rhss
+
+-- subs moet unifyen met 1 [Term] uit de resultaten van rhss!
+--
+-- If the t and c unify, we know that there is a term in the rules with which
+-- the current term under consideration unifies. As a result, we return the
+-- right-hand side of the rule(s) with which the provided term unifies.
+--
+-- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
+rhss :: [Rule] -> Env -> Term -> [[Term]]
+rhss rules e t = [cs  |  (c :<-: cs)  <- rules
+                      ,  Just _       <- [unify (t, c) (Just e)]]
+
+
+{-
+                        pa(alex,ama). (5)
+                        -------------
+ma(bea,alex). (3)    ouder(alex,ama). (4)
+-------------        ----------------
+ouder(bea,alex), (2a) voor(alex,ama). (2b)
+-------------------------------------
+         voor(bea,ama). (1)
+
+
+
+If (1) does not unify with something in the environment, return a False tree.
+If (1) unifies with something in the environment, then grab the corresponding
+rule with which it unified and grab the right-hand side list of terms of this
+rule. With this list, see if the list of terms at (2) matches. That is, all
+left-hand side terms must be exactly present at (2). No more no less. In
+addition, they all need to unify with the left-hand side of (1). This now
+repeats for every branch of the provided proof-tree. In general, if the
+left-hand side list is empty, it means that we have arrived at a fact and we're
+done. If we do not end up at a fact, this should be communicated in some way as
+well.
+
+Alternatively, just solve for every level in the tree. Not fast, but might just
+work and it is definitely simple.
+-}
+
+-- FIXME:
+-- Approach: First check/solve for the current node. This will result in an
+-- environment. In `solve` the recursive case is passed (cs ++ ts), which are
+-- the next things to be considered. These are the exact same things the user
+-- passed in the childnodes. (or should have at least). We now just have to
+-- check whether these resulting terms are specified in the node's children.
+-- This needs to be an exact match. We then repeat this for each of the
+-- children. This means that all non-root and non-leaf nodes are checked twice,
+-- in essence.
+-- We might not even need the Env here...
 checkProof :: [Rule] -> Env -> Int -> Proof -> PCheck
-checkProof rules e n (Node lbl sub) = Node unified children
-  where (unified, children) = case solve rules lbl e n of
-                                []     -> (False,  map mkTr sub)
-                                [[]]   -> (True,   [])
-                                env:_  -> (True,   map (checkProof rules env (n+1)) sub)
-
-mkTr :: Proof -> PCheck
-mkTr (Node _ cs) = Node False (map mkTr cs)
+checkProof rules e n nd@(Node _ sub)
+  | check rules nd e n  = Node True $ map (checkProof rules e (n+1)) sub
+  | otherwise           = fmap (\_ -> False) nd
 
 testSimpleRight :: [Env]
-testSimpleRight = solve testStoredRules [(Fun "ma" [cnst "mien", cnst "juul"])] [] 0
+testSimpleRight = solve testStoredRules [] 0 [Fun "ma" [cnst "mien", cnst "juul"]]
 testSimpleWrong :: [Env]
-testSimpleWrong = solve testStoredRules [(Fun "ma" [cnst "miesn", cnst "juul"])] [] 0
+testSimpleWrong = solve testStoredRules [] 0 [Fun "ma" [cnst "miesn", cnst "juul"]]
+
 
 testRight ::  PCheck
 testRight = checkProof testStoredRules [] 0 voorBeaAmaProof
-testWrong ::  PCheck
+testWrong :: PCheck
 testWrong = checkProof testStoredRules [] 0 voorBeaAmaWrong
 
 

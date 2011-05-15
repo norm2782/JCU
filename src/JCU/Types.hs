@@ -25,6 +25,7 @@ type Env     =  [(Ident, Term)]
 type Proof   =  Tree [Term]
 type PCheck  =  Tree Bool
 
+-- TODO: Decide if we should keep these custom Show instances.
 instance Show Term where
   show (Con  i)     = show i
   show (Var  i)     = i
