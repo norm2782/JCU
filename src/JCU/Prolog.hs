@@ -75,19 +75,20 @@ work and it is definitely simple.
 -- in essence.
 -- We might not even need the Env here...
 check :: [Rule] -> Env -> Proof -> Bool
-check _      _ (Node _      [])    = True
-check rules  e (Node terms  subs)  = match && all (check rules e) subs
-  where  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
-         -- | Gather all right-hand sides of all terms in the current node
-         match = any (isJust . find (\(ts, env) -> tseq ts subs env)) (map (rhss rules e) terms)
+check _      _  (Node _      [])    = True
+check rules  e  (Node terms  subs)  = any match terms && all (check rules e) subs
+  where -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
+        -- | Gather all right-hand sides of all terms in the current node
+        match = isJust . find (\(ts, env) -> tseq ts subs env) . (rhss rules e)
 
 tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
 tseq terms subs env = let ans = any (matches . rootLabel) subs in
-  trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++ "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans
+  trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++
+         "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans
   where  matches :: [Term] -> Bool
          matches sts    = any (match sts) (permutations terms)
          match :: [Term] -> [Term] -> Bool
-         match ts1 ts2  = all (\tp -> isJust $ unify tp (Just env)) (zip ts1 ts2)
+         match ts1 ts2  = all (isJust . flip unify (Just env)) (zip ts1 ts2)
 
 -- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
 -- van de unify'de resultaten uit rhss
