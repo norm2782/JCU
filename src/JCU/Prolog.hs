@@ -25,7 +25,7 @@ solve :: [Rule] -> Env -> Int -> [Term] -> [Env]
 solve _     e _  []      = [e]
 solve rules e n  (t:ts)  =
   [  sol
-  |  (c :<-: cs)  <- map (tag n) rules
+  |  (c :<-: cs)  <- tag n rules
   ,  Just r       <- [unify (t, c) (Just e)]
   ,  sol          <- solve rules r (n+1) (cs ++ ts)
   ]
@@ -70,9 +70,10 @@ rhss :: Env -> [Rule] -> Term -> [([Term], Env)]
 rhss env rls tm = [(cs, env')  |  (c :<-: cs)  <- rls
                                ,  Just env'    <- [unify (tm, c) (Just env)]]
 
+-- TODO: Double-check
 check :: Env -> Int -> [Rule] -> Proof -> PCheck
-check env n rls (Node tm []) = Node ((not . null) $ rhss env (tag n rls) tm) []
-check env n rls (Node tm cs) = Node success nwChlds
+check env n rls (Node tm [])  = Node ((not . null) $ rhss env (tag n rls) tm) []
+check env n rls (Node tm cs)  = Node success nwChlds
   where  -- All possible right-hand sides of `tm`. Each of the child nodes
          -- _must_ unify with at least one of the right-hand side nodes.
          rhsss :: [([Term], Env)]
@@ -80,12 +81,13 @@ check env n rls (Node tm cs) = Node success nwChlds
 
          success :: Bool
          success = (not . null) rhsss && (not . null) (concat matches)
-           where  matches :: [Env]
-                  matches = [m  |  (tms, env')  <- rhsss
-                                ,  Just m       <- [match tms env']]
+
+         matches :: [Env]
+         matches = [m  |  (tms, env')  <- rhsss
+                       ,  Just m       <- [match tms env']]
 
          nwChlds :: [PCheck]
-         nwChlds | success    = map (check env (n+1) rls) cs -- TODO: Env to env'
+         nwChlds | success    = map (check (head matches) (n+1) rls) cs
                  | otherwise  = map (fmap (const False)) cs
 
          match :: [Term] -> Env -> Maybe Env
@@ -110,7 +112,7 @@ voorBeaAmaWrong :: Proof
 voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])
                     [ Node (Fun "ouder" [cnst "bea",  cnst "alex"])
                         [ Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
-                        , Node (Fun "fout!" [cnst "alex", cnst "ama"])
+                        , Node (Fun "ma" [cnst "alex", cnst "ama"])
                             [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]
                         ]
                     , Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]

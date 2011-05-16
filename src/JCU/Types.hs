@@ -43,12 +43,12 @@ class Taggable a where
   tag :: Int -> a -> a
 
 instance Taggable Term where
-  tag _  (Con  x)     = Con  x
+  tag _  con@(Con _)  = con
   tag n  (Var  x)     = Var  (x ++ show n)
-  tag n  (Fun  x xs)  = Fun  x (map (tag n) xs)
+  tag n  (Fun  x xs)  = Fun  x (tag n xs)
 
 instance Taggable Rule where
-  tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
+  tag n (c :<-: cs) = tag n c :<-: tag n cs
 
 instance Taggable a => Taggable [a] where
   tag n = map (tag n)
