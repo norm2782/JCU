@@ -759,21 +759,12 @@ jQuery.extend({
 		if ( isArray ) {
 			for ( ; i < length; i++ ) {
 				value = callback( elems[ i ], i, arg );
-<<<<<<< HEAD
 
 				if ( value != null ) {
 					ret[ ret.length ] = value;
 				}
 			}
 
-=======
-
-				if ( value != null ) {
-					ret[ ret.length ] = value;
-				}
-			}
-
->>>>>>> master
 		// Go through every key on the object,
 		} else {
 			for ( key in elems ) {
@@ -1757,7 +1748,6 @@ jQuery.extend({
 			type = elem;
 			elem = force;
 			force = false;
-<<<<<<< HEAD
 		}
 		if ( elem ) {
 			type = type || "fx";
@@ -1770,20 +1760,6 @@ jQuery.extend({
 				handleQueueMarkDefer( elem, type, "mark" );
 			}
 		}
-=======
-		}
-		if ( elem ) {
-			type = type || "fx";
-			var key = type + "mark",
-				count = force ? 0 : ( (jQuery.data( elem, key, undefined, true) || 1 ) - 1 );
-			if ( count ) {
-				jQuery.data( elem, key, count, true );
-			} else {
-				jQuery.removeData( elem, key, true );
-				handleQueueMarkDefer( elem, type, "mark" );
-			}
-		}
->>>>>>> master
 	},
 
 	queue: function( elem, type, data ) {
@@ -2068,19 +2044,11 @@ jQuery.fn.extend({
 		if ( !arguments.length ) {
 			if ( elem ) {
 				hooks = jQuery.valHooks[ elem.nodeName.toLowerCase() ] || jQuery.valHooks[ elem.type ];
-<<<<<<< HEAD
 
 				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
 					return ret;
 				}
 
-=======
-
-				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
-					return ret;
-				}
-
->>>>>>> master
 				return (elem.value || "").replace(rreturn, "");
 			}
 
@@ -2114,7 +2082,6 @@ jQuery.fn.extend({
 			}
 
 			hooks = jQuery.valHooks[ this.nodeName.toLowerCase() ] || jQuery.valHooks[ this.type ];
-<<<<<<< HEAD
 
 			// If set returns undefined, fall back to normal setting
 			if ( !hooks || ("set" in hooks && hooks.set( this, val, "value" ) === undefined) ) {
@@ -2172,65 +2139,6 @@ jQuery.extend({
 					return jQuery( options[ index ] ).val();
 				}
 
-=======
-
-			// If set returns undefined, fall back to normal setting
-			if ( !hooks || ("set" in hooks && hooks.set( this, val, "value" ) === undefined) ) {
-				this.value = val;
-			}
-		});
-	}
-});
-
-jQuery.extend({
-	valHooks: {
-		option: {
-			get: function( elem ) {
-				// attributes.value is undefined in Blackberry 4.7 but
-				// uses .value. See #6932
-				var val = elem.attributes.value;
-				return !val || val.specified ? elem.value : elem.text;
-			}
-		},
-		select: {
-			get: function( elem ) {
-				var index = elem.selectedIndex,
-					values = [],
-					options = elem.options,
-					one = elem.type === "select-one";
-
-				// Nothing was selected
-				if ( index < 0 ) {
-					return null;
-				}
-
-				// Loop through all the selected options
-				for ( var i = one ? index : 0, max = one ? index + 1 : options.length; i < max; i++ ) {
-					var option = options[ i ];
-
-					// Don't return options that are disabled or in a disabled optgroup
-					if ( option.selected && (jQuery.support.optDisabled ? !option.disabled : option.getAttribute("disabled") === null) &&
-							(!option.parentNode.disabled || !jQuery.nodeName( option.parentNode, "optgroup" )) ) {
-
-						// Get the specific value for the option
-						value = jQuery( option ).val();
-
-						// We don't need an array for one selects
-						if ( one ) {
-							return value;
-						}
-
-						// Multi-Selects return an array
-						values.push( value );
-					}
-				}
-
-				// Fixes Bug #2551 -- select.val() broken in IE after form.reset()
-				if ( one && !values.length && options.length ) {
-					return jQuery( options[ index ] ).val();
-				}
-
->>>>>>> master
 				return values;
 			},
 
@@ -2492,7 +2400,6 @@ if ( !jQuery.support.style ) {
 		}
 	};
 }
-<<<<<<< HEAD
 
 // Safari mis-reports the default selected property of an option
 // Accessing the parent's selectedIndex property fixes it
@@ -2504,19 +2411,6 @@ if ( !jQuery.support.optSelected ) {
 			if ( parent ) {
 				parent.selectedIndex;
 
-=======
-
-// Safari mis-reports the default selected property of an option
-// Accessing the parent's selectedIndex property fixes it
-if ( !jQuery.support.optSelected ) {
-	jQuery.propHooks.selected = jQuery.extend( jQuery.propHooks.selected, {
-		get: function( elem ) {
-			var parent = elem.parentNode;
-
-			if ( parent ) {
-				parent.selectedIndex;
-
->>>>>>> master
 				// Make sure that it also works with optgroups, see #5701
 				if ( parent.parentNode ) {
 					parent.parentNode.selectedIndex;
@@ -8022,7 +7916,6 @@ jQuery.fn.extend({
 
 				if ( elem.style ) {
 					display = elem.style.display;
-<<<<<<< HEAD
 
 					// Reset the inline display of this element to learn if it is
 					// being hidden by cascaded rules or not
@@ -8030,15 +7923,6 @@ jQuery.fn.extend({
 						display = elem.style.display = "";
 					}
 
-=======
-
-					// Reset the inline display of this element to learn if it is
-					// being hidden by cascaded rules or not
-					if ( !jQuery._data(elem, "olddisplay") && display === "none" ) {
-						display = elem.style.display = "";
-					}
-
->>>>>>> master
 					// Set elements which have been overridden with display: none
 					// in a stylesheet to whatever the default browser style is
 					// for such an element
@@ -11110,17 +10994,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return child;
   };
   exports.MainController = (function() {
-<<<<<<< HEAD
-    function MainController() {
-      MainController.__super__.constructor.apply(this, arguments);
-    }
-    __extends(MainController, Backbone.Controller);
-=======
     __extends(MainController, Backbone.Controller);
     function MainController() {
       MainController.__super__.constructor.apply(this, arguments);
     }
->>>>>>> master
     MainController.prototype.routes = {
       'home': 'home'
     };
@@ -11131,11 +11008,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   })();
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-<<<<<<< HEAD
-  var HomeView, MainController, RuleTree, RulesList, RulesListView, RulesTreeView;
-=======
   var HomeView, MainController, ProofTree, ProofTreeView, RulesList, RulesListView;
->>>>>>> master
   window.app = {};
   app.controllers = {};
   app.models = {};
@@ -11144,11 +11017,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   app.styles = {};
   app.templates = {};
   RulesList = require('collections/rules_list_collection').RulesList;
-<<<<<<< HEAD
-  RuleTree = require('models/rule_tree').RuleTree;
-=======
   ProofTree = require('models/proof_tree').ProofTree;
->>>>>>> master
   MainController = require('controllers/main_controller').MainController;
   HomeView = require('views/home_view').HomeView;
   RulesListView = require('views/rules_list_view').RulesListView;
@@ -11167,17 +11036,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
       });
       app.controllers.main = new MainController();
-<<<<<<< HEAD
-      app.models.tree = new RuleTree();
-      app.views.home = new HomeView();
-      app.views.rulesList = new RulesListView();
-      app.views.rulesTree = new RulesTreeView({
-=======
       app.models.tree = new ProofTree();
       app.views.home = new HomeView();
       app.views.rulesList = new RulesListView();
       app.views.proofTree = new ProofTreeView({
->>>>>>> master
         model: app.models.tree
       });
       if (Backbone.history.getFragment() === '') {
@@ -11316,12 +11178,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return Rule;
   })();
 }).call(this);
-<<<<<<< HEAD
 }, "models/rule_tree": function(exports, require, module) {(function() {
   var RuleTreeNode;
-=======
-}, "models/term_model": function(exports, require, module) {(function() {
->>>>>>> master
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11330,13 +11188,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     child.__super__ = parent.prototype;
     return child;
   };
-<<<<<<< HEAD
   RuleTreeNode = require('models/rule_tree_node').RuleTreeNode;
   exports.RuleTree = (function() {
+    __extends(RuleTree, Backbone.Model);
     function RuleTree() {
       RuleTree.__super__.constructor.apply(this, arguments);
     }
-    __extends(RuleTree, Backbone.Model);
     RuleTree.prototype.url = function() {
       return '/rules/inuse';
     };
@@ -11361,10 +11218,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return child;
   };
   exports.RuleTreeNode = (function() {
+    __extends(RuleTreeNode, Backbone.Model);
     function RuleTreeNode() {
       RuleTreeNode.__super__.constructor.apply(this, arguments);
     }
-    __extends(RuleTreeNode, Backbone.Model);
     RuleTreeNode.prototype.initialize = function() {
       return this.set({
         childRules: new Backbone.Collection()
@@ -11390,7 +11247,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.destroy();
     };
     return RuleTreeNode;
-=======
+  })();
+}).call(this);
+}, "models/term_model": function(exports, require, module) {(function() {
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
   exports.Term = (function() {
     __extends(Term, Backbone.Model);
     function Term() {
@@ -11411,7 +11278,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.view.remove();
     };
     return Term;
->>>>>>> master
   })();
 }).call(this);
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
@@ -11435,11 +11301,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-<<<<<<< HEAD
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Derivation Tree</h2>\n      <div id="rules-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
-=======
       _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
->>>>>>> master
     }).call(this);
     
     return __out.join('');
@@ -11519,17 +11381,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-<<<<<<< HEAD
-      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_rules" class="droppable" value="'));
-      _print(this.content.rule);
-      _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
-=======
       _print(_safe('<div id="rule_'));
       _print(this.content.rule.replace(/[^a-zA-Z0-9]+/g, ""));
       _print(_safe('" class="draggable">\n  <span class="rule-text">'));
       _print(this.content.rule);
       _print(_safe('</span>\n  <input class="btnDeleteList" type="button" value="X" />\n</div>\n'));
->>>>>>> master
     }).call(this);
     
     return __out.join('');
@@ -11571,11 +11427,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
-<<<<<<< HEAD
-      this.$('#rules-tree-div').append(app.views.rulesTree.render());
-=======
       this.$('#proof-tree-div').append(app.views.proofTree.render());
->>>>>>> master
       this.$('#rules-list-div').append(app.views.rulesList.render().el);
       return this;
     };
@@ -11847,7 +11699,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return RulesListView;
   })();
 }).call(this);
-<<<<<<< HEAD
 }, "views/rules_tree_node_view": function(exports, require, module) {(function() {
   var RulesTreeNodeView, rulesTreeItemTemplate;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
@@ -11861,11 +11712,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   rulesTreeItemTemplate = require('templates/rules_tree_item');
   RulesTreeNodeView = require('views/rules_tree_node_view').RulesTreeNodeView;
   exports.RulesTreeNodeView = (function() {
-    function RulesTreeNodeView() {
-      this.renderNode = __bind(this.renderNode, this);;
-      this.render = __bind(this.render, this);;      RulesTreeNodeView.__super__.constructor.apply(this, arguments);
-    }
     __extends(RulesTreeNodeView, Backbone.View);
+    function RulesTreeNodeView() {
+      this.renderNode = __bind(this.renderNode, this);
+      this.render = __bind(this.render, this);
+      RulesTreeNodeView.__super__.constructor.apply(this, arguments);
+    }
     RulesTreeNodeView.prototype.tagName = "li";
     RulesTreeNodeView.prototype.tmpUl = null;
     RulesTreeNodeView.prototype.events = {
@@ -11940,39 +11792,4 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return RulesTreeNodeView;
   })();
 }).call(this);
-}, "views/rules_tree_view": function(exports, require, module) {(function() {
-  var RulesTreeNodeView;
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
-  RulesTreeNodeView = require('views/rules_tree_node_view').RulesTreeNodeView;
-  exports.RulesTreeView = (function() {
-    function RulesTreeView() {
-      RulesTreeView.__super__.constructor.apply(this, arguments);
-    }
-    __extends(RulesTreeView, Backbone.View);
-    RulesTreeView.prototype.id = 'rules-tree-view';
-    RulesTreeView.prototype.tagName = 'ul';
-    RulesTreeView.prototype.className = 'tree';
-    RulesTreeView.prototype.initialize = function() {
-      _.bindAll(this, "render");
-      return this.model.bind("change", this.render);
-    };
-    RulesTreeView.prototype.render = function() {
-      var view;
-      view = new RulesTreeNodeView({
-        model: this.model.get('root')
-      });
-      return this.$(this.el).html(view.render().el);
-    };
-    return RulesTreeView;
-  })();
-}).call(this);
-=======
->>>>>>> master
 }});
