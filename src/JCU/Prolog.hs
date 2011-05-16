@@ -1,7 +1,7 @@
 module JCU.Prolog where
 
 import            Data.List (find, permutations)
-import            Data.Maybe (isJust, isNothing)
+import            Data.Maybe (isJust)
 import            Data.Tree (Tree(..))
 import Debug.Trace (trace)
 import            JCU.Types
@@ -74,22 +74,23 @@ work and it is definitely simple.
 -- children. This means that all non-root and non-leaf nodes are checked twice,
 -- in essence.
 -- We might not even need the Env here...
-check :: [Rule] -> Env -> Proof -> Bool
-check _      _  (Node _      [])    = True
-check rules  e  (Node terms  subs)  = any matched terms &&
-                                      all (check rules e) subs
-  where -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
-        -- | Gather all right-hand sides of all terms in the current node
-        matched  ::  Term -> Bool
-        matched  =   isJust . find (\(ts, env) -> tseq ts subs env) . rhss
-        rhss     ::  Term -> [([Term], Env)]
-        rhss t   =   [(cs, env)  |  (c :<-: cs)  <- rules
-                                 ,  Just env     <- [unify (t, c) (Just e)]]
+check :: [Rule] -> Proof -> Bool
+check rls (Node trms [])   = (not . null) $ concatMap (rhss rls) trms
+check rls (Node trms sbs)  = any matched trms -- && all (check rls) sbs
+  where  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
+         -- | Gather all right-hand sides of all terms in the current node
+         matched :: Term -> Bool
+         matched = isJust . find (\(ts, env) -> tseq ts sbs env) . rhss rls
+
+rhss :: [Rule] -> Term -> [([Term], Env)]
+rhss rls t = [(cs, env)  |  (c :<-: cs)  <- rls
+                         ,  Just env     <- [unify (t, c) (Just [])]]
 
 tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
-tseq terms subs env = let ans = any (matches . rootLabel) subs in
-  trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++
-         "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans
+tseq terms subs env = let ans = any (matches . rootLabel) subs in 
+  ans
+  {- trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++-}
+         {- "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans-}
   where  matches :: [Term] -> Bool
          matches sts    = any (match sts) (permutations terms)
          match :: [Term] -> [Term] -> Bool
@@ -106,12 +107,15 @@ tseq terms subs env = let ans = any (matches . rootLabel) subs in
 --
 -- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
 
+-- TODO: Always to the full work, so that we always get some answer and some
+-- environment at a node. The resulting tree should have something like a
+-- (Bool, Env) type.
+-- TODO: R
+checkProof :: [Rule] -> Proof -> PCheck
+checkProof rules node
+  | check rules node  = Node True $ map (checkProof rules) (subForest node)
+  | otherwise         = fmap (const False) node
 
-
-checkProof :: [Rule] -> Env -> Proof -> PCheck
-checkProof rules e nd@(Node _ sub)
-  | check rules e nd  = Node True $ map (checkProof rules e) sub
-  | otherwise         = fmap (\_ -> False) nd
 
 testSimpleRight :: [Env]
 testSimpleRight = solve testStoredRules [] 0 [Fun "ma" [cnst "mien", cnst "juul"]]
@@ -119,10 +123,13 @@ testSimpleWrong :: [Env]
 testSimpleWrong = solve testStoredRules [] 0 [Fun "ma" [cnst "miesn", cnst "juul"]]
 
 
+testBla ::  PCheck
+testBla = checkProof testStoredRules $ Node [Fun "pa" [cnst "alex",  cnst "ama"]] []
+
 testRight ::  PCheck
-testRight = checkProof testStoredRules [] voorBeaAmaProof
+testRight = checkProof testStoredRules voorBeaAmaProof
 testWrong :: PCheck
-testWrong = checkProof testStoredRules [] voorBeaAmaWrong
+testWrong = checkProof testStoredRules voorBeaAmaWrong
 
 
 {-
