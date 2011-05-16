@@ -1,8 +1,9 @@
-class exports.Rule extends Backbone.Model
+class exports.Term extends Backbone.Model
   validate: (str) ->
     if !str?
-      str = @get "rule"
+      str = @get "term"
 
+    # TODO: Modify this Rule regex to become a Term regex
     # Token -> a word with possibly spaces in front and after
     # Rule  -> Token ( Token {, Token}* )
     # Regex -> Rule {, Rule}* {. | :- { Rule {, | .} }* }

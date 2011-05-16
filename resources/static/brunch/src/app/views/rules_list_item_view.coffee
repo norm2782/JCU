@@ -17,16 +17,7 @@ class exports.RulesListItemView extends Backbone.View
     @model.destroy()
     @$(@el).remove()
 
-  initialize: ->
-    @model.view = @
-
   render: =>
     @$(@el).html rulesListItemTemplate content: @model.toJSON()
     @
-
-  remove: ->
-    @$(@el).remove()
-
-  clear: ->
-    @model.clear()
 

@@ -759,12 +759,21 @@ jQuery.extend({
 		if ( isArray ) {
 			for ( ; i < length; i++ ) {
 				value = callback( elems[ i ], i, arg );
+<<<<<<< HEAD
 
 				if ( value != null ) {
 					ret[ ret.length ] = value;
 				}
 			}
 
+=======
+
+				if ( value != null ) {
+					ret[ ret.length ] = value;
+				}
+			}
+
+>>>>>>> master
 		// Go through every key on the object,
 		} else {
 			for ( key in elems ) {
@@ -1748,6 +1757,7 @@ jQuery.extend({
 			type = elem;
 			elem = force;
 			force = false;
+<<<<<<< HEAD
 		}
 		if ( elem ) {
 			type = type || "fx";
@@ -1760,6 +1770,20 @@ jQuery.extend({
 				handleQueueMarkDefer( elem, type, "mark" );
 			}
 		}
+=======
+		}
+		if ( elem ) {
+			type = type || "fx";
+			var key = type + "mark",
+				count = force ? 0 : ( (jQuery.data( elem, key, undefined, true) || 1 ) - 1 );
+			if ( count ) {
+				jQuery.data( elem, key, count, true );
+			} else {
+				jQuery.removeData( elem, key, true );
+				handleQueueMarkDefer( elem, type, "mark" );
+			}
+		}
+>>>>>>> master
 	},
 
 	queue: function( elem, type, data ) {
@@ -2044,11 +2068,19 @@ jQuery.fn.extend({
 		if ( !arguments.length ) {
 			if ( elem ) {
 				hooks = jQuery.valHooks[ elem.nodeName.toLowerCase() ] || jQuery.valHooks[ elem.type ];
+<<<<<<< HEAD
 
 				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
 					return ret;
 				}
 
+=======
+
+				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
+					return ret;
+				}
+
+>>>>>>> master
 				return (elem.value || "").replace(rreturn, "");
 			}
 
@@ -2082,6 +2114,7 @@ jQuery.fn.extend({
 			}
 
 			hooks = jQuery.valHooks[ this.nodeName.toLowerCase() ] || jQuery.valHooks[ this.type ];
+<<<<<<< HEAD
 
 			// If set returns undefined, fall back to normal setting
 			if ( !hooks || ("set" in hooks && hooks.set( this, val, "value" ) === undefined) ) {
@@ -2139,6 +2172,65 @@ jQuery.extend({
 					return jQuery( options[ index ] ).val();
 				}
 
+=======
+
+			// If set returns undefined, fall back to normal setting
+			if ( !hooks || ("set" in hooks && hooks.set( this, val, "value" ) === undefined) ) {
+				this.value = val;
+			}
+		});
+	}
+});
+
+jQuery.extend({
+	valHooks: {
+		option: {
+			get: function( elem ) {
+				// attributes.value is undefined in Blackberry 4.7 but
+				// uses .value. See #6932
+				var val = elem.attributes.value;
+				return !val || val.specified ? elem.value : elem.text;
+			}
+		},
+		select: {
+			get: function( elem ) {
+				var index = elem.selectedIndex,
+					values = [],
+					options = elem.options,
+					one = elem.type === "select-one";
+
+				// Nothing was selected
+				if ( index < 0 ) {
+					return null;
+				}
+
+				// Loop through all the selected options
+				for ( var i = one ? index : 0, max = one ? index + 1 : options.length; i < max; i++ ) {
+					var option = options[ i ];
+
+					// Don't return options that are disabled or in a disabled optgroup
+					if ( option.selected && (jQuery.support.optDisabled ? !option.disabled : option.getAttribute("disabled") === null) &&
+							(!option.parentNode.disabled || !jQuery.nodeName( option.parentNode, "optgroup" )) ) {
+
+						// Get the specific value for the option
+						value = jQuery( option ).val();
+
+						// We don't need an array for one selects
+						if ( one ) {
+							return value;
+						}
+
+						// Multi-Selects return an array
+						values.push( value );
+					}
+				}
+
+				// Fixes Bug #2551 -- select.val() broken in IE after form.reset()
+				if ( one && !values.length && options.length ) {
+					return jQuery( options[ index ] ).val();
+				}
+
+>>>>>>> master
 				return values;
 			},
 
@@ -2400,6 +2492,7 @@ if ( !jQuery.support.style ) {
 		}
 	};
 }
+<<<<<<< HEAD
 
 // Safari mis-reports the default selected property of an option
 // Accessing the parent's selectedIndex property fixes it
@@ -2411,6 +2504,19 @@ if ( !jQuery.support.optSelected ) {
 			if ( parent ) {
 				parent.selectedIndex;
 
+=======
+
+// Safari mis-reports the default selected property of an option
+// Accessing the parent's selectedIndex property fixes it
+if ( !jQuery.support.optSelected ) {
+	jQuery.propHooks.selected = jQuery.extend( jQuery.propHooks.selected, {
+		get: function( elem ) {
+			var parent = elem.parentNode;
+
+			if ( parent ) {
+				parent.selectedIndex;
+
+>>>>>>> master
 				// Make sure that it also works with optgroups, see #5701
 				if ( parent.parentNode ) {
 					parent.parentNode.selectedIndex;
@@ -7916,6 +8022,7 @@ jQuery.fn.extend({
 
 				if ( elem.style ) {
 					display = elem.style.display;
+<<<<<<< HEAD
 
 					// Reset the inline display of this element to learn if it is
 					// being hidden by cascaded rules or not
@@ -7923,6 +8030,15 @@ jQuery.fn.extend({
 						display = elem.style.display = "";
 					}
 
+=======
+
+					// Reset the inline display of this element to learn if it is
+					// being hidden by cascaded rules or not
+					if ( !jQuery._data(elem, "olddisplay") && display === "none" ) {
+						display = elem.style.display = "";
+					}
+
+>>>>>>> master
 					// Set elements which have been overridden with display: none
 					// in a stylesheet to whatever the default browser style is
 					// for such an element
@@ -10973,10 +11089,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   Rule = require('models/rule_model').Rule;
   exports.RulesList = (function() {
+    __extends(RulesList, Backbone.Collection);
     function RulesList() {
       RulesList.__super__.constructor.apply(this, arguments);
     }
-    __extends(RulesList, Backbone.Collection);
     RulesList.prototype.model = Rule;
     RulesList.prototype.url = function() {
       return '/rules/stored';
@@ -10994,10 +11110,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return child;
   };
   exports.MainController = (function() {
+<<<<<<< HEAD
     function MainController() {
       MainController.__super__.constructor.apply(this, arguments);
     }
     __extends(MainController, Backbone.Controller);
+=======
+    __extends(MainController, Backbone.Controller);
+    function MainController() {
+      MainController.__super__.constructor.apply(this, arguments);
+    }
+>>>>>>> master
     MainController.prototype.routes = {
       'home': 'home'
     };
@@ -11008,7 +11131,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   })();
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
+<<<<<<< HEAD
   var HomeView, MainController, RuleTree, RulesList, RulesListView, RulesTreeView;
+=======
+  var HomeView, MainController, ProofTree, ProofTreeView, RulesList, RulesListView;
+>>>>>>> master
   window.app = {};
   app.controllers = {};
   app.models = {};
@@ -11017,11 +11144,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   app.styles = {};
   app.templates = {};
   RulesList = require('collections/rules_list_collection').RulesList;
+<<<<<<< HEAD
   RuleTree = require('models/rule_tree').RuleTree;
+=======
+  ProofTree = require('models/proof_tree').ProofTree;
+>>>>>>> master
   MainController = require('controllers/main_controller').MainController;
   HomeView = require('views/home_view').HomeView;
   RulesListView = require('views/rules_list_view').RulesListView;
-  RulesTreeView = require('views/rules_tree_view').RulesTreeView;
+  ProofTreeView = require('views/proof_tree_view').ProofTreeView;
   $(document).ready(function() {
     app.initialize = function() {
       app.collections.rulesList = new RulesList();
@@ -11036,10 +11167,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
       });
       app.controllers.main = new MainController();
+<<<<<<< HEAD
       app.models.tree = new RuleTree();
       app.views.home = new HomeView();
       app.views.rulesList = new RulesListView();
       app.views.rulesTree = new RulesTreeView({
+=======
+      app.models.tree = new ProofTree();
+      app.views.home = new HomeView();
+      app.views.rulesList = new RulesListView();
+      app.views.proofTree = new ProofTreeView({
+>>>>>>> master
         model: app.models.tree
       });
       if (Backbone.history.getFragment() === '') {
@@ -11049,6 +11187,103 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     app.initialize();
     return Backbone.history.start();
   });
+}).call(this);
+}, "models/proof_tree": function(exports, require, module) {(function() {
+  var ProofTreeNode;
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  ProofTreeNode = require('models/proof_tree_node').ProofTreeNode;
+  exports.ProofTree = (function() {
+    __extends(ProofTree, Backbone.Model);
+    function ProofTree() {
+      ProofTree.__super__.constructor.apply(this, arguments);
+    }
+    ProofTree.prototype.url = function() {
+      return '/rules/inuse';
+    };
+    ProofTree.prototype.mkTree = function(raw, t) {
+      var cs, ct, node, _i, _len, _ref;
+      node = new ProofTreeNode();
+      node.set({
+        term: raw.term
+      });
+      cs = new Backbone.Collection(cs);
+      _ref = raw.childTerms;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ct = _ref[_i];
+        cs.add(t.mkTree(ct, t));
+      }
+      node.set({
+        childTerms: cs
+      });
+      return node;
+    };
+    ProofTree.prototype.initialize = function() {
+      var model, options;
+      model = this;
+      options = {};
+      options.success = function(resp, status, xhr) {
+        var r;
+        r = model.mkTree(resp, model);
+        console.log(r);
+        return model.set({
+          root: r
+        });
+      };
+      return Backbone.sync.call(this, 'read', this, options);
+    };
+    ProofTree.prototype.allValid = function() {
+      return this.get('root').isValid();
+    };
+    return ProofTree;
+  })();
+}).call(this);
+}, "models/proof_tree_node": function(exports, require, module) {(function() {
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  exports.ProofTreeNode = (function() {
+    __extends(ProofTreeNode, Backbone.Model);
+    function ProofTreeNode() {
+      ProofTreeNode.__super__.constructor.apply(this, arguments);
+    }
+    ProofTreeNode.prototype.initialize = function() {
+      return this.set({
+        childTerms: new Backbone.Collection()
+      });
+    };
+    ProofTreeNode.prototype.hasTerm = function() {
+      return this.get('term') != null;
+    };
+    ProofTreeNode.prototype.addRule = function() {
+      this.get('childTerms').add(new ProofTreeNode());
+      return this.change();
+    };
+    ProofTreeNode.prototype.isValid = function() {
+      return true;
+      if (!this.hasTerm()) {
+        return false;
+      }
+      return this.get('term').validate() && this.get('childTerms').all(function(x) {
+        return x.isValid();
+      });
+    };
+    ProofTreeNode.prototype.clear = function() {
+      return this.destroy();
+    };
+    return ProofTreeNode;
+  })();
 }).call(this);
 }, "models/rule_model": function(exports, require, module) {(function() {
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
@@ -11060,10 +11295,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return child;
   };
   exports.Rule = (function() {
+    __extends(Rule, Backbone.Model);
     function Rule() {
       Rule.__super__.constructor.apply(this, arguments);
     }
-    __extends(Rule, Backbone.Model);
     Rule.prototype.validate = function(str) {
       var regex, rule, token;
       if (!(str != null)) {
@@ -11081,8 +11316,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return Rule;
   })();
 }).call(this);
+<<<<<<< HEAD
 }, "models/rule_tree": function(exports, require, module) {(function() {
   var RuleTreeNode;
+=======
+}, "models/term_model": function(exports, require, module) {(function() {
+>>>>>>> master
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11091,6 +11330,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     child.__super__ = parent.prototype;
     return child;
   };
+<<<<<<< HEAD
   RuleTreeNode = require('models/rule_tree_node').RuleTreeNode;
   exports.RuleTree = (function() {
     function RuleTree() {
@@ -11150,6 +11390,28 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.destroy();
     };
     return RuleTreeNode;
+=======
+  exports.Term = (function() {
+    __extends(Term, Backbone.Model);
+    function Term() {
+      Term.__super__.constructor.apply(this, arguments);
+    }
+    Term.prototype.validate = function(str) {
+      var regex, rule, token;
+      if (!(str != null)) {
+        str = this.get("term");
+      }
+      token = "\\s*\\w+\\s*";
+      rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
+      regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)");
+      return regex.test(str);
+    };
+    Term.prototype.clear = function() {
+      this.destroy();
+      return this.view.remove();
+    };
+    return Term;
+>>>>>>> master
   })();
 }).call(this);
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
@@ -11173,7 +11435,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
+<<<<<<< HEAD
       _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Derivation Tree</h2>\n      <div id="rules-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+=======
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+>>>>>>> master
     }).call(this);
     
     return __out.join('');
@@ -11191,50 +11457,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     for (key in __obj) obj[key] = __obj[key];
     return obj;
   })());
-};}, "templates/rules_list_item": function(exports, require, module) {module.exports = function(__obj) {
-  var _safe = function(value) {
-    if (typeof value === 'undefined' && value == null)
-      value = '';
-    var result = new String(value);
-    result.ecoSafe = true;
-    return result;
-  };
-  return (function() {
-    var __out = [], __self = this, _print = function(value) {
-      if (typeof value !== 'undefined' && value != null)
-        __out.push(value.ecoSafe ? value : __self.escape(value));
-    }, _capture = function(callback) {
-      var out = __out, result;
-      __out = [];
-      callback.call(this);
-      result = __out.join('');
-      __out = out;
-      return _safe(result);
-    };
-    (function() {
-      _print(_safe('<div id="rule_'));
-      _print(this.content.rule.replace(/[^a-zA-Z0-9]+/g, ""));
-      _print(_safe('" class="draggable">\n  <span class="rule-text">'));
-      _print(this.content.rule);
-      _print(_safe('</span>\n  <input class="btnDeleteList" type="button" value="X" />\n</div>\n'));
-    }).call(this);
-    
-    return __out.join('');
-  }).call((function() {
-    var obj = {
-      escape: function(value) {
-        return ('' + value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
-      },
-      safe: _safe
-    }, key;
-    for (key in __obj) obj[key] = __obj[key];
-    return obj;
-  })());
-};}, "templates/rules_tree_item": function(exports, require, module) {module.exports = function(__obj) {
+};}, "templates/proof_tree_item": function(exports, require, module) {module.exports = function(__obj) {
   var _safe = function(value) {
     if (typeof value === 'undefined' && value == null)
       value = '';
@@ -11275,6 +11498,55 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     for (key in __obj) obj[key] = __obj[key];
     return obj;
   })());
+};}, "templates/rules_list_item": function(exports, require, module) {module.exports = function(__obj) {
+  var _safe = function(value) {
+    if (typeof value === 'undefined' && value == null)
+      value = '';
+    var result = new String(value);
+    result.ecoSafe = true;
+    return result;
+  };
+  return (function() {
+    var __out = [], __self = this, _print = function(value) {
+      if (typeof value !== 'undefined' && value != null)
+        __out.push(value.ecoSafe ? value : __self.escape(value));
+    }, _capture = function(callback) {
+      var out = __out, result;
+      __out = [];
+      callback.call(this);
+      result = __out.join('');
+      __out = out;
+      return _safe(result);
+    };
+    (function() {
+<<<<<<< HEAD
+      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_rules" class="droppable" value="'));
+      _print(this.content.rule);
+      _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
+=======
+      _print(_safe('<div id="rule_'));
+      _print(this.content.rule.replace(/[^a-zA-Z0-9]+/g, ""));
+      _print(_safe('" class="draggable">\n  <span class="rule-text">'));
+      _print(this.content.rule);
+      _print(_safe('</span>\n  <input class="btnDeleteList" type="button" value="X" />\n</div>\n'));
+>>>>>>> master
+    }).call(this);
+    
+    return __out.join('');
+  }).call((function() {
+    var obj = {
+      escape: function(value) {
+        return ('' + value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      },
+      safe: _safe
+    }, key;
+    for (key in __obj) obj[key] = __obj[key];
+    return obj;
+  })());
 };}, "views/home_view": function(exports, require, module) {(function() {
   var Rule, homeTemplate;
   var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
@@ -11288,24 +11560,24 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   homeTemplate = require('templates/home');
   Rule = require('models/rule_model').Rule;
   exports.HomeView = (function() {
+    __extends(HomeView, Backbone.View);
     function HomeView() {
       HomeView.__super__.constructor.apply(this, arguments);
     }
-    __extends(HomeView, Backbone.View);
     HomeView.prototype.id = 'home-view';
     HomeView.prototype.events = {
-      'click #btnAdd': 'addTreeRule',
       'click #btnCheck': 'checkRules',
       'click #btnAddRule': 'addStoreRule'
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
+<<<<<<< HEAD
       this.$('#rules-tree-div').append(app.views.rulesTree.render());
+=======
+      this.$('#proof-tree-div').append(app.views.proofTree.render());
+>>>>>>> master
       this.$('#rules-list-div').append(app.views.rulesList.render().el);
       return this;
-    };
-    HomeView.prototype.addTreeRule = function() {
-      return app.collections.rulesTree.add({});
     };
     HomeView.prototype.addStoreRule = function() {
       var color, newRule, res, txtAddRule, txtVal;
@@ -11366,6 +11638,126 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return HomeView;
   })();
 }).call(this);
+}, "views/proof_tree_node_view": function(exports, require, module) {(function() {
+  var ProofTreeNodeView, proofTreeItemTemplate;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  proofTreeItemTemplate = require('templates/proof_tree_item');
+  ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+  exports.ProofTreeNodeView = (function() {
+    __extends(ProofTreeNodeView, Backbone.View);
+    function ProofTreeNodeView() {
+      this.renderNode = __bind(this.renderNode, this);
+      this.render = __bind(this.render, this);
+      ProofTreeNodeView.__super__.constructor.apply(this, arguments);
+    }
+    ProofTreeNodeView.prototype.tagName = "li";
+    ProofTreeNodeView.prototype.tmpUl = null;
+    ProofTreeNodeView.prototype.events = {
+      "click .btnDeleteTree": "deleteItem",
+      "blur  .droppable": "checkTermSyntax",
+      "change input[type='text']": "updateModel"
+    };
+    ProofTreeNodeView.prototype.initialize = function() {
+      _.bindAll(this, "render");
+      return this.model.bind("change", this.render);
+    };
+    ProofTreeNodeView.prototype.checkTermSyntax = function() {
+      var bgc, fld;
+      fld = this.$(this.el).find("input[type='text']");
+      if (!this.model.validate(fld.val())) {
+        bgc = "#faa";
+      } else {
+        bgc = "#fff";
+      }
+      return fld.css("background-color", bgc);
+    };
+    ProofTreeNodeView.prototype.deleteItem = function() {
+      this.model.destroy();
+      return this.$(this.el).remove();
+    };
+    ProofTreeNodeView.prototype.render = function() {
+      var btn, newNode;
+      newNode = function(e) {
+        var model;
+        model = e.data;
+        return model.addRule();
+      };
+      btn = $('<input type="button" value="+" />');
+      btn.click(this.model, newNode);
+      this.$(this.el).html(btn);
+      this.$(this.el).append(proofTreeItemTemplate({
+        content: this.model.toJSON()
+      }));
+      this.$(this.el).find(".dropzone").droppable({
+        hoverClass: 'dropHover',
+        drop: function(event, ui) {
+          var elem;
+          elem = $(this).find("input[type='text']");
+          elem.val(ui.draggable.find(".rule-text").html());
+          return elem.trigger('change');
+        }
+      });
+      this.tmpUl = $('<ul></ul>');
+      this.model.get('childTerms').each(this.renderNode);
+      this.$(this.el).append(this.tmpUl);
+      this.tmpUl = null;
+      return this;
+    };
+    ProofTreeNodeView.prototype.renderNode = function(node) {
+      var view;
+      view = new ProofTreeNodeView({
+        model: node
+      });
+      return this.tmpUl.append(view.render().el);
+    };
+    ProofTreeNodeView.prototype.updateModel = function() {
+      return this.model.set({
+        rule: this.$(this.el).find("input[type='text']").val()
+      });
+    };
+    return ProofTreeNodeView;
+  })();
+}).call(this);
+}, "views/proof_tree_view": function(exports, require, module) {(function() {
+  var ProofTreeNodeView;
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+  exports.ProofTreeView = (function() {
+    __extends(ProofTreeView, Backbone.View);
+    function ProofTreeView() {
+      ProofTreeView.__super__.constructor.apply(this, arguments);
+    }
+    ProofTreeView.prototype.id = 'proof-tree-view';
+    ProofTreeView.prototype.tagName = 'ul';
+    ProofTreeView.prototype.className = 'tree';
+    ProofTreeView.prototype.initialize = function() {
+      _.bindAll(this, "render");
+      return this.model.bind("change", this.render);
+    };
+    ProofTreeView.prototype.render = function() {
+      var view;
+      view = new ProofTreeNodeView({
+        model: this.model.get('root')
+      });
+      return this.$(this.el).html(view.render().el);
+    };
+    return ProofTreeView;
+  })();
+}).call(this);
 }, "views/rules_list_item_view": function(exports, require, module) {(function() {
   var rulesListItemTemplate;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
@@ -11378,10 +11770,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   rulesListItemTemplate = require('templates/rules_list_item');
   exports.RulesListItemView = (function() {
-    function RulesListItemView() {
-      this.render = __bind(this.render, this);;      RulesListItemView.__super__.constructor.apply(this, arguments);
-    }
     __extends(RulesListItemView, Backbone.View);
+    function RulesListItemView() {
+      this.render = __bind(this.render, this);
+      RulesListItemView.__super__.constructor.apply(this, arguments);
+    }
     RulesListItemView.prototype.tagName = 'li';
     RulesListItemView.prototype.events = {
       "click .btnDeleteList": "deleteItem"
@@ -11397,20 +11790,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.model.destroy();
       return this.$(this.el).remove();
     };
-    RulesListItemView.prototype.initialize = function() {
-      return this.model.view = this;
-    };
     RulesListItemView.prototype.render = function() {
       this.$(this.el).html(rulesListItemTemplate({
         content: this.model.toJSON()
       }));
       return this;
-    };
-    RulesListItemView.prototype.remove = function() {
-      return this.$(this.el).remove();
-    };
-    RulesListItemView.prototype.clear = function() {
-      return this.model.clear();
     };
     return RulesListItemView;
   })();
@@ -11427,16 +11811,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   RulesListItemView = require('views/rules_list_item_view').RulesListItemView;
   exports.RulesListView = (function() {
-    function RulesListView() {
-      this.renderList = __bind(this.renderList, this);;
-      this.addAll = __bind(this.addAll, this);;
-      this.addOne = __bind(this.addOne, this);;      RulesListView.__super__.constructor.apply(this, arguments);
-    }
     __extends(RulesListView, Backbone.View);
+    function RulesListView() {
+      this.renderList = __bind(this.renderList, this);
+      this.addAll = __bind(this.addAll, this);
+      this.addOne = __bind(this.addOne, this);
+      RulesListView.__super__.constructor.apply(this, arguments);
+    }
     RulesListView.prototype.id = 'rules-list-view';
     RulesListView.prototype.tagName = 'ul';
     RulesListView.prototype.initialize = function() {
-      _.bindAll(this, 'addOne', 'addAll', 'render');
+      _.bindAll(this, 'addOne', 'addAll', 'renderList');
       app.collections.rulesList.bind('add', this.addOne);
       app.collections.rulesList.bind('refresh', this.addAll);
       app.collections.rulesList.bind('all', this.renderList);
@@ -11462,6 +11847,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return RulesListView;
   })();
 }).call(this);
+<<<<<<< HEAD
 }, "views/rules_tree_node_view": function(exports, require, module) {(function() {
   var RulesTreeNodeView, rulesTreeItemTemplate;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
@@ -11587,4 +11973,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return RulesTreeView;
   })();
 }).call(this);
+=======
+>>>>>>> master
 }});

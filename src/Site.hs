@@ -13,7 +13,7 @@ module Site
 
 import            Application
 import            Control.Applicative
-import            JCU.Web.Handlers
+import            JCU.Handlers
 import            Snap.Extension.Heist
 import            Snap.Util.FileServe
 import            Snap.Types
@@ -35,7 +35,6 @@ site =  route  [  ("/",           siteIndex)
                ,  ("/rules/inuse",   method GET   readInUseRulesH)
                ,  ("/rules/inuse",   method POST  updateInUseRulesH)
                ,  ("/rules/inuse/:id",   method DELETE deleteInUseRuleH)
-               ,  ("/rules/hint",    method POST  hintRulesH)
                ,  ("/rules/check",   method POST  checkRulesH)
                ,  ("/rules/check",   method GET   checkH) -- TODO: Remove after done testing
                ]

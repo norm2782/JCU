@@ -5,18 +5,14 @@ class exports.HomeView extends Backbone.View
   id: 'home-view'
 
   events:
-    'click #btnAdd'     : 'addTreeRule'
     'click #btnCheck'   : 'checkRules'
     'click #btnAddRule' : 'addStoreRule'
 
   render: ->
     @$(@.el).html homeTemplate
-    @$('#rules-tree-div').append app.views.rulesTree.render()
+    @$('#proof-tree-div').append app.views.proofTree.render()
     @$('#rules-list-div').append app.views.rulesList.render().el
     @
-
-  addTreeRule: ->
-    app.collections.rulesTree.add {}
 
   addStoreRule: ->
     txtAddRule = @$('#txtAddRule')

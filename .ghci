@@ -3,6 +3,8 @@
 :set -XDeriveDataTypeable
 :set -XMultiParamTypeClasses
 :set -XFunctionalDependencies
+:set -XFlexibleInstances
+:set -XTypeSynonymInstances
 :set -Wall
 :set -isrc
 :set -itest/suite
