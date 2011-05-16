@@ -74,27 +74,28 @@ work and it is definitely simple.
 -- children. This means that all non-root and non-leaf nodes are checked twice,
 -- in essence.
 -- We might not even need the Env here...
+
+-- Invariant: all Terms in trms need to unify with _something_ in order for the
+-- node to be correct.
+
 check :: [Rule] -> Proof -> Bool
-check rls (Node trms [])   = (not . null) $ concatMap (rhss rls) trms
-check rls (Node trms sbs)  = any matched trms -- && all (check rls) sbs
-  where  -- Nu moet er dus een [Term] in rhsss zijn die hetzelfde is als subs (misschien wel verschillende volgorde).
+check rls (Node trms [])   =  length (concatMap (rhss rls) trms) == length trms
+check rls (Node trms sbs)  =  any matched trms -- && all (check rls) sbs
+  where  -- Nu moet er dus een [Term] in (rhss trms) zijn die hetzelfde is als subs (misschien wel verschillende volgorde). Echter, rhss kan ook een ([], env) terug geven. Dit kan geldig zijn als er al een oplossing is. M.a.w., we kunnen _niet_ kijken naar equality!
          -- | Gather all right-hand sides of all terms in the current node
          matched :: Term -> Bool
-         matched = isJust . find (\(ts, env) -> tseq ts sbs env) . rhss rls
+         matched = isJust . find (termMatch sbs) . rhss rls
 
+termMatch :: [Tree [Term]] -> ([Term], Env) -> Bool
+termMatch sbs (trms, env) = any (matches . rootLabel) sbs
+  where  matches :: [Term] -> Bool
+         matches sts    = any (match sts) (permutations trms)
+         match :: [Term] -> [Term] -> Bool
+         match ts1 ts2  = all (isJust . flip unify (Just env)) (zip ts1 ts2)
+        
 rhss :: [Rule] -> Term -> [([Term], Env)]
 rhss rls t = [(cs, env)  |  (c :<-: cs)  <- rls
                          ,  Just env     <- [unify (t, c) (Just [])]]
-
-tseq :: [Term] -> [Tree [Term]] -> Env -> Bool
-tseq terms subs env = let ans = any (matches . rootLabel) subs in 
-  ans
-  {- trace ("Terms: " ++ show terms ++ "\nSubs: " ++ show subs ++-}
-         {- "\nEnv: " ++ show env ++ "\nAns: " ++ show ans ++ "\n\n") ans-}
-  where  matches :: [Term] -> Bool
-         matches sts    = any (match sts) (permutations terms)
-         match :: [Term] -> [Term] -> Bool
-         match ts1 ts2  = all (isJust . flip unify (Just env)) (zip ts1 ts2)
 
 -- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
 -- van de unify'de resultaten uit rhss
@@ -113,18 +114,15 @@ tseq terms subs env = let ans = any (matches . rootLabel) subs in
 -- TODO: R
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rules node
-  | check rules node  = Node True $ map (checkProof rules) (subForest node)
+  | trace ("\ntrace: " ++ show node ++ "\n") $ check rules node  =  Node True $ map (checkProof rules) (subForest node)
   | otherwise         = fmap (const False) node
 
 
-testSimpleRight :: [Env]
-testSimpleRight = solve testStoredRules [] 0 [Fun "ma" [cnst "mien", cnst "juul"]]
-testSimpleWrong :: [Env]
-testSimpleWrong = solve testStoredRules [] 0 [Fun "ma" [cnst "miesn", cnst "juul"]]
+testSimpleRight ::  PCheck
+testSimpleRight = checkProof testStoredRules $ Node [Fun "pa" [cnst "alex",  cnst "ama"], Fun "ma" [cnst "max", cnst "ama"]] []
 
-
-testBla ::  PCheck
-testBla = checkProof testStoredRules $ Node [Fun "pa" [cnst "alex",  cnst "ama"]] []
+testSimpleWrong ::  PCheck
+testSimpleWrong = checkProof testStoredRules $ Node [Fun "ma" [cnst "alex",  cnst "ama"]] []
 
 testRight ::  PCheck
 testRight = checkProof testStoredRules voorBeaAmaProof
