@@ -1,9 +1,7 @@
 module JCU.Prolog where
 
-import            Data.List (find, permutations)
-import            Data.Maybe (isJust)
+import            Data.List (permutations)
 import            Data.Tree (Tree(..))
-import Debug.Trace (trace)
 import            JCU.Types
 
 lookUp :: Term -> Env -> Term
@@ -39,113 +37,87 @@ ouder(alex,ama).
 -}
 
 {-
-                        pa(alex,ama). (5)
-                        -------------
-ma(bea,alex). (3)    ouder(alex,ama). (4)
--------------        ----------------
-ouder(bea,alex), (2a) voor(alex,ama). (2b)
+                         pa(alex,ama). (6)
+                         -------------
+ma(bea,alex). (4)     ouder(alex,ama). (5)
+-------------         ----------------
+ouder(bea,alex), (2)  voor(alex,ama). (3)
 -------------------------------------
          voor(bea,ama). (1)
-
-
-
-If (1) does not unify with something in the environment, return a False tree.
-If (1) unifies with something in the environment, then grab the corresponding
-rule with which it unified and grab the right-hand side list of terms of this
-rule. With this list, see if the list of terms at (2) matches. That is, all
-left-hand side terms must be exactly present at (2). No more no less. In
-addition, they all need to unify with the left-hand side of (1). This now
-repeats for every branch of the provided proof-tree. In general, if the
-left-hand side list is empty, it means that we have arrived at a fact and we're
-done. If we do not end up at a fact, this should be communicated in some way as
-well.
-
-Alternatively, just solve for every level in the tree. Not fast, but might just
-work and it is definitely simple.
 -}
 
--- FIXME:
--- Approach: First check/solve for the current node. This will result in an
--- environment. In `solve` the recursive case is passed (cs ++ ts), which are
--- the next things to be considered. These are the exact same things the user
--- passed in the childnodes. (or should have at least). We now just have to
--- check whether these resulting terms are specified in the node's children.
--- This needs to be an exact match. We then repeat this for each of the
--- children. This means that all non-root and non-leaf nodes are checked twice,
--- in essence.
--- We might not even need the Env here...
+-- TODO Client-side:
+-- A rule from the list can be dragged onto a textfield which already has
+-- content. Then application then checks whether the dragged rule and the
+-- text in the textfield can be unified. If so, n child text fields appear,
+-- where n is the number of terms in the right-hand side of the rule.
+-- If a fact is unified this way, it will spawn one text field, containing
+-- the fact.
 
--- Invariant: all Terms in trms need to unify with _something_ in order for the
--- node to be correct.
+testSimpleRight :: PCheck
+testSimpleRight  =  checkProof testStoredRules
+                 $  Node (Fun "pa" [cnst "alex",  cnst "ama"]) []
 
-check :: [Rule] -> Proof -> Bool
-check rls (Node trms [])   =  length (concatMap (rhss rls) trms) == length trms
-check rls (Node trms sbs)  =  any matched trms -- && all (check rls) sbs
-  where  -- Nu moet er dus een [Term] in (rhss trms) zijn die hetzelfde is als subs (misschien wel verschillende volgorde). Echter, rhss kan ook een ([], env) terug geven. Dit kan geldig zijn als er al een oplossing is. M.a.w., we kunnen _niet_ kijken naar equality!
-         -- | Gather all right-hand sides of all terms in the current node
-         matched :: Term -> Bool
-         matched = isJust . find (termMatch sbs) . rhss rls
+testSimpleWrong :: PCheck
+testSimpleWrong = checkProof testStoredRules $ Node (Fun "ma" [cnst "alex",  cnst "ama"]) []
 
-termMatch :: [Tree [Term]] -> ([Term], Env) -> Bool
-termMatch sbs (trms, env) = any (matches . rootLabel) sbs
-  where  matches :: [Term] -> Bool
-         matches sts    = any (match sts) (permutations trms)
-         match :: [Term] -> [Term] -> Bool
-         match ts1 ts2  = all (isJust . flip unify (Just env)) (zip ts1 ts2)
-        
-rhss :: [Rule] -> Term -> [([Term], Env)]
-rhss rls t = [(cs, env)  |  (c :<-: cs)  <- rls
-                         ,  Just env     <- [unify (t, c) (Just [])]]
-
--- ergens in de subs moet een Node zitten waarvan de terms gelijk zijn aan een
--- van de unify'de resultaten uit rhss
-
--- subs moet unifyen met 1 [Term] uit de resultaten van rhss!
---
--- If the t and c unify, we know that there is a term in the rules with which
--- the current term under consideration unifies. As a result, we return the
--- right-hand side of the rule(s) with which the provided term unifies.
---
--- Each [Term] represents a branch in the proof tree. E.g., either ma or ouder.
-
--- TODO: Always to the full work, so that we always get some answer and some
--- environment at a node. The resulting tree should have something like a
--- (Bool, Env) type.
--- TODO: R
-checkProof :: [Rule] -> Proof -> PCheck
-checkProof rules node
-  | trace ("\ntrace: " ++ show node ++ "\n") $ check rules node  =  Node True $ map (checkProof rules) (subForest node)
-  | otherwise         = fmap (const False) node
-
-
-testSimpleRight ::  PCheck
-testSimpleRight = checkProof testStoredRules $ Node [Fun "pa" [cnst "alex",  cnst "ama"], Fun "ma" [cnst "max", cnst "ama"]] []
-
-testSimpleWrong ::  PCheck
-testSimpleWrong = checkProof testStoredRules $ Node [Fun "ma" [cnst "alex",  cnst "ama"]] []
-
-testRight ::  PCheck
+testRight :: PCheck
 testRight = checkProof testStoredRules voorBeaAmaProof
 testWrong :: PCheck
 testWrong = checkProof testStoredRules voorBeaAmaWrong
 
+rhss :: Env -> [Rule] -> Term -> [([Term], Env)]
+rhss env rls tm = [(cs, env')  |  (c :<-: cs)  <- rls
+                               ,  Just env'    <- [unify (tm, c) (Just env)]]
 
-{-
-Need to unify ouder(alex, ama). with ouder(X,Y) :- pa(X,Y). somehow.
-How about:
-- Zip concrete data with variable names
-- Input those as variable/value pairs in the environment
-- Continue unification
+check :: Env -> Int -> [Rule] -> Proof -> PCheck
+check env n rls (Node tm []) = Node ((not . null) $ rhss env (tag n rls) tm) []
+check env n rls (Node tm cs) = Node success nwChlds
+  where  -- All possible right-hand sides of `tm`. Each of the child nodes
+         -- _must_ unify with at least one of the right-hand side nodes.
+         rhsss :: [([Term], Env)]
+         rhsss = rhss env (tag n rls) tm
 
-Does the existing unify already do this? It seems so! :D
-So now the only trick is to build the tree and we're done.
+         success :: Bool
+         success = (not . null) rhsss && (not . null) (concat matches)
+           where  matches :: [Env]
+                  matches = [m  |  (tms, env')  <- rhsss
+                                ,  Just m       <- [match tms env']]
 
-When this is working, we can expand the PCheck tree to include whole
-environments which can be passed to the client.
--}
+         nwChlds :: [PCheck]
+         nwChlds | success    = map (check env (n+1) rls) cs -- TODO: Env to env'
+                 | otherwise  = map (fmap (const False)) cs
+
+         match :: [Term] -> Env -> Maybe Env
+         match ts env' | null match'  = Nothing
+                       | otherwise    = Just (head match')
+           where match'  = [env''  |  perm        <- permutations (map rootLabel cs)
+                                   ,  Just env''  <- [foldr unify (Just env') (zip perm ts)] ]
+
+checkProof :: [Rule] -> Proof -> PCheck
+checkProof = check [] 0
+
+voorBeaAmaProof :: Proof
+voorBeaAmaProof = Node (Fun "voor" [cnst "bea",  cnst "ama"])
+                    [  Node (Fun "ouder" [cnst "bea",  cnst "alex"])
+                         [  Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
+                         ,  Node (Fun "ouder" [cnst "alex", cnst "ama"])
+                              [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]
+                         ] 
+                    ,  Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
+
+voorBeaAmaWrong :: Proof
+voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])
+                    [ Node (Fun "ouder" [cnst "bea",  cnst "alex"])
+                        [ Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
+                        , Node (Fun "fout!" [cnst "alex", cnst "ama"])
+                            [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]
+                        ]
+                    , Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
 
 cnst ::  Ident -> Term
 cnst s = Fun s []
+
 testStoredRules :: [Rule]
 testStoredRules =  [ Fun "ma"    [cnst "mien", cnst "juul"] :<-: []
                    , Fun "ma"    [cnst "juul", cnst "bea"]  :<-: []
@@ -155,7 +127,7 @@ testStoredRules =  [ Fun "ma"    [cnst "mien", cnst "juul"] :<-: []
                    , Fun "ma"    [cnst "max" , cnst "ama"]  :<-: []
                    , Fun "ma"    [cnst "max" , cnst "ari"]  :<-: []
                    , Fun "oma"   [Var  "X"   ,  Var "Z"]    :<-: [ Fun "ma"    [Var "X", Var "Y"]
-                                                               , Fun "ouder" [Var "Y", Var "Z"] ]
+                                                                 , Fun "ouder" [Var "Y", Var "Z"] ]
                    , Fun "pa"    [cnst "alex", cnst "ale"]  :<-: []
                    , Fun "pa"    [cnst "alex", cnst "ama"]  :<-: []
                    , Fun "pa"    [cnst "alex", cnst "ari"]  :<-: []
@@ -171,26 +143,3 @@ testInUseRules = [ Fun "voor"  [cnst "bea",    cnst "ama"] :<-: []
                  , Fun "pa"    [Var "X"    , cnst "ama"] :<-: []
                  , Fun "pa"    [cnst "alex", cnst "ama"] :<-: []
                  ]
-
-voorBeaAmaProof :: Proof
-voorBeaAmaProof = Node [Fun "voor" [cnst "bea",  cnst "ama"]]
-                    [ Node [ Fun "ouder" [cnst "bea",  cnst "alex"]
-                           , Fun "voor"  [cnst "alex", cnst "ama"]
-                           ]
-                        [ Node [Fun "ma" [cnst "bea",  cnst "alex"]] []
-                        , Node [Fun "ouder" [cnst "alex", cnst "ama"]]
-                            [ Node [Fun "pa" [cnst "alex", cnst "ama"]] []
-                            ]
-                        ]
-                    ]
-voorBeaAmaWrong :: Proof
-voorBeaAmaWrong = Node [Fun "voor" [cnst "bea",  cnst "ama"]]
-                    [ Node [ Fun "ouder" [cnst "bea",  cnst "alex"]
-                           , Fun "voor"  [cnst "alex", cnst "ama"]
-                           ]
-                        [ Node [Fun "ma" [cnst "bea",  cnst "alex"]] []
-                        , Node [Fun "ouder" [cnst "fout!", cnst "ama"]]
-                            [ Node [Fun "pa" [cnst "alex", cnst "ama"]] []
-                            ]
-                        ]
-                    ]

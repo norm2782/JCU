@@ -22,7 +22,7 @@ data Rule    =  Term :<-: [Term]
 
 type Ident   =  String
 type Env     =  [(Ident, Term)]
-type Proof   =  Tree [Term]
+type Proof   =  Tree Term
 type PCheck  =  Tree Bool
 
 -- TODO: Decide if we should keep these custom Show instances.
@@ -49,3 +49,6 @@ instance Taggable Term where
 
 instance Taggable Rule where
   tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
+
+instance Taggable a => Taggable [a] where
+  tag n = map (tag n)
