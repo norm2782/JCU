@@ -1,10 +1,7 @@
 module JCU.Prolog where
 
-import            Data.List (permutations)
 import            Data.Tree (Tree(..))
 import            JCU.Types
-import qualified  Data.Set as S hiding (map)
-import Debug.Trace
 
 lookUp :: Term -> Env -> Term
 lookUp (Var x)  e   = case lookup x e of
@@ -13,11 +10,11 @@ lookUp (Var x)  e   = case lookup x e of
 lookUp t        _   = t
 
 subst :: Env -> Term  -> Term
-subst env (Var x)      = case lookup x env of
-                         Nothing   -> Var x
-                         Just res  -> subst env res
-subst env (Fun x cs)   = Fun x (map (subst env) cs)
-subst env (Con x   )   = Con x
+subst env  (Var x)      = case lookup x env of
+                            Nothing   -> Var x
+                            Just res  -> subst env res
+subst env  (Fun x cs)   = Fun x (map (subst env) cs)
+subst _    con@(Con _)  = con
 
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
@@ -64,85 +61,61 @@ ouder(bea,alex), (2)  voor(alex,ama). (3)
 -- If a fact is unified this way, it will spawn one text field, containing
 -- the fact.
 
--- testSimpleRight :: PCheck
+checkProof ::  [Rule] -> Proof -> Tree Status
+checkProof rls (Node tm cs)
+  | rlsMatch   = Node Correct (map (checkProof rls) cs)
+  | otherwise  = if null cs
+                   then  Node Incomplete []
+                   else  Node Invalid (map (checkProof rls) cs)
+  where rlsMatch = any (tryRule tm [c | Node c _ <- cs]) rls
+
+tryRule :: Term -> [Term] -> Rule -> Bool
+tryRule tm cs (lhs :<-: rhs) =
+  case unify (tm, lhs) (Just []) of
+    Nothing  ->  False
+    Just s   ->  let  newrhs = map (subst s) rhs
+                 in   locateAll newrhs cs
+
+locateAll :: [Term] -> [Term] -> Bool
+locateAll []      []  = True
+locateAll []      _   = False -- TODO: Verify
+locateAll (_:_)   []  = False
+locateAll (x:xs)  cs  = or  [  locateAll (map (subst e) xs) css
+                            |  (c,css) <- split cs
+                            ,  Just e  <- [unify (x,c) (Just [])]
+                            ]
+
+split :: [a] -> [(a, [a])]
+split xs = split' xs id
+    where  split' (y:ys)  f  = (y, f ys) : split' ys (f.(y:))
+           split' []      _  = []
+
+testSimpleRight :: PCheck
 testSimpleRight  =  checkProof testStoredRules
                  $  Node (Fun "pa" [cnst "alex",  cnst "ama"]) []
 
--- testSimpleWrong :: PCheck
+testSimpleWrong :: PCheck
 testSimpleWrong = checkProof testStoredRules $ Node (Fun "ma" [cnst "alex",  cnst "ama"]) []
 
--- testRight :: PCheck
-testRight = checkProof testStoredRules voorBeaAmaProof
--- testWrong :: PCheck
-testWrong = checkProof testStoredRules voorBeaAmaWrong
-
-rhss :: Env -> [Rule] -> Term -> [([Term], Env)]
-rhss env rls tm = [(cs, env')  |  (c :<-: cs)  <- rls
-                               ,  Just env'    <- [unify (tm, c) (Just env)]]
-
--- TODO: Double-check
-data Status = Correct
-            | Incomplete
-            | Invalid deriving Show
-
-checkProof ::  [Rule] -> Proof -> Tree Status
-checkProof rls (Node tm cs)  = 
-     if null (filter (tryRule tm [c | Node c _ <- cs]) rls)
-     then if null cs then Node Incomplete []
-                     else      Node Invalid (map (checkProof rls) cs)
-     else                      Node Correct (map (checkProof rls) cs)
-
- 
-tryRule tm cs (lhs :<-: rhs) =
-  case unify (tm, lhs) (Just []) of
-  Nothing -> False
-  Just s  -> let newrhs = map (subst s) rhs
-             in -- trace ("env   : " ++ show s ++ "\n" ++
-                --      "newrhs: " ++ show newrhs ++ "\n" ++
-                --       "cs    : " ++ show cs ++ "\n")
-                (locateAll newrhs cs) 
-
-locateAll []      []  = True
-locateAll (x:xs)  []  = False
-locateAll (x:xs)  cs  = or  [ locateAll (map (subst e) xs) css| (c,css) <- split cs
-                                                              , Just e  <- [unify (x,c) (Just [])]
-                            ] 
-
-split xs = split' xs id
-    where split' (x:xs) f = (x, f xs) : split' xs (f.(x:))
-          split' []     _ = []
-                         
-{-  case tryRules rls tmNode success nwChlds
-  where  success =-- All possible right-hand sides of `tm`. Each of the child nodes
-         -- _must_ unify with at least one of the right-hand side nodes.
-         rhsss :: [([Term], Env)]
-         rhsss = rhss env (tag n rls) tm
-
-         success :: Bool
-         success = (not . null) rhsss && (not . null) (concat matches)
-
-         matches :: [Env]
-         matches = [m  |  (tms, env')  <- rhsss
-                       ,  Just m       <- [match tms env']]
-
-         nwChlds :: [PCheck]
-         nwChlds | success    = map (check (head matches) (n+1) rls) cs
-                 | otherwise  = map (fmap (const False)) cs
-
-         match :: [Term] -> Env -> Maybe Env
-         match ts env' | null match'  = Nothing
-                       | otherwise    = Just (head match')
-           where match'  = [env''  |  perm        <- permutations (map rootLabel cs)
-                                   ,  Just env''  <- [foldr unify (Just env') (zip perm ts)] ]
-
--} 
+testCorrect :: PCheck
+testCorrect = checkProof testStoredRules voorBeaAmaProof
+testInvalid :: PCheck
+testInvalid = checkProof testStoredRules voorBeaAmaWrong
+testIncomplete :: PCheck
+testIncomplete = checkProof testStoredRules voorBeaAmaIncomplete
 
 voorBeaAmaProof :: Proof
 voorBeaAmaProof = Node (Fun "voor" [cnst "bea",  cnst "ama"])
                     [  Node (Fun "ouder" [cnst "bea",  cnst "alex"])
-                         [ 
-                         ] 
-                    ,  Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
+                         [ Node (Fun "ma" [cnst "bea",  cnst "alex"]) []]
+                    ,  Node (Fun "voor"  [cnst "alex", cnst "ama"])
+                         [ Node (Fun "ouder" [cnst "alex", cnst "ama"])
+                             [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]] ]
+
+voorBeaAmaIncomplete :: Proof
+voorBeaAmaIncomplete = Node (Fun "voor" [cnst "bea",  cnst "ama"])
+                         [  Node (Fun "ouder" [cnst "bea",  cnst "alex"]) []
+                         ,  Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
 
 voorBeaAmaWrong :: Proof
 voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])

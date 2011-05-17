@@ -20,10 +20,15 @@ data Term    =  Con Int
 data Rule    =  Term :<-: [Term]
              deriving Eq
 
+data Status  =  Correct
+             |  Incomplete
+             |  Invalid
+             deriving Show
+
 type Ident   =  String
 type Env     =  [(Ident, Term)]
 type Proof   =  Tree Term
-type PCheck  =  Tree Bool
+type PCheck  =  Tree Status
 
 -- TODO: Decide if we should keep these custom Show instances.
 instance Show Term where
