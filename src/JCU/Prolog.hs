@@ -3,12 +3,22 @@ module JCU.Prolog where
 import            Data.List (permutations)
 import            Data.Tree (Tree(..))
 import            JCU.Types
+import qualified  Data.Set as S hiding (map)
+import Debug.Trace
 
 lookUp :: Term -> Env -> Term
 lookUp (Var x)  e   = case lookup x e of
                         Nothing   -> Var x
                         Just res  -> lookUp res e
 lookUp t        _   = t
+
+subst :: Env -> Term  -> Term
+subst env (Var x)      = case lookup x env of
+                         Nothing   -> Var x
+                         Just res  -> subst env res
+subst env (Fun x cs)   = Fun x (map (subst env) cs)
+subst env (Con x   )   = Con x
+
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
 unify _       Nothing       = Nothing
@@ -54,16 +64,16 @@ ouder(bea,alex), (2)  voor(alex,ama). (3)
 -- If a fact is unified this way, it will spawn one text field, containing
 -- the fact.
 
-testSimpleRight :: PCheck
+-- testSimpleRight :: PCheck
 testSimpleRight  =  checkProof testStoredRules
                  $  Node (Fun "pa" [cnst "alex",  cnst "ama"]) []
 
-testSimpleWrong :: PCheck
+-- testSimpleWrong :: PCheck
 testSimpleWrong = checkProof testStoredRules $ Node (Fun "ma" [cnst "alex",  cnst "ama"]) []
 
-testRight :: PCheck
+-- testRight :: PCheck
 testRight = checkProof testStoredRules voorBeaAmaProof
-testWrong :: PCheck
+-- testWrong :: PCheck
 testWrong = checkProof testStoredRules voorBeaAmaWrong
 
 rhss :: Env -> [Rule] -> Term -> [([Term], Env)]
@@ -71,10 +81,39 @@ rhss env rls tm = [(cs, env')  |  (c :<-: cs)  <- rls
                                ,  Just env'    <- [unify (tm, c) (Just env)]]
 
 -- TODO: Double-check
-check :: Env -> Int -> [Rule] -> Proof -> PCheck
-check env n rls (Node tm [])  = Node ((not . null) $ rhss env (tag n rls) tm) []
-check env n rls (Node tm cs)  = Node success nwChlds
-  where  -- All possible right-hand sides of `tm`. Each of the child nodes
+data Status = Correct
+            | Incomplete
+            | Invalid deriving Show
+
+checkProof ::  [Rule] -> Proof -> Tree Status
+checkProof rls (Node tm cs)  = 
+     if null (filter (tryRule tm [c | Node c _ <- cs]) rls)
+     then if null cs then Node Incomplete []
+                     else      Node Invalid (map (checkProof rls) cs)
+     else                      Node Correct (map (checkProof rls) cs)
+
+ 
+tryRule tm cs (lhs :<-: rhs) =
+  case unify (tm, lhs) (Just []) of
+  Nothing -> False
+  Just s  -> let newrhs = map (subst s) rhs
+             in -- trace ("env   : " ++ show s ++ "\n" ++
+                --      "newrhs: " ++ show newrhs ++ "\n" ++
+                --       "cs    : " ++ show cs ++ "\n")
+                (locateAll newrhs cs) 
+
+locateAll []      []  = True
+locateAll (x:xs)  []  = False
+locateAll (x:xs)  cs  = or  [ locateAll (map (subst e) xs) css| (c,css) <- split cs
+                                                              , Just e  <- [unify (x,c) (Just [])]
+                            ] 
+
+split xs = split' xs id
+    where split' (x:xs) f = (x, f xs) : split' xs (f.(x:))
+          split' []     _ = []
+                         
+{-  case tryRules rls tmNode success nwChlds
+  where  success =-- All possible right-hand sides of `tm`. Each of the child nodes
          -- _must_ unify with at least one of the right-hand side nodes.
          rhsss :: [([Term], Env)]
          rhsss = rhss env (tag n rls) tm
@@ -96,15 +135,12 @@ check env n rls (Node tm cs)  = Node success nwChlds
            where match'  = [env''  |  perm        <- permutations (map rootLabel cs)
                                    ,  Just env''  <- [foldr unify (Just env') (zip perm ts)] ]
 
-checkProof :: [Rule] -> Proof -> PCheck
-checkProof = check [] 0
+-} 
 
 voorBeaAmaProof :: Proof
 voorBeaAmaProof = Node (Fun "voor" [cnst "bea",  cnst "ama"])
                     [  Node (Fun "ouder" [cnst "bea",  cnst "alex"])
-                         [  Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
-                         ,  Node (Fun "ouder" [cnst "alex", cnst "ama"])
-                              [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]
+                         [ 
                          ] 
                     ,  Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
 

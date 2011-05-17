@@ -15,7 +15,7 @@ data User    =  User  {  authUser     :: AuthUser
 data Term    =  Con Int
              |  Var Ident
              |  Fun Ident [Term]
-             deriving Eq
+             deriving (Eq, Ord)
 
 data Rule    =  Term :<-: [Term]
              deriving Eq
