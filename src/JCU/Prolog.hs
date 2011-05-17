@@ -77,7 +77,7 @@ tryRule tm cs (lhs :<-: rhs) =
                  in   locateAll newrhs cs
 
 locateAll :: [Term] -> [Term] -> Bool
-locateAll []      _  = True
+locateAll []      _   = True
 locateAll (_:_)   []  = False
 locateAll (x:xs)  cs  = or  [  locateAll (map (subst e) xs) css
                             |  (c,css) <- split cs
