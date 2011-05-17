@@ -77,8 +77,7 @@ tryRule tm cs (lhs :<-: rhs) =
                  in   locateAll newrhs cs
 
 locateAll :: [Term] -> [Term] -> Bool
-locateAll []      []  = True
-locateAll []      _   = False -- TODO: Verify
+locateAll []      _  = True
 locateAll (_:_)   []  = False
 locateAll (x:xs)  cs  = or  [  locateAll (map (subst e) xs) css
                             |  (c,css) <- split cs
@@ -119,12 +118,11 @@ voorBeaAmaIncomplete = Node (Fun "voor" [cnst "bea",  cnst "ama"])
 
 voorBeaAmaWrong :: Proof
 voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])
-                    [ Node (Fun "ouder" [cnst "bea",  cnst "alex"])
-                        [ Node (Fun "ma" [cnst "bea",  cnst "alex"]) []
-                        , Node (Fun "ma" [cnst "alex", cnst "ama"])
-                            [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]
-                        ]
-                    , Node (Fun "voor"  [cnst "alex", cnst "ama"]) [] ]
+                    [  Node (Fun "ouder" [cnst "bea",  cnst "alex"])
+                         [ Node (Fun "ma" [cnst "bea",  cnst "alex"]) []]
+                    ,  Node (Fun "fout!"  [cnst "alex", cnst "ama"])
+                         [ Node (Fun "ouder" [cnst "alex", cnst "ama"])
+                             [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]] ]
 
 cnst ::  Ident -> Term
 cnst s = Fun s []
