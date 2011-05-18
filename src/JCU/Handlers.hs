@@ -159,10 +159,10 @@ unifyH = do
   writeLBS $ encode (getRhss (dropTerm dropReq) (dropRule dropReq))
 
 mkDropReq :: L.ByteString -> Application DropReq
-mkDropReq raw = parseJSON raw (\r -> fromJSON r :: AE.Result DropReq)
+mkDropReq = parseJSON (\r -> fromJSON r :: AE.Result DropReq)
 
-parseJSON :: L.ByteString -> (Value -> AE.Result a) -> Application a
-parseJSON raw f =
+parseJSON :: (Value -> AE.Result a) -> L.ByteString -> Application a
+parseJSON f raw =
   case L.parse json raw of
     (Done _ r)  ->
       case f r of
@@ -171,7 +171,7 @@ parseJSON raw f =
     _           -> do500
 
 mkRules :: L.ByteString -> Application Proof
-mkRules raw = parseJSON raw (\r -> fromJSON r :: AE.Result Proof)
+mkRules = parseJSON (\r -> fromJSON r :: AE.Result Proof)
 
 do500 :: Application a
 do500 = do
