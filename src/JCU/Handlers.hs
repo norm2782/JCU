@@ -171,28 +171,6 @@ mkRules raw =
           r <- getResponse
           finishWith r
 
--- TODO: Still needed?
-{- checkRules :: [Rule] -> [Env] -> [Bool]-}
-{- checkRules rules = foldr (comp . checkRules') []-}
-{-   where checkRules' (env, trcs) = [ any (cmpRuleTrace env r) trcs-}
-{-                                   | r <- rules ]-}
-
-{- comp :: [Bool] -> [Bool] -> [Bool]-}
-{- comp lst highest | l lst > l highest = lst-}
-{-                  | otherwise         = highest-}
-{-   where l = DL.length . takeWhile (== True)-}
-
-{- -- TODO: Is this right? Also, do we need r == u?-}
-{- -- TODO: Take the conclusion into account-}
-{- -- TODO: Send data from client from text fields, not from collection...-}
-{- cmpRuleTrace :: Env -> Rule -> Trace -> Bool-}
-{- cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =-}
-{-   trace ("env: " ++ show env ++ "\n" ++-}
-{-          "rterm: " ++ show r ++ "\n" ++-}
-{-          "traceg: " ++ show g ++ "\n" ++-}
-{-          "traceu: " ++ show u ++ "\n")-}
-{-         unify (t, g) (Just env) /= Nothing || r == u-}
-
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
@@ -205,19 +183,3 @@ updateInUseRulesH = do-- TODO restrict forbiddenH $ do
   let dmods = models -- fromJSON models
   trace ("updateInUseRulesH: " ++ show dmods) (return ())
   return ()
-
-
-{-
-alex
------------- pa(alex, ama).
-pa(X, ama).
------------- ouder(X, Y) :- pa(X, Y).
-ouder(X, ama).
-
-
-max
------------- ma(max, ama).
-ma(X, ama).
------------- ouder(X, Y) :- ma(X, Y).
-ouder(X, ama).
--}

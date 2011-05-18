@@ -11075,7 +11075,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       node.set({
         term: raw.term
       });
-      cs = new Backbone.Collection(cs);
+      cs = new Backbone.Collection();
       _ref = raw.childTerms;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         ct = _ref[_i];
@@ -11093,15 +11093,14 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       options.success = function(resp, status, xhr) {
         var r;
         r = model.mkTree(resp, model);
-        console.log(r);
         return model.set({
-          root: r
+          treeRoot: r
         });
       };
       return Backbone.sync.call(this, 'read', this, options);
     };
     ProofTree.prototype.allValid = function() {
-      return this.get('root').isValid();
+      return this.get('treeRoot').isValid();
     };
     return ProofTree;
   })();
@@ -11176,77 +11175,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.view.remove();
     };
     return Rule;
-  })();
-}).call(this);
-}, "models/rule_tree": function(exports, require, module) {(function() {
-  var RuleTreeNode;
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
-  RuleTreeNode = require('models/rule_tree_node').RuleTreeNode;
-  exports.RuleTree = (function() {
-    __extends(RuleTree, Backbone.Model);
-    function RuleTree() {
-      RuleTree.__super__.constructor.apply(this, arguments);
-    }
-    RuleTree.prototype.url = function() {
-      return '/rules/inuse';
-    };
-    RuleTree.prototype.initialize = function() {
-      return this.set({
-        root: new RuleTreeNode()
-      });
-    };
-    RuleTree.prototype.allValid = function() {
-      return this.get('root').isValid();
-    };
-    return RuleTree;
-  })();
-}).call(this);
-}, "models/rule_tree_node": function(exports, require, module) {(function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
-  exports.RuleTreeNode = (function() {
-    __extends(RuleTreeNode, Backbone.Model);
-    function RuleTreeNode() {
-      RuleTreeNode.__super__.constructor.apply(this, arguments);
-    }
-    RuleTreeNode.prototype.initialize = function() {
-      return this.set({
-        childRules: new Backbone.Collection()
-      });
-    };
-    RuleTreeNode.prototype.hasRule = function() {
-      return this.get('rule') != null;
-    };
-    RuleTreeNode.prototype.addRule = function() {
-      this.get('childRules').add(new RuleTreeNode());
-      return this.change();
-    };
-    RuleTreeNode.prototype.isValid = function() {
-      return true;
-      if (!this.hasRule()) {
-        return false;
-      }
-      return this.get('rule').validate() && this.get('childRules').all(function(x) {
-        return x.isValid();
-      });
-    };
-    RuleTreeNode.prototype.clear = function() {
-      return this.destroy();
-    };
-    return RuleTreeNode;
   })();
 }).call(this);
 }, "models/term_model": function(exports, require, module) {(function() {
@@ -11482,7 +11410,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           type: 'POST',
           contentType: 'application/json',
           dataType: 'json',
-          data: JSON.stringify(app.models.tree.get('root')),
+          data: JSON.stringify(app.models.tree.get('treeRoot')),
           success: callback
         });
       }
@@ -11518,7 +11446,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNodeView.prototype.initialize = function() {
       _.bindAll(this, "render");
-      return this.model.bind("change", this.render);
+      return this.childTerms().bind("change", this.render);
+    };
+    ProofTreeNodeView.prototype.childTerms = function() {
+      return this.model.get('childTerms');
     };
     ProofTreeNodeView.prototype.checkTermSyntax = function() {
       var bgc, fld;
@@ -11557,7 +11488,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
       });
       this.tmpUl = $('<ul></ul>');
-      this.model.get('childTerms').each(this.renderNode);
+      this.childTerms().each(this.renderNode);
       this.$(this.el).append(this.tmpUl);
       this.tmpUl = null;
       return this;
@@ -11596,14 +11527,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeView.prototype.id = 'proof-tree-view';
     ProofTreeView.prototype.tagName = 'ul';
     ProofTreeView.prototype.className = 'tree';
+    ProofTreeView.prototype.getRoot = function() {
+      return this.model.get('treeRoot');
+    };
     ProofTreeView.prototype.initialize = function() {
       _.bindAll(this, "render");
-      return this.model.bind("change", this.render);
+      return this.getRoot().get('childTerms').bind("change", this.render);
     };
     ProofTreeView.prototype.render = function() {
       var view;
       view = new ProofTreeNodeView({
-        model: this.model.get('root')
+        model: this.getRoot()
       });
       return this.$(this.el).html(view.render().el);
     };
@@ -11697,99 +11631,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       });
     };
     return RulesListView;
-  })();
-}).call(this);
-}, "views/rules_tree_node_view": function(exports, require, module) {(function() {
-  var RulesTreeNodeView, rulesTreeItemTemplate;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
-  rulesTreeItemTemplate = require('templates/rules_tree_item');
-  RulesTreeNodeView = require('views/rules_tree_node_view').RulesTreeNodeView;
-  exports.RulesTreeNodeView = (function() {
-    __extends(RulesTreeNodeView, Backbone.View);
-    function RulesTreeNodeView() {
-      this.renderNode = __bind(this.renderNode, this);
-      this.render = __bind(this.render, this);
-      RulesTreeNodeView.__super__.constructor.apply(this, arguments);
-    }
-    RulesTreeNodeView.prototype.tagName = "li";
-    RulesTreeNodeView.prototype.tmpUl = null;
-    RulesTreeNodeView.prototype.events = {
-      "click .btnDeleteTree": "deleteItem",
-      "blur  .droppable": "checkRuleSyntax",
-      "change input[type='text']": "updateModel"
-    };
-    RulesTreeNodeView.prototype.initialize = function() {
-      _.bindAll(this, "render");
-      return this.model.bind("change", this.render);
-    };
-    RulesTreeNodeView.prototype.checkRuleSyntax = function() {
-      var bgc, fld;
-      fld = this.$(this.el).find("input[type='text']");
-      if (!this.model.validate(fld.val())) {
-        bgc = "#faa";
-      } else {
-        bgc = "#fff";
-      }
-      return fld.css("background-color", bgc);
-    };
-    RulesTreeNodeView.prototype.deleteItem = function() {
-      this.model.destroy();
-      return this.$(this.el).remove();
-    };
-    RulesTreeNodeView.prototype.render = function() {
-      var btn, newNode;
-      newNode = function(e) {
-        var model;
-        model = e.data;
-        return model.addRule();
-      };
-      btn = $('<input type="button" value="+" />');
-      btn.click(this.model, newNode);
-      this.$(this.el).html(btn);
-      this.$(this.el).append(rulesTreeItemTemplate({
-        content: this.model.toJSON()
-      }));
-      this.$(this.el).find(".dropzone").droppable({
-        hoverClass: 'dropHover',
-        drop: function(event, ui) {
-          var elem;
-          elem = $(this).find("input[type='text']");
-          elem.val(ui.draggable.find(".rule-text").html());
-          return elem.trigger('change');
-        }
-      });
-      this.tmpUl = $('<ul></ul>');
-      this.model.get('childRules').each(this.renderNode);
-      this.$(this.el).append(this.tmpUl);
-      this.tmpUl = null;
-      return this;
-    };
-    RulesTreeNodeView.prototype.renderNode = function(node) {
-      var view;
-      view = new RulesTreeNodeView({
-        model: node
-      });
-      return this.tmpUl.append(view.render().el);
-    };
-    RulesTreeNodeView.prototype.remove = function() {
-      return this.$(this.el).remove();
-    };
-    RulesTreeNodeView.prototype.clear = function() {
-      return this.model.clear();
-    };
-    RulesTreeNodeView.prototype.updateModel = function() {
-      return this.model.set({
-        rule: this.$(this.el).find("input[type='text']").val()
-      });
-    };
-    return RulesTreeNodeView;
   })();
 }).call(this);
 }});
