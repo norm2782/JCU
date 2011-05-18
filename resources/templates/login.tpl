@@ -11,7 +11,7 @@
     </tr>
     <tr>
       <td><input type="submit" text="Login" /></td>
-      <td><input type="checkbox" name="remember" />Remember me?</td>
+      <td><input type="checkbox" value="1" name="remember" />Remember me?</td>
     </tr>
   </table>
   </form>

@@ -7,7 +7,7 @@ import            Data.Aeson (encode, fromJSON, json)
 import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
-import            Data.ByteString.Char8 as B (unpack)
+import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
@@ -18,7 +18,7 @@ import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB ((=:), Document, MonadMongoDB)
 import            Snap.Extension.Heist (render, MonadHeist)
-import            Snap.Extension.Session.CookieSession (setSessionUserId)
+import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
 
@@ -28,6 +28,7 @@ import            Text.Email.Validate as E (isValid)
 -- | Access control related actions
 restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b -> m b
 restrict failH succH = do
+  touchSession
   authed <- isLoggedIn
   if authed
     then succH
@@ -104,7 +105,6 @@ signupH = do
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
               let u = makeUser email pwd
-              trace (show u) (return ())
               au     <- saveAuthUser (authUser u, additionalUserFields u)
               case au of
                 Nothing   -> newSignupH
@@ -114,27 +114,27 @@ signupH = do
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
 makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) [] []
+                                          , userEmail     = email }) (map (pack . show) testStoredRules)
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
 readStoredRulesH :: Application ()
-readStoredRulesH = do-- TODO restrict forbiddenH $ do
+readStoredRulesH = restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
   trace ("readStoredRulesH: " ++ show testStoredRules)
         (writeLBS $ encode testStoredRules)
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = undefined -- TODO restrict forbiddenH $ do
+updateStoredRulesH = restrict forbiddenH $ do undefined
 
 deleteStoredRuleH :: Application ()
-deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
+deleteStoredRuleH = restrict forbiddenH $ do
   rule <- getParam "id"
   trace ("deleteStoredRuleH: " ++ show rule) (return ())
 
 addStoredRuleH :: Application ()
-addStoredRuleH = do-- TODO restrict forbiddenH $ do
+addStoredRuleH = restrict forbiddenH $ do
   rule <- getRequestBody
   trace ("addStoredRuleH: " ++ show rule)
         (writeLBS "")
@@ -142,15 +142,15 @@ addStoredRuleH = do-- TODO restrict forbiddenH $ do
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
 checkProofH :: Application ()
-checkProofH = do-- TODO restrict forbiddenH $ do
+checkProofH = restrict forbiddenH $ do
   setTimeout 15
   proof <- mkRules =<< getRequestBody
   writeLBS $ encode (checkProof testStoredRules proof) -- TODO: Grab rules from User
 
 unifyH :: Application ()
-unifyH = do
-  dropReq <- mkDropReq =<< getRequestBody
-  writeLBS $ encode (getRhss (dropTerm dropReq) (dropRule dropReq))
+unifyH = restrict forbiddenH $ do
+  (DropReq tm rl) <- mkDropReq =<< getRequestBody
+  writeLBS $ encode (getRhss tm rl)
 
 mkDropReq :: L.ByteString -> Application DropReq
 mkDropReq = parseJSON fromJSON
