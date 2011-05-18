@@ -4,22 +4,21 @@ module JCU.Handlers where
 
 import            Application (Application)
 import            Data.Aeson (encode, fromJSON, json)
-import            Data.Aeson.Types as AE (Result(..))
+import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
-import            Data.ByteString.Char8 as B (unpack)
+import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
-import            Data.List as DL (length)
 import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
-import            JCU.Parser
+import            JCU.Parser()
 import            JCU.Prolog
 import            JCU.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB ((=:), Document, MonadMongoDB)
 import            Snap.Extension.Heist (render, MonadHeist)
-import            Snap.Extension.Session.CookieSession (setSessionUserId)
+import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
 
@@ -29,6 +28,7 @@ import            Text.Email.Validate as E (isValid)
 -- | Access control related actions
 restrict :: (MonadMongoDB m, MonadAuth m) => m b -> m b -> m b
 restrict failH succH = do
+  touchSession
   authed <- isLoggedIn
   if authed
     then succH
@@ -105,7 +105,6 @@ signupH = do
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
               let u = makeUser email pwd
-              trace (show u) (return ())
               au     <- saveAuthUser (authUser u, additionalUserFields u)
               case au of
                 Nothing   -> newSignupH
@@ -115,111 +114,62 @@ signupH = do
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
 makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) [] []
+                                          , userEmail     = email }) (map (pack . show) testStoredRules)
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
 readStoredRulesH :: Application ()
-readStoredRulesH = do-- TODO restrict forbiddenH $ do
+readStoredRulesH = restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
   trace ("readStoredRulesH: " ++ show testStoredRules)
         (writeLBS $ encode testStoredRules)
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = undefined -- TODO restrict forbiddenH $ do
+updateStoredRulesH = restrict forbiddenH $ do undefined
 
 deleteStoredRuleH :: Application ()
-deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
+deleteStoredRuleH = restrict forbiddenH $ do
   rule <- getParam "id"
   trace ("deleteStoredRuleH: " ++ show rule) (return ())
 
-deleteInUseRuleH :: Application ()
-deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
-  rule <- getParam "id"
-  trace ("deleteInUseRuleH: " ++ show rule) (return ())
-
 addStoredRuleH :: Application ()
-addStoredRuleH = do-- TODO restrict forbiddenH $ do
+addStoredRuleH = restrict forbiddenH $ do
   rule <- getRequestBody
   trace ("addStoredRuleH: " ++ show rule)
         (writeLBS "")
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
-checkRulesH :: Application ()
-checkRulesH = do-- TODO restrict forbiddenH $ do
+checkProofH :: Application ()
+checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  r <- getRequestBody
-  trace ("checkRulesH1: " ++ (show r)) (return ())
-  rules <- mkRules r -- =<< getRequestBody
-  {- let (t :<-: _:_)  = rules-}
-  {- let solutions     = solve testStoredRules [t] [] 0-}
-  let checked       = True -- TODO: checkRules rules solutions
-  trace ("checkRulesH: " ++ show rules)
-        (writeLBS $ encode checked)
+  proof <- mkRules =<< getRequestBody
+  writeLBS $ encode (checkProof testStoredRules proof) -- TODO: Grab rules from User
 
-mkRules :: L.ByteString -> Application Proof
-mkRules raw =
+unifyH :: Application ()
+unifyH = restrict forbiddenH $ do
+  (DropReq tm rl) <- mkDropReq =<< getRequestBody
+  writeLBS $ encode (getRhss tm rl)
+
+mkDropReq :: L.ByteString -> Application DropReq
+mkDropReq = parseJSON fromJSON
+
+parseJSON :: (Value -> AE.Result a) -> L.ByteString -> Application a
+parseJSON f raw =
   case L.parse json raw of
     (Done _ r)  ->
-      case fromJSON r :: AE.Result Proof of
+      case f r of
         (Success a)  -> return a
-        _            -> do500
-    _           -> do500
-  where do500 = do
-          modifyResponse $ setResponseStatus 500 "Internal server error"
-          writeBS "500 internal server error"
-          r <- getResponse
-          finishWith r
+        _            -> error500H
+    _           -> error500H
 
--- TODO: Still needed?
-{- checkRules :: [Rule] -> [Env] -> [Bool]-}
-{- checkRules rules = foldr (comp . checkRules') []-}
-{-   where checkRules' (env, trcs) = [ any (cmpRuleTrace env r) trcs-}
-{-                                   | r <- rules ]-}
+mkRules :: L.ByteString -> Application Proof
+mkRules = parseJSON fromJSON
 
-{- comp :: [Bool] -> [Bool] -> [Bool]-}
-{- comp lst highest | l lst > l highest = lst-}
-{-                  | otherwise         = highest-}
-{-   where l = DL.length . takeWhile (== True)-}
-
-{- -- TODO: Is this right? Also, do we need r == u?-}
-{- -- TODO: Take the conclusion into account-}
-{- -- TODO: Send data from client from text fields, not from collection...-}
-{- cmpRuleTrace :: Env -> Rule -> Trace -> Bool-}
-{- cmpRuleTrace env r@(t :<-: _) (Trace g u _ _) =-}
-{-   trace ("env: " ++ show env ++ "\n" ++-}
-{-          "rterm: " ++ show r ++ "\n" ++-}
-{-          "traceg: " ++ show g ++ "\n" ++-}
-{-          "traceu: " ++ show u ++ "\n")-}
-{-         unify (t, g) (Just env) /= Nothing || r == u-}
-
-readInUseRulesH :: Application ()
-readInUseRulesH =  do-- TODO restrict forbiddenH $ do
-  modifyResponse $ setContentType "application/json"
-  trace ("readInUseRulesH: " ++ (show $ encode voorBeaAmaProof))
-        (writeLBS $ encode voorBeaAmaProof)
-
-updateInUseRulesH :: Application ()
-updateInUseRulesH = do-- TODO restrict forbiddenH $ do
-  models <- getRequestBody
-  let dmods = models -- fromJSON models
-  trace ("updateInUseRulesH: " ++ show dmods) (return ())
-  return ()
-
-
-{-
-alex
------------- pa(alex, ama).
-pa(X, ama).
------------- ouder(X, Y) :- pa(X, Y).
-ouder(X, ama).
-
-
-max
------------- ma(max, ama).
-ma(X, ama).
------------- ouder(X, Y) :- ma(X, Y).
-ouder(X, ama).
--}
+error500H :: Application a
+error500H = do
+  modifyResponse $ setResponseStatus 500 "Internal server error"
+  writeBS "500 internal server error"
+  r <- getResponse
+  finishWith r

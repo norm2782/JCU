@@ -15,6 +15,7 @@
       <span id="header">
         <img src="/img/jculogo-64.png" /> Module Functional Programming
       </span>
+      <span id="logout"><a href="/logout">Logout</a></span>
     </div>
 
     <div id="bd">

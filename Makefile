@@ -1,6 +1,9 @@
 default:
 	make install
 
+jcu:
+	make && jcu
+
 dist:
 	cabal check
 	cabal configure

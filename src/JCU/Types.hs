@@ -7,30 +7,32 @@ import            Data.List (intercalate)
 import            Data.Tree (Tree(..))
 import            Snap.Auth (AuthUser)
 
-data User    =  User  {  authUser     :: AuthUser
-                      ,  storedRules  :: [ByteString]
-                      ,  inuseRules   :: [ByteString] }
-             deriving Show
+data User     =  User  {  authUser     :: AuthUser
+                       ,  storedRules  :: [ByteString] }
+              deriving Show
 
-data Term    =  Con Int
-             |  Var Ident
-             |  Fun Ident [Term]
-             deriving (Eq, Ord)
+data Term     =  Con Int
+              |  Var Ident
+              |  Fun Ident [Term]
+              deriving (Eq, Ord)
 
-data Rule    =  Term :<-: [Term]
-             deriving Eq
+data Rule     =  Term :<-: [Term]
+              deriving Eq
 
-data Status  =  Correct
-             |  Incomplete
-             |  Invalid
-             deriving Show
+data Status   =  Correct
+              |  Incomplete
+              |  Invalid
+              deriving Show
 
-type Ident   =  String
-type Env     =  [(Ident, Term)]
-type Proof   =  Tree Term
-type PCheck  =  Tree Status
+data DropReq  = DropReq Term Rule
+              deriving Show
 
--- TODO: Decide if we should keep these custom Show instances.
+type Ident    = String
+type Env      = [(Ident, Term)]
+type Proof    = Tree Term
+type PCheck   = Tree Status
+type DropRes  = (Bool, Int)
+
 instance Show Term where
   show (Con  i)      = show i
   show (Var  i)      = i

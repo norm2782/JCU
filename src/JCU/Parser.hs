@@ -37,6 +37,20 @@ startParse p inp  =  parse ((,) <$> p <*> pEnd)
 pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
 
+instance FromJSON DropReq where
+  parseJSON (Object o) = mkDropReq <$> o .: "term" <*> o .: "rule"
+
+mkDropReq :: String -> String -> DropReq
+mkDropReq t r = DropReq (mkTerm t) (mkRule r)
+  where mkRule = fst . startParse pRule
+
+instance ToJSON DropRes where
+  toJSON (b, i) = object  [  "unified"   .= b
+                          ,  "children"  .= i]
+
+instance ToJSON PCheck where
+  toJSON (Node st cs) = object  [  "status"    .= show st
+                                ,  "children"  .= toJSON cs ]
 
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]
@@ -57,4 +71,3 @@ mkProofTree r rts = Node (mkTerm r) mkProofTrees
 -- TODO: Something with errors
 mkTerm :: String -> Term
 mkTerm = fst . startParse pTerm
-

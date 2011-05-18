@@ -13,10 +13,10 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   initialize: ->
     _.bindAll @, "render"
-    # TODO: instead of triggering render here, trigger some proxy. The current
-    # approach re-renders everything multiple times. Instead, send a render
-    # event to the root once and let it decide on re-rendering, once.
-    @model.bind "change", @render
+    @childTerms().bind "change", @render
+
+  childTerms: ->
+    @model.get('childTerms')
 
   checkTermSyntax: ->
     fld = @$(@el).find("input[type='text']")
@@ -48,11 +48,11 @@ class exports.ProofTreeNodeView extends Backbone.View
       , drop: (event, ui) ->
           elem = $(this).find("input[type='text']")
           elem.val ui.draggable.find(".rule-text").html()
-          elem.trigger('change')
+          elem.trigger('change') # DOM change, not Backbone change
       }
 
     @tmpUl = $('<ul></ul>')
-    @model.get('childTerms').each @renderNode
+    @childTerms().each @renderNode
     @$(@el).append @tmpUl
     @tmpUl = null
     @
@@ -63,3 +63,16 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   updateModel: ->
     @model.set {rule: @$(@el).find("input[type='text']").val()}
+
+  unify: (term, rule) ->
+    model = @
+    callback = (data) ->
+      console.log data # TODO: Finish
+
+    $.ajax
+      url:  '/rules/unify'
+      type: 'POST'
+      contentType: 'application/json'
+      dataType: 'json'
+      data:     JSON.stringify {term: term, rule: rule}
+      success:  callback

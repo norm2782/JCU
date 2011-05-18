@@ -37,6 +37,26 @@ solve rules e n  (t:ts)  =
   ,  sol          <- solve rules r (n+1) (cs ++ ts)
   ]
 
+
+getRhss :: Term -> Rule -> DropRes
+getRhss t (c :<-: cs) =
+  case unify (t, c) (Just []) of
+    Nothing  -> (False, 0)
+    Just _   -> (True, length cs)
+
+testGetRhsss :: DropRes
+testGetRhsss = getRhss t r
+  where t = Fun "voor" [cnst "bea", cnst "ama"]
+        r = Fun "voor" [Var "X",    Var "Y"] :<-: [ Fun "ouder" [Var "X", Var "Z"]
+                                                  , Fun "voor"  [Var "Z", Var "Y"] ]
+
+testGetRhsss' :: DropRes
+testGetRhsss' = getRhss t r
+  where t = Fun "voor" [cnst "bea", cnst "ama"]
+        r = Fun "pa" [cnst "alex", cnst "ama"] :<-: []
+
+
+
 {-
  pa(alex,ama).
 ----------------
@@ -61,14 +81,13 @@ ouder(bea,alex), (2)  voor(alex,ama). (3)
 -- If a fact is unified this way, it will spawn one text field, containing
 -- the fact.
 
-checkProof ::  [Rule] -> Proof -> Tree Status
+checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
   | rlsMatch   = Node Correct (map (checkProof rls) cs)
   | otherwise  = if null cs
                    then  Node Incomplete []
                    else  Node Invalid (map (checkProof rls) cs)
   where rlsMatch = any (tryRule tm [c | Node c _ <- cs]) rls
-
 tryRule :: Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
   case unify (tm, lhs) (Just []) of
