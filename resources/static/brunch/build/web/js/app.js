@@ -11528,6 +11528,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeView.prototype.tagName = 'ul';
     ProofTreeView.prototype.className = 'tree';
     ProofTreeView.prototype.getRoot = function() {
+      console.log(this.model);
+      console.log(this.model.attributes);
+      console.log(this.model.get('treeRoot'));
+      console.log(this.model.attributes.treeRoot);
       return this.model.get('treeRoot');
     };
     ProofTreeView.prototype.initialize = function() {

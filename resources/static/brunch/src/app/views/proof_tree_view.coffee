@@ -7,9 +7,11 @@ class exports.ProofTreeView extends Backbone.View
   className: 'tree'
 
   getRoot: ->
-    # console.log @model
-    # console.log @model.attributes
-    # console.log @model.attributes.treeRoot
+    console.log @model
+    console.log @model.attributes
+    console.log @model.get('treeRoot')
+    console.log @model.attributes.treeRoot
+
     @model.get('treeRoot')
 
   initialize: ->
