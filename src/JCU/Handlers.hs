@@ -4,7 +4,7 @@ module JCU.Handlers where
 
 import            Application (Application)
 import            Data.Aeson (encode, fromJSON, json)
-import            Data.Aeson.Types as AE (Result(..))
+import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
@@ -159,22 +159,19 @@ unifyH = do
   writeLBS $ encode (getRhss (dropTerm dropReq) (dropRule dropReq))
 
 mkDropReq :: L.ByteString -> Application DropReq
-mkDropReq raw =
+mkDropReq raw = parseJSON raw (\r -> fromJSON r :: AE.Result DropReq)
+
+parseJSON :: L.ByteString -> (Value -> AE.Result a) -> Application a
+parseJSON raw f =
   case L.parse json raw of
     (Done _ r)  ->
-      case fromJSON r :: AE.Result DropReq of
+      case f r of
         (Success a)  -> return a
         _            -> do500
     _           -> do500
 
 mkRules :: L.ByteString -> Application Proof
-mkRules raw =
-  case L.parse json raw of
-    (Done _ r)  ->
-      case fromJSON r :: AE.Result Proof of
-        (Success a)  -> return a
-        _            -> do500
-    _           -> do500
+mkRules raw = parseJSON raw (\r -> fromJSON r :: AE.Result Proof)
 
 do500 :: Application a
 do500 = do
