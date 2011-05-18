@@ -31,9 +31,6 @@ router =  route  [  ("/",           siteIndex)
                  ,  ("/rules/stored",  method PUT   updateStoredRulesH)
                  ,  ("/rules/stored",  method POST   addStoredRuleH) -- TODO: For adding individual rule. See if this is the desired approach
                  ,  ("/rules/stored/:id",  method DELETE  deleteStoredRuleH)
-                 ,  ("/rules/inuse",   method GET   readInUseRulesH)
-                 ,  ("/rules/inuse",   method POST  updateInUseRulesH)
-                 ,  ("/rules/inuse/:id",   method DELETE deleteInUseRuleH)
                  ,  ("/proof/check",   method POST  checkProofH)
                  ,  ("/rules/check",   method GET   checkH) -- TODO: Remove after done testing
                  ,  ("/rules/unify",   method POST  unifyH)

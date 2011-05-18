@@ -133,11 +133,6 @@ deleteStoredRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getParam "id"
   trace ("deleteStoredRuleH: " ++ show rule) (return ())
 
-deleteInUseRuleH :: Application ()
-deleteInUseRuleH = do-- TODO restrict forbiddenH $ do
-  rule <- getParam "id"
-  trace ("deleteInUseRuleH: " ++ show rule) (return ())
-
 addStoredRuleH :: Application ()
 addStoredRuleH = do-- TODO restrict forbiddenH $ do
   rule <- getRequestBody
@@ -152,14 +147,13 @@ checkProofH = do-- TODO restrict forbiddenH $ do
   proof <- mkRules =<< getRequestBody
   writeLBS $ encode (checkProof testStoredRules proof) -- TODO: Grab rules from User
 
-
 unifyH :: Application ()
 unifyH = do
   dropReq <- mkDropReq =<< getRequestBody
   writeLBS $ encode (getRhss (dropTerm dropReq) (dropRule dropReq))
 
 mkDropReq :: L.ByteString -> Application DropReq
-mkDropReq = parseJSON (\r -> fromJSON r :: AE.Result DropReq)
+mkDropReq = parseJSON fromJSON
 
 parseJSON :: (Value -> AE.Result a) -> L.ByteString -> Application a
 parseJSON f raw =
@@ -167,28 +161,15 @@ parseJSON f raw =
     (Done _ r)  ->
       case f r of
         (Success a)  -> return a
-        _            -> do500
-    _           -> do500
+        _            -> error500H
+    _           -> error500H
 
 mkRules :: L.ByteString -> Application Proof
-mkRules = parseJSON (\r -> fromJSON r :: AE.Result Proof)
+mkRules = parseJSON fromJSON
 
-do500 :: Application a
-do500 = do
+error500H :: Application a
+error500H = do
   modifyResponse $ setResponseStatus 500 "Internal server error"
   writeBS "500 internal server error"
   r <- getResponse
   finishWith r
-
-readInUseRulesH :: Application ()
-readInUseRulesH =  do-- TODO restrict forbiddenH $ do
-  modifyResponse $ setContentType "application/json"
-  trace ("readInUseRulesH: " ++ show (encode voorBeaAmaProof))
-        (writeLBS $ encode voorBeaAmaProof)
-
-updateInUseRulesH :: Application ()
-updateInUseRulesH = do-- TODO restrict forbiddenH $ do
-  models <- getRequestBody
-  let dmods = models -- fromJSON models
-  trace ("updateInUseRulesH: " ++ show dmods) (return ())
-  return ()
