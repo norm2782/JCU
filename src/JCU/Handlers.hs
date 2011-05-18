@@ -9,10 +9,9 @@ import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
-import            Data.List as DL (length)
 import            Data.Map (Map, member, (!))
 import            Debug.Trace (trace) -- TODO: Remove
-import            JCU.Parser
+import            JCU.Parser()
 import            JCU.Prolog
 import            JCU.Types
 import            Snap.Auth
@@ -155,7 +154,18 @@ checkProofH = do-- TODO restrict forbiddenH $ do
 
 
 unifyH :: Application ()
-unifyH = undefined
+unifyH = do
+  dropReq <- mkDropReq =<< getRequestBody
+  writeLBS $ encode (getRhss (dropTerm dropReq) (dropRule dropReq))
+
+mkDropReq :: L.ByteString -> Application DropReq
+mkDropReq raw =
+  case L.parse json raw of
+    (Done _ r)  ->
+      case fromJSON r :: AE.Result DropReq of
+        (Success a)  -> return a
+        _            -> do500
+    _           -> do500
 
 mkRules :: L.ByteString -> Application Proof
 mkRules raw =
@@ -165,16 +175,18 @@ mkRules raw =
         (Success a)  -> return a
         _            -> do500
     _           -> do500
-  where do500 = do
-          modifyResponse $ setResponseStatus 500 "Internal server error"
-          writeBS "500 internal server error"
-          r <- getResponse
-          finishWith r
+
+do500 :: Application a
+do500 = do
+  modifyResponse $ setResponseStatus 500 "Internal server error"
+  writeBS "500 internal server error"
+  r <- getResponse
+  finishWith r
 
 readInUseRulesH :: Application ()
 readInUseRulesH =  do-- TODO restrict forbiddenH $ do
   modifyResponse $ setContentType "application/json"
-  trace ("readInUseRulesH: " ++ (show $ encode voorBeaAmaProof))
+  trace ("readInUseRulesH: " ++ show (encode voorBeaAmaProof))
         (writeLBS $ encode voorBeaAmaProof)
 
 updateInUseRulesH :: Application ()

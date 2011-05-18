@@ -37,6 +37,26 @@ solve rules e n  (t:ts)  =
   ,  sol          <- solve rules r (n+1) (cs ++ ts)
   ]
 
+
+getRhss :: Term -> Rule -> DropRes
+getRhss t (c :<-: cs) =
+  case unify (t, c) (Just []) of
+    Nothing  -> (False, 0)
+    Just _   -> (True, length cs)
+
+testGetRhsss :: DropRes
+testGetRhsss = getRhss t r
+  where t = Fun "voor" [cnst "bea", cnst "ama"]
+        r = Fun "voor" [Var "X",    Var "Y"] :<-: [ Fun "ouder" [Var "X", Var "Z"]
+                                                  , Fun "voor"  [Var "Z", Var "Y"] ]
+
+testGetRhsss' :: DropRes
+testGetRhsss' = getRhss t r
+  where t = Fun "voor" [cnst "bea", cnst "ama"]
+        r = Fun "pa" [cnst "alex", cnst "ama"] :<-: []
+
+
+
 {-
  pa(alex,ama).
 ----------------

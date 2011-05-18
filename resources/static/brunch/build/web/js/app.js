@@ -11505,6 +11505,24 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         rule: this.$(this.el).find("input[type='text']").val()
       });
     };
+    ProofTreeNodeView.prototype.unify = function(term, rule) {
+      var callback, model;
+      model = this;
+      callback = function(data) {
+        return console.log(data);
+      };
+      return $.ajax({
+        url: '/rules/unify',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+          term: term,
+          rule: rule
+        }),
+        success: callback
+      });
+    };
     return ProofTreeNodeView;
   })();
 }).call(this);

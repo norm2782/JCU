@@ -63,3 +63,16 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   updateModel: ->
     @model.set {rule: @$(@el).find("input[type='text']").val()}
+
+  unify: (term, rule) ->
+    model = @
+    callback = (data) ->
+      console.log data # TODO: Finish
+
+    $.ajax
+      url:  '/rules/unify'
+      type: 'POST'
+      contentType: 'application/json'
+      dataType: 'json'
+      data:     JSON.stringify {term: term, rule: rule}
+      success:  callback
