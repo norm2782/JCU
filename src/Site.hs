@@ -14,7 +14,6 @@ module Site
 import            Application
 import            Control.Applicative
 import            JCU.Handlers
-import            Snap.Extension.Heist
 import            Snap.Util.FileServe
 import            Snap.Types
 
@@ -35,7 +34,8 @@ site =  route  [  ("/",           siteIndex)
                ,  ("/rules/inuse",   method GET   readInUseRulesH)
                ,  ("/rules/inuse",   method POST  updateInUseRulesH)
                ,  ("/rules/inuse/:id",   method DELETE deleteInUseRuleH)
-               ,  ("/rules/check",   method POST  checkRulesH)
+               ,  ("/proof/check",   method POST  checkProofH)
                ,  ("/rules/check",   method GET   checkH) -- TODO: Remove after done testing
+               ,  ("/rules/unify",   method POST  unifyH)
                ]
         <|> serveDirectory "resources/static"

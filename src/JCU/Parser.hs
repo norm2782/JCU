@@ -38,6 +38,10 @@ pIdentifier :: Parser String
 pIdentifier = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
 
 
+instance ToJSON PCheck where
+  toJSON (Node st cs) = object  [  "status"    .= show st
+                                ,  "children"  .= toJSON cs ]
+
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]
 
@@ -57,4 +61,3 @@ mkProofTree r rts = Node (mkTerm r) mkProofTrees
 -- TODO: Something with errors
 mkTerm :: String -> Term
 mkTerm = fst . startParse pTerm
-

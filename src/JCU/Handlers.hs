@@ -147,17 +147,15 @@ addStoredRuleH = do-- TODO restrict forbiddenH $ do
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
-checkRulesH :: Application ()
-checkRulesH = do-- TODO restrict forbiddenH $ do
+checkProofH :: Application ()
+checkProofH = do-- TODO restrict forbiddenH $ do
   setTimeout 15
-  r <- getRequestBody
-  trace ("checkRulesH1: " ++ (show r)) (return ())
-  rules <- mkRules r -- =<< getRequestBody
-  {- let (t :<-: _:_)  = rules-}
-  {- let solutions     = solve testStoredRules [t] [] 0-}
-  let checked       = True -- TODO: checkRules rules solutions
-  trace ("checkRulesH: " ++ show rules)
-        (writeLBS $ encode checked)
+  proof <- mkRules =<< getRequestBody
+  writeLBS $ encode (checkProof testStoredRules proof) -- TODO: Grab rules from User
+
+
+unifyH :: Application ()
+unifyH = undefined
 
 mkRules :: L.ByteString -> Application Proof
 mkRules raw =
