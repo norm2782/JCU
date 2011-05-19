@@ -11064,6 +11064,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     RulesList.prototype.url = function() {
       return '/rules/stored';
     };
+    RulesList.prototype.parse = function(resp) {
+      return _.map(resp, function(x) {
+        return {
+          rule: x
+        };
+      });
+    };
     return RulesList;
   })();
 }).call(this);
@@ -11119,12 +11126,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
       });
       app.controllers.main = new MainController();
-      app.models.tree = new ProofTree();
       app.views.home = new HomeView();
       app.views.rulesList = new RulesListView();
-      app.views.proofTree = new ProofTreeView({
-        model: app.models.tree
-      });
       if (Backbone.history.getFragment() === '') {
         return Backbone.history.saveLocation("home");
       }
@@ -11258,37 +11261,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.view.remove();
     };
     return Rule;
-  })();
-}).call(this);
-}, "models/term_model": function(exports, require, module) {(function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
-  exports.Term = (function() {
-    __extends(Term, Backbone.Model);
-    function Term() {
-      Term.__super__.constructor.apply(this, arguments);
-    }
-    Term.prototype.validate = function(str) {
-      var regex, rule, token;
-      if (!(str != null)) {
-        str = this.get("term");
-      }
-      token = "\\s*\\w+\\s*";
-      rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
-      regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)");
-      return regex.test(str);
-    };
-    Term.prototype.clear = function() {
-      this.destroy();
-      return this.view.remove();
-    };
-    return Term;
   })();
 }).call(this);
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
@@ -11438,7 +11410,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
-      this.$('#proof-tree-div').append(app.views.proofTree.render());
       this.$('#rules-list-div').append(app.views.rulesList.render().el);
       return this;
     };
@@ -11671,11 +11642,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "click .btnDeleteList": "deleteItem"
     };
     RulesListItemView.prototype.initialize = function() {
-      _.bindAll(this, 'addOne', 'addAll', 'render');
-      app.collections.rulesTree.bind('add', this.addOne);
-      app.collections.rulesTree.bind('refresh', this.addAll);
-      app.collections.rulesTree.bind('all', this.renderList);
-      return app.collections.rulesTree.fetch();
+      return _.bindAll(this, 'render');
     };
     RulesListItemView.prototype.deleteItem = function() {
       this.model.destroy();

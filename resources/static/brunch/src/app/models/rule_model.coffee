@@ -1,4 +1,7 @@
 class exports.Rule extends Backbone.Model
+  # Attributes:
+  # rule :: String
+
   validate: (str) ->
     if !str?
       str = @get "rule"

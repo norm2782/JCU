@@ -10,7 +10,7 @@ class exports.HomeView extends Backbone.View
 
   render: ->
     @$(@.el).html homeTemplate
-    @$('#proof-tree-div').append app.views.proofTree.render()
+    # @$('#proof-tree-div').append app.views.proofTree.render()
     @$('#rules-list-div').append app.views.rulesList.render().el
     @
 
