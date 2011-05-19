@@ -169,8 +169,7 @@ getRules = restrict forbiddenH $ do
   cau <- currentAuthUser
   let rawRules = getStoredRules . snd . fromJust $ cau
   -- TODO: Error handling
-  let rules = fmap (fst . startParse pRule . unpack) (fromMaybe [] rawRules)
-  return rules
+  return $ map (fst . startParse pRule . unpack) (fromMaybe [] rawRules)
 
 getRawRules :: Application [ByteString]
 getRawRules = restrict forbiddenH $ do
