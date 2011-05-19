@@ -11520,20 +11520,28 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.$(this.el).remove();
     };
     ProofTreeNodeView.prototype.render = function() {
+      var model;
+      model = this;
       this.$(this.el).append(proofTreeItemTemplate({
         content: this.model.toJSON()
       }));
       this.$(this.el).find(".dropzone").droppable({
         hoverClass: 'dropHover',
         drop: function(event, ui) {
-          var elem;
+          var elem, elemVal, rule;
           elem = $(this).find("input[type='text']");
           if (!elem.val()) {
             alert("You need to have entered a term in the textfield!");
             return this;
           } else {
-            elem.val(ui.draggable.find(".rule-text").html());
-            return elem.trigger('change');
+            rule = new Rule();
+            elemVal = elem.val();
+            if (!rule.validate(elemVal)) {
+              alert("Cannot unify with an invalid term!");
+              return this;
+            } else {
+              return model.unify(elem, elemVal, ui.draggable.find(".rule-text").html());
+            }
           }
         }
       });
@@ -11555,11 +11563,20 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         rule: this.$(this.el).find("input[type='text']").val()
       });
     };
-    ProofTreeNodeView.prototype.unify = function(term, rule) {
-      var callback, model;
-      model = this;
+    ProofTreeNodeView.prototype.unify = function(elem, term, rule) {
+      var callback, view;
+      view = this;
       callback = function(data) {
-        return console.log(data);
+        var i, _ref, _results;
+        if (!data.unified) {
+          return alert("Failed to unify!");
+        } else {
+          _results = [];
+          for (i = 1, _ref = data.children; 1 <= _ref ? i <= _ref : i >= _ref; 1 <= _ref ? i++ : i--) {
+            _results.push(view.model.addRule());
+          }
+          return _results;
+        }
       };
       return $.ajax({
         url: '/rules/unify',

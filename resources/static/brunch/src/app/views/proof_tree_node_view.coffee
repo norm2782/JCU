@@ -42,7 +42,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     # btn.click @model, newNode
 
     # @$(@el).html btn
-
+    model = @
     @$(@el).append proofTreeItemTemplate content: @model.toJSON()
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
@@ -52,8 +52,14 @@ class exports.ProofTreeNodeView extends Backbone.View
             alert "You need to have entered a term in the textfield!"
             @
           else
-            elem.val ui.draggable.find(".rule-text").html()
-            elem.trigger('change') # DOM change, not Backbone change
+            rule = new Rule()
+            elemVal = elem.val()
+
+            if !rule.validate(elemVal)
+              alert "Cannot unify with an invalid term!"
+              @
+            else
+              model.unify(elem, elemVal, ui.draggable.find(".rule-text").html())
       }
 
     @tmpUl = $('<ul></ul>')
@@ -69,10 +75,18 @@ class exports.ProofTreeNodeView extends Backbone.View
   updateModel: =>
     @model.set {rule: @$(@el).find("input[type='text']").val()}
 
-  unify: (term, rule) =>
-    model = @
+  unify: (elem, term, rule) =>
+    view = @
     callback = (data) ->
-      console.log data # TODO: Finish
+      if !data.unified
+        alert "Failed to unify!"
+      else
+        view.model.addRule() for i in [1..data.children]
+        # data.children
+        # console.log view.model
+        # TODO: Grab the _MODEL_ corresponding to this node an add children...
+        # console.log data # TODO: Finish
+        # elem.trigger('change') # DOM change, not Backbone change
 
     # TODO: Defer this to a Model
     $.ajax
