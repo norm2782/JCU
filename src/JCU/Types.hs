@@ -11,30 +11,27 @@ data User     =  User  {  authUser     :: AuthUser
                        ,  storedRules  :: [ByteString] }
               deriving Show
 
-data Term     =  Con Int
-              |  Var Ident
-              |  Fun Ident [Term]
+type UpperCase = String
+type LowerCase = String
+
+data Term     =  Var UpperCase
+              |  Fun LowerCase [Term]
               deriving (Eq, Ord)
 
-data Rule     =  Term :<-: [Term]
-              deriving Eq
+data Rule     =  Term :<-: [Term] deriving Eq
 
 data Status   =  Correct
               |  Incomplete
               |  Invalid
               deriving Show
 
-data DropReq  = DropReq Term Rule
-              deriving Show
+data DropReq  = DropReq Term Rule  deriving Show
 
-type Ident    = String
-type Env      = [(Ident, Term)]
 type Proof    = Tree Term
 type PCheck   = Tree Status
 type DropRes  = (Bool, Int)
 
 instance Show Term where
-  show (Con  i)      = show i
   show (Var  i)      = i
   show (Fun  i [] )  = i
   show (Fun  i ts )  = i ++ "(" ++ showCommas ts ++ ")"
@@ -50,12 +47,14 @@ class Taggable a where
   tag :: Int -> a -> a
 
 instance Taggable Term where
-  tag _  con@(Con _)  = con
   tag n  (Var  x)     = Var  (x ++ show n)
-  tag n  (Fun  x xs)  = Fun  x (tag n xs)
+  tag n  (Fun  x xs)  = Fun  x (map (tag n) xs)
 
 instance Taggable Rule where
-  tag n (c :<-: cs) = tag n c :<-: tag n cs
+  tag n (c :<-: cs) = tag n c :<-: map (tag n) cs
 
-instance Taggable a => Taggable [a] where
-  tag n = map (tag n)
+type Env      = [(UpperCase, Term)]
+
+subst :: Env -> Term  -> Term
+subst env  (Var x)      = maybe (Var x) (subst env) (lookup x env)
+subst env  (Fun x cs)   = Fun x (map (subst env) cs)

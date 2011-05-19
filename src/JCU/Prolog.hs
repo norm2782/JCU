@@ -1,42 +1,25 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
+import            Data.Maybe
 import            JCU.Types
-
-lookUp :: Term -> Env -> Term
-lookUp (Var x)  e   = case lookup x e of
-                        Nothing   -> Var x
-                        Just res  -> lookUp res e
-lookUp t        _   = t
-
-subst :: Env -> Term  -> Term
-subst env  (Var x)      = case lookup x env of
-                            Nothing   -> Var x
-                            Just res  -> subst env res
-subst env  (Fun x cs)   = Fun x (map (subst env) cs)
-subst _    con@(Con _)  = con
-
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
 unify _       Nothing       = Nothing
-unify (t, u)  env@(Just e)  = uni (lookUp t e) (lookUp u e)
+unify (t, u)  env@(Just e)  = uni (subst e t) (subst e u)
   where  uni (Var x) y        = Just ((x, y): e)
-         uni x (Var y)        = Just ((y, x): e)
-         uni (Con x) (Con y)  = if x == y then env else Nothing
+         uni x       (Var y)  = Just ((y, x): e)
          uni (Fun x xs) (Fun y ys)
            | x == y && length xs == length ys  = foldr unify env (zip xs ys)
            | otherwise                         = Nothing
          uni _ _              =  Nothing
 
-solve :: [Rule] -> Env -> Int -> [Term] -> [Env]
-solve _     e _  []      = [e]
-solve rules e n  (t:ts)  =
-  [  sol
-  |  (c :<-: cs)  <- tag n rules
-  ,  Just r       <- [unify (t, c) (Just e)]
-  ,  sol          <- solve rules r (n+1) (cs ++ ts)
-  ]
-
+solve :: [Rule] -> Maybe Env -> Int -> [Term] -> [Env]
+solve _     Nothing  _ _  = []
+solve _     e        _ [] = [fromJust e]
+solve rules e n  (t:ts)   = [  sol |  (c :<-: cs)  <- map (tag n) rules
+                                   ,  sol          <- solve rules  (unify (t, c) e) (n+1) (cs ++ ts)
+                            ]
 
 getRhss :: Term -> Rule -> DropRes
 getRhss t (c :<-: cs) =
@@ -143,7 +126,7 @@ voorBeaAmaWrong = Node (Fun "voor" [cnst "bea",  cnst "ama"])
                          [ Node (Fun "ouder" [cnst "alex", cnst "ama"])
                              [ Node (Fun "pa" [cnst "alex", cnst "ama"]) []]] ]
 
-cnst ::  Ident -> Term
+cnst ::  LowerCase -> Term
 cnst s = Fun s []
 
 testStoredRules :: [Rule]
