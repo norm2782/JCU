@@ -23,7 +23,6 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
-
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
 --
@@ -160,11 +159,14 @@ getRules :: Application [ByteString]
 getRules = do
   cau <- currentAuthUser
   let rules = docToLst . snd . fromJust $ cau
-  trace ("rules:" ++ show rules) (return ())
-  return []
+  return $ case rules of
+             Nothing  -> []
+             Just xs  -> xs
 
-docToLst :: Document -> [ByteString]
-docToLst d = trace ("docToLst: " ++ show d) $ MDB.lookup "storedRules" d
+docToLst :: Document -> Maybe [ByteString]
+docToLst d = do
+  sr <- MDB.lookup "storedRules" d
+  return sr
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
