@@ -34,5 +34,6 @@ router =  route  [  ("/",           siteIndex)
                  ,  ("/proof/check",   method POST  checkProofH)
                  ,  ("/rules/check",   method GET   checkH) -- TODO: Remove after done testing
                  ,  ("/rules/unify",   method POST  unifyH)
+                 ,  ("/populate", method GET populateH)
                  ]
           <|> serveDirectory "resources/static"

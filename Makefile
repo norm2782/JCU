@@ -1,4 +1,5 @@
 default:
+	make clean
 	make install
 
 jcu:

@@ -10,13 +10,15 @@ import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.Map (Map, member, (!))
+import            Data.Maybe (fromJust)
+{- import            Database.MongoDB as DB hiding (unpack, Value(..))-}
 import            Debug.Trace (trace) -- TODO: Remove
 import            JCU.Parser()
 import            JCU.Prolog
 import            JCU.Types
 import            Snap.Auth
 import            Snap.Auth.Handlers
-import            Snap.Extension.DB.MongoDB ((=:), Document, MonadMongoDB)
+import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup, Document, MonadMongoDB, withDB')
 import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
@@ -78,7 +80,7 @@ redirHome :: Application ()
 redirHome = redirect "/"
 
 additionalUserFields :: User -> Document
-additionalUserFields u = [ "storedRules"  =: storedRules u ]
+additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
 
 type FormValidator = [(ByteString, FormField)]
 data FormField = FormField  {  isRequired    :: Bool
@@ -104,8 +106,8 @@ signupH = do
   if validated
     then  do  email  <- getParam "email"
               pwd    <- getParam "password"
-              let u = makeUser email pwd
-              au     <- saveAuthUser (authUser u, additionalUserFields u)
+              let usr = makeUser email pwd
+              au     <- saveAuthUser (authUser usr, additionalUserFields usr)
               case au of
                 Nothing   -> newSignupH
                 Just au'  -> do  setSessionUserId $ userId au'
@@ -114,16 +116,16 @@ signupH = do
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
 makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) (map (pack . show) testStoredRules)
+                                          , userEmail     = email }) []
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
 
 readStoredRulesH :: Application ()
 readStoredRulesH = restrict forbiddenH $ do
+  rules <- getRules
   modifyResponse $ setContentType "application/json"
-  trace ("readStoredRulesH: " ++ show testStoredRules)
-        (writeLBS $ encode testStoredRules)
+  writeLBS $ encode rules
 
 updateStoredRulesH :: Application ()
 updateStoredRulesH = restrict forbiddenH $ do undefined
@@ -138,6 +140,31 @@ addStoredRuleH = restrict forbiddenH $ do
   rule <- getRequestBody
   trace ("addStoredRuleH: " ++ show rule)
         (writeLBS "")
+
+-- TODO: Eventually remove this
+populateH :: Application ()
+populateH = restrict forbiddenH $ do
+  cau <- currentAuthUser
+  d <- addTestRules (snd . fromJust $ cau)
+  t <- fmap u authUserTable
+  withDB' $ save t d
+  writeLBS "populateH"
+
+
+addTestRules :: (MonadMongoDB m) => Document -> m Document
+addTestRules d = do
+  let tsc = ["storedRules" =: map (pack . show) testStoredRules]
+  return $ tsc `MDB.merge` d
+
+getRules :: Application [ByteString]
+getRules = do
+  cau <- currentAuthUser
+  let rules = docToLst . snd . fromJust $ cau
+  trace ("rules:" ++ show rules) (return ())
+  return []
+
+docToLst :: Document -> [ByteString]
+docToLst d = trace ("docToLst: " ++ show d) $ MDB.lookup "storedRules" d
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
