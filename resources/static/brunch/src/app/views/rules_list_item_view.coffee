@@ -6,10 +6,7 @@ class exports.RulesListItemView extends Backbone.View
   events:
     "click .btnDeleteList" : "deleteItem"
 
-  initialize: ->
-    _.bindAll @, 'render'
-
-  deleteItem: ->
+  deleteItem: =>
     @model.destroy()
     @$(@el).remove()
 
