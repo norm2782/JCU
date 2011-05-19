@@ -38,7 +38,7 @@ restrict failH succH = do
 loginRedir :: Application ()
 loginRedir = redirect "/login"
 
-forbiddenH :: Application ()
+forbiddenH :: Application a
 forbiddenH = do
   modifyResponse $ setResponseStatus 403 "Forbidden"
   writeBS "403 forbidden"
@@ -122,7 +122,7 @@ makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
 
 readStoredRulesH :: Application ()
 readStoredRulesH = restrict forbiddenH $ do
-  rules <- getRules
+  rules <- getRawRules
   modifyResponse $ setContentType "application/json"
   writeLBS $ encode rules
 
@@ -136,9 +136,9 @@ deleteStoredRuleH = restrict forbiddenH $ do
 
 addStoredRuleH :: Application ()
 addStoredRuleH = restrict forbiddenH $ do
-  rule <- getRequestBody
-  trace ("addStoredRuleH: " ++ show rule)
-        (writeLBS "")
+  rule  <- getRequestBody
+  rls   <- getRawRules
+  putRawRules (rls ++ [pack . show $ rule])
 
 -- TODO: Eventually remove populateH
 populateH :: Application ()
@@ -147,25 +147,28 @@ populateH = restrict forbiddenH $ do
   writeLBS "populateH"
 
 putRules :: [Rule] -> Application ()
-putRules rls = do
+putRules = putRawRules . map (pack . show)
+
+putRawRules :: [ByteString] -> Application ()
+putRawRules rls = restrict forbiddenH $ do
   cau  <- currentAuthUser
   doc  <- rulesToDoc rls (snd . fromJust $ cau)
   tbl  <- fmap u authUserTable
   withDB' $ save tbl doc
 
-rulesToDoc :: (MonadMongoDB m) => [Rule] -> Document -> m Document
+rulesToDoc :: (MonadMongoDB m) => [ByteString] -> Document -> m Document
 rulesToDoc rls d = do
-  let tsc = ["storedRules" =: map (pack . show) rls]
+  let tsc = ["storedRules" =: rls]
   return $ tsc `MDB.merge` d
 
-getRules :: Application [ByteString]
-getRules = do
+getRawRules :: Application [ByteString]
+getRawRules = restrict forbiddenH $ do
   cau <- currentAuthUser
-  let rules = docToLst . snd . fromJust $ cau
+  let rules = getStoredRules . snd . fromJust $ cau
   return $ fromMaybe [] rules
 
-docToLst :: Document -> Maybe [ByteString]
-docToLst = MDB.lookup "storedRules"
+getStoredRules :: Document -> Maybe [ByteString]
+getStoredRules = MDB.lookup "storedRules"
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
