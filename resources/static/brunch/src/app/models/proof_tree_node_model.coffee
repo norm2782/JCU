@@ -9,9 +9,16 @@ class exports.ProofTreeNode extends Backbone.Model
   hasTerm: =>
     @get('term')?
 
-  addRule: =>
-    @get('childTerms').add(new ProofTreeNode())
-    @change()
+  getChildTerms: =>
+    @get('childTerms')
+
+  setChildNo: (childNo) =>
+    newNo = childNo - @getChildTerms().length
+    @addRule(false) for i in [1..newNo] if newNo > 0
+
+  addRule: (change) =>
+    @getChildTerms().add(new ProofTreeNode())
+    @change() if change
 
   isValid: =>
     return true # TODO: Remove
@@ -19,7 +26,7 @@ class exports.ProofTreeNode extends Backbone.Model
       return false
     # TODO: Make sure a Rule object is available here
 
-    @get('term').validate() && @get('childTerms').all((x) -> x.isValid())
+    @get('term').validate() && @getChildTerms().all((x) -> x.isValid())
 
   clear: =>
     @destroy()
