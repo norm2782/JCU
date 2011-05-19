@@ -6,18 +6,12 @@ class exports.ProofTreeView extends Backbone.View
   tagName: 'ul'
   className: 'tree'
 
-  getRoot: ->
-    console.log @model
-    console.log @model.attributes
-    console.log @model.get('treeRoot')
-    console.log @model.attributes.treeRoot
-
-    @model.get('treeRoot')
-
-  initialize: ->
-    _.bindAll @, "render"
+  initialize: =>
     @getRoot().get('childTerms').bind "change", @render
 
-  render: ->
+  getRoot: =>
+    @model.get('treeRoot')
+
+  render: =>
     view = new ProofTreeNodeView model: @getRoot()
     @$(@el).html view.render().el
