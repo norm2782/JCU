@@ -13,8 +13,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     "change input[type='text']" : "updateModel"
 
   initialize: =>
-    _.bindAll @, "render", "childTerms", "checkTermSyntax"
-    @childTerms().bind "change", @render
+    @model.bind "change", @render
 
   childTerms: =>
     @model.get('childTerms')
@@ -34,14 +33,8 @@ class exports.ProofTreeNodeView extends Backbone.View
     @$(@el).remove()
 
   render: =>
-    # newNode = (e) ->
-    #   model = e.data
-    #   model.addRule()
+    console.log "render"
 
-    # btn = $('<input type="button" value="+" />')
-    # btn.click @model, newNode
-
-    # @$(@el).html btn
     model = @
     @$(@el).append proofTreeItemTemplate content: @model.toJSON()
     @$(@el).find(".dropzone").droppable {
@@ -81,14 +74,10 @@ class exports.ProofTreeNodeView extends Backbone.View
       if !data.unified
         alert "Failed to unify!"
       else
-        view.model.addRule() for i in [1..data.children]
-        # data.children
-        # console.log view.model
-        # TODO: Grab the _MODEL_ corresponding to this node an add children...
-        # console.log data # TODO: Finish
-        # elem.trigger('change') # DOM change, not Backbone change
+        view.model.setChildNo(data.children)
+        elem.trigger('change') # DOM change, not Backbone change
 
-    # TODO: Defer this to a Model
+    # TODO: Move this to a Model
     $.ajax
       url:  '/rules/unify'
       type: 'POST'

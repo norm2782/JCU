@@ -11187,6 +11187,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.clear = __bind(this.clear, this);
       this.isValid = __bind(this.isValid, this);
       this.addRule = __bind(this.addRule, this);
+      this.setChildNo = __bind(this.setChildNo, this);
+      this.getChildTerms = __bind(this.getChildTerms, this);
       this.hasTerm = __bind(this.hasTerm, this);
       this.initialize = __bind(this.initialize, this);
       ProofTreeNode.__super__.constructor.apply(this, arguments);
@@ -11199,16 +11201,32 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeNode.prototype.hasTerm = function() {
       return this.get('term') != null;
     };
-    ProofTreeNode.prototype.addRule = function() {
-      this.get('childTerms').add(new ProofTreeNode());
-      return this.change();
+    ProofTreeNode.prototype.getChildTerms = function() {
+      return this.get('childTerms');
+    };
+    ProofTreeNode.prototype.setChildNo = function(childNo) {
+      var i, newNo, _results;
+      newNo = childNo - this.getChildTerms().length;
+      if (newNo > 0) {
+        _results = [];
+        for (i = 1; 1 <= newNo ? i <= newNo : i >= newNo; 1 <= newNo ? i++ : i--) {
+          _results.push(this.addRule(false));
+        }
+        return _results;
+      }
+    };
+    ProofTreeNode.prototype.addRule = function(change) {
+      this.getChildTerms().add(new ProofTreeNode());
+      if (change) {
+        return this.change();
+      }
     };
     ProofTreeNode.prototype.isValid = function() {
       return true;
       if (!this.hasTerm()) {
         return false;
       }
-      return this.get('term').validate() && this.get('childTerms').all(function(x) {
+      return this.get('term').validate() && this.getChildTerms().all(function(x) {
         return x.isValid();
       });
     };
@@ -11498,8 +11516,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "change input[type='text']": "updateModel"
     };
     ProofTreeNodeView.prototype.initialize = function() {
-      _.bindAll(this, "render", "childTerms", "checkTermSyntax");
-      return this.childTerms().bind("change", this.render);
+      return this.model.bind("change", this.render);
     };
     ProofTreeNodeView.prototype.childTerms = function() {
       return this.model.get('childTerms');
@@ -11521,6 +11538,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNodeView.prototype.render = function() {
       var model;
+      console.log("render");
       model = this;
       this.$(this.el).append(proofTreeItemTemplate({
         content: this.model.toJSON()
@@ -11567,15 +11585,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       var callback, view;
       view = this;
       callback = function(data) {
-        var i, _ref, _results;
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
-          _results = [];
-          for (i = 1, _ref = data.children; 1 <= _ref ? i <= _ref : i >= _ref; 1 <= _ref ? i++ : i--) {
-            _results.push(view.model.addRule());
-          }
-          return _results;
+          view.model.setChildNo(data.children);
+          return elem.trigger('change');
         }
       };
       return $.ajax({
