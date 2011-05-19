@@ -6,7 +6,7 @@ class exports.RulesListView extends Backbone.View
   tagName: 'ul'
 
   initialize: ->
-    _.bindAll(@, 'addOne', 'addAll', 'renderList')
+    _.bindAll @, 'addOne', 'addAll', 'renderList'
     app.collections.rulesList.bind 'add', @addOne
     app.collections.rulesList.bind 'refresh', @addAll
     app.collections.rulesList.bind 'all', @renderList
