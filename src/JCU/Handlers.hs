@@ -140,19 +140,22 @@ addStoredRuleH = restrict forbiddenH $ do
   trace ("addStoredRuleH: " ++ show rule)
         (writeLBS "")
 
--- TODO: Eventually remove this
+-- TODO: Eventually remove populateH
 populateH :: Application ()
 populateH = restrict forbiddenH $ do
-  cau <- currentAuthUser
-  d <- addTestRules (snd . fromJust $ cau)
-  t <- fmap u authUserTable
-  withDB' $ save t d
+  putRules testStoredRules
   writeLBS "populateH"
 
+putRules :: [Rule] -> Application ()
+putRules rls = do
+  cau  <- currentAuthUser
+  doc  <- rulesToDoc rls (snd . fromJust $ cau)
+  tbl  <- fmap u authUserTable
+  withDB' $ save tbl doc
 
-addTestRules :: (MonadMongoDB m) => Document -> m Document
-addTestRules d = do
-  let tsc = ["storedRules" =: map (pack . show) testStoredRules]
+rulesToDoc :: (MonadMongoDB m) => [Rule] -> Document -> m Document
+rulesToDoc rls d = do
+  let tsc = ["storedRules" =: map (pack . show) rls]
   return $ tsc `MDB.merge` d
 
 getRules :: Application [ByteString]
