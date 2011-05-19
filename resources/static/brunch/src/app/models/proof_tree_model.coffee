@@ -1,4 +1,4 @@
-ProofTreeNode = require('models/proof_tree_node').ProofTreeNode
+ProofTreeNode = require('models/proof_tree_node_model').ProofTreeNode
 
 class exports.ProofTree extends Backbone.Model
   # Available attributes:
