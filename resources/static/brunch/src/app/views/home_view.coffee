@@ -5,7 +5,7 @@ class exports.HomeView extends Backbone.View
   id: 'home-view'
 
   events:
-    'click #btnCheck'   : 'checkRules'
+    'click #btnCheck'   : 'checkProof'
     'click #btnAddRule' : 'addStoreRule'
     'keypress #txtAddRule' : 'addEnterRule'
 
@@ -41,7 +41,7 @@ class exports.HomeView extends Backbone.View
     txtAddRule.val("")
 
   # TODO: Rework this to use the new checking system.
-  checkRules: =>
+  checkProof: =>
     # TODO: Clicking check right after add doesn't color the added text field
     # Do we really want all of this here? Or do we want to delegate parts of
     # it all to the individual models?
@@ -57,6 +57,10 @@ class exports.HomeView extends Backbone.View
              else
                $(this).css "background-color", "#faa"
         )
+    if app.models.tree.isValid()
+
+    else
+      alert "Cannot check proof. You have one or more invalid rules in your tree."
 
     # TODO: Defer this to a Model
     # if false

@@ -11158,6 +11158,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTree = (function() {
     __extends(ProofTree, Backbone.Model);
     function ProofTree() {
+      this.isValid = __bind(this.isValid, this);
       this.initialize = __bind(this.initialize, this);
       ProofTree.__super__.constructor.apply(this, arguments);
     }
@@ -11165,6 +11166,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.set({
         treeRoot: new ProofTreeNode()
       });
+    };
+    ProofTree.prototype.isValid = function() {
+      return this.get('treeRoot').isValid();
     };
     return ProofTree;
   })();
@@ -11181,8 +11185,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTreeNode = (function() {
     __extends(ProofTreeNode, Backbone.Model);
     function ProofTreeNode() {
+      this.isValid = __bind(this.isValid, this);
       this.setChildNo = __bind(this.setChildNo, this);
-      this.getChildTerms = __bind(this.getChildTerms, this);
+      this.childTerms = __bind(this.childTerms, this);
+      this.term = __bind(this.term, this);
       this.hasTerm = __bind(this.hasTerm, this);
       this.initialize = __bind(this.initialize, this);
       ProofTreeNode.__super__.constructor.apply(this, arguments);
@@ -11193,9 +11199,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       });
     };
     ProofTreeNode.prototype.hasTerm = function() {
-      return this.get('term') != null;
+      return this.term != null;
     };
-    ProofTreeNode.prototype.getChildTerms = function() {
+    ProofTreeNode.prototype.term = function() {
+      return this.get('term');
+    };
+    ProofTreeNode.prototype.childTerms = function() {
       return this.get('childTerms');
     };
     ProofTreeNode.prototype.setChildNo = function(childNo) {
@@ -11206,7 +11215,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           newChildren.push(new ProofTreeNode());
         }
       }
-      return this.getChildTerms().refresh(newChildren);
+      return this.childTerms().refresh(newChildren);
+    };
+    ProofTreeNode.prototype.isValid = function() {
+      if (!this.hasTerm()) {
+        return false;
+      }
+      return this.term().validate() && this.childTerms().reduce((function(c, xs) {
+        return c.isValid() && xs;
+      }), true);
     };
     return ProofTreeNode;
   })();
@@ -11229,14 +11246,47 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     Rule.prototype.validate = function(str) {
       var regex, rule, token;
       if (!(str != null)) {
+        if (!(this.get('term') != null)) {
+          return false;
+        }
         str = this.get("rule");
       }
       token = "\\s*\\w+\\s*";
       rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
-      regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)");
+      regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$");
       return regex.test(str);
     };
     return Rule;
+  })();
+}).call(this);
+}, "models/term_model": function(exports, require, module) {(function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  exports.Term = (function() {
+    __extends(Term, Backbone.Model);
+    function Term() {
+      this.validate = __bind(this.validate, this);
+      Term.__super__.constructor.apply(this, arguments);
+    }
+    Term.prototype.validate = function(str) {
+      var regex, token;
+      if (!(str != null)) {
+        if (!(this.get('term') != null)) {
+          return false;
+        }
+        str = this.get("term");
+      }
+      token = "\\s*\\w+\\s*";
+      regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$");
+      return regex.test(str);
+    };
+    return Term;
   })();
 }).call(this);
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
@@ -11299,8 +11349,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_rules[]" class="droppable" value="'));
-      _print(this.content.rule);
+      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_terms[]" class="droppable" value="'));
+      _print(this.content.term);
       _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
     }).call(this);
     
@@ -11377,7 +11427,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.HomeView = (function() {
     __extends(HomeView, Backbone.View);
     function HomeView() {
-      this.checkRules = __bind(this.checkRules, this);
+      this.checkProof = __bind(this.checkProof, this);
       this.addStoreRule = __bind(this.addStoreRule, this);
       this.addEnterRule = __bind(this.addEnterRule, this);
       this.render = __bind(this.render, this);
@@ -11385,7 +11435,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     }
     HomeView.prototype.id = 'home-view';
     HomeView.prototype.events = {
-      'click #btnCheck': 'checkRules',
+      'click #btnCheck': 'checkProof',
       'click #btnAddRule': 'addStoreRule',
       'keypress #txtAddRule': 'addEnterRule'
     };
@@ -11424,9 +11474,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       txtAddRule.css("background-color", color);
       return txtAddRule.val("");
     };
-    HomeView.prototype.checkRules = function() {
+    HomeView.prototype.checkProof = function() {
       var callback;
-      return callback = function(data) {
+      callback = function(data) {
         var flds;
         flds = $('#rules-tree-div input[type="text"]');
         if (_.and(data)) {
@@ -11444,12 +11494,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           });
         }
       };
+      if (app.models.tree.isValid()) {
+        ;
+      } else {
+        return alert("Cannot check proof. You have one or more invalid rules in your tree.");
+      }
     };
     return HomeView;
   })();
 }).call(this);
 }, "views/proof_tree_node_view": function(exports, require, module) {(function() {
-  var ProofTreeNodeView, Rule, proofTreeItemTemplate;
+  var ProofTreeNodeView, Term, proofTreeItemTemplate;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11460,7 +11515,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   proofTreeItemTemplate = require('templates/proof_tree_item');
   ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
-  Rule = require('models/rule_model').Rule;
+  Term = require('models/term_model').Term;
   exports.ProofTreeNodeView = (function() {
     __extends(ProofTreeNodeView, Backbone.View);
     function ProofTreeNodeView() {
@@ -11483,13 +11538,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.childTerms().bind("refresh", this.render);
     };
     ProofTreeNodeView.prototype.childTerms = function() {
-      return this.model.getChildTerms();
+      return this.model.childTerms();
     };
     ProofTreeNodeView.prototype.checkTermSyntax = function() {
-      var bgc, fld, rl;
+      var bgc, fld, tm;
       fld = this.$(this.el).find("input[type='text']");
-      rl = new Rule();
-      if (!rl.validate(fld.val())) {
+      tm = new Term();
+      if (!tm.validate(fld.val())) {
         bgc = "#faa";
       } else {
         bgc = "#fff";
@@ -11509,15 +11564,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.$(this.el).find(".dropzone").droppable({
         hoverClass: 'dropHover',
         drop: function(event, ui) {
-          var elem, elemVal, rule;
+          var elem, elemVal, term;
           elem = $(this).find("input[type='text']");
           if (!elem.val()) {
             alert("There needs to be a term in the text field!");
             return this;
           } else {
-            rule = new Rule();
+            term = new Term();
             elemVal = elem.val();
-            if (!rule.validate(elemVal)) {
+            if (!term.validate(elemVal)) {
               alert("Cannot unify with an invalid term!");
               return this;
             } else {
@@ -11542,7 +11597,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNodeView.prototype.updateModel = function() {
       return this.model.set({
-        rule: this.$(this.el).find("input[type='text']").val()
+        term: new Term({
+          term: this.$(this.el).find("input[type='text']").val()
+        })
       });
     };
     ProofTreeNodeView.prototype.unify = function(elem, term, rule) {

@@ -1,6 +1,6 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
-Rule = require('models/rule_model').Rule
+Term = require('models/term_model').Term
 
 class exports.ProofTreeNodeView extends Backbone.View
 
@@ -15,12 +15,12 @@ class exports.ProofTreeNodeView extends Backbone.View
     @childTerms().bind "refresh", @render
 
   childTerms: =>
-    @model.getChildTerms()
+    @model.childTerms()
 
   checkTermSyntax: =>
     fld = @$(@el).find("input[type='text']")
-    rl = new Rule()
-    if !rl.validate fld.val()
+    tm = new Term()
+    if !tm.validate fld.val()
       bgc = "#faa"
     else
       bgc = "#fff"
@@ -42,10 +42,10 @@ class exports.ProofTreeNodeView extends Backbone.View
             alert "There needs to be a term in the text field!"
             @
           else
-            rule = new Rule()
+            term = new Term()
             elemVal = elem.val()
 
-            if !rule.validate(elemVal)
+            if !term.validate(elemVal)
               alert "Cannot unify with an invalid term!"
               @
             else
@@ -63,7 +63,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @
 
   updateModel: =>
-    @model.set {rule: @$(@el).find("input[type='text']").val()}
+    @model.set {term: new Term({term: @$(@el).find("input[type='text']").val()})}
 
   unify: (elem, term, rule) =>
     view = @
