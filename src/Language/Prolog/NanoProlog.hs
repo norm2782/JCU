@@ -80,17 +80,16 @@ main =
                                       mapM_ print errors
                                       main
 
+
 loop :: [Rule] -> IO ()
-loop rules =  do  putStr "term? "
+loop rules =  do  putStr "goals? "
                   s <- getLine
-                  (unless (s == "quit") $
-                    do  let (goal, errors) = startParse pFun s
-                        if null errors
-                          then  do  print goal
-                                    printsolutions (solve rules emptyEnv 0 [goal])
-                          else do   putStrLn "A term was expected:"
-                                    mapM_ print errors
-                        loop rules)
+                  unless (s == "quit") $
+                    do  let (goals, errors) = startParse (pListSep pComma pFun) s 
+                        if null errors then printsolutions (solve rules  emptyEnv 0 goals)
+                        else do  putStrLn "Some goals were expected:"
+                                 mapM_ (putStrLn.show) errors
+                  loop rules
 
 -- ** Printing the solutions
 
@@ -98,13 +97,13 @@ printsolutions :: [Env] -> IO ()
 printsolutions sols = sequence_ [ do {printsolution bs; getLine} |bs <- sols]
 
 printsolution :: Env -> IO ()
-printsolution bs = putStr (concatMap showBdg bs)
- where  showBdg (x, t)  | isGlobVar x  = x ++ " = "++ showTerm t ++ "\n"
-                        | otherwise    = ""
-        showTerm t@(Var _)  = showTerm (subst bs t)
-        showTerm (Fun f []) = f
-        showTerm (Fun f ts) = f ++ "(" ++ intercalate ", " (map showTerm ts) ++ ")"
-        isGlobVar x = head x `elem` ['A'..'Z'] && last x `notElem` ['0'..'9']
+printsolution bs =  putStr (intercalate ", " . filter (not.null) . map  showBdg $ bs) 
+ where  showBdg (    x,t)  | isGlobVar x =  x ++ " <- "++ showTerm t 
+                           | otherwise = ""   
+        showTerm t@(Var _)  = showTerm (subst bs t) 
+        showTerm (Fun f []) = f 
+        showTerm (Fun f ts) = f ++"("++ (intercalate ", " (map showTerm ts)) ++ ")"
+        isGlobVar x = head x `elem` ['A'..'Z'] && last x `notElem` ['0'..'9']   
 
 instance Show Term where
   show (Var  i)      = i

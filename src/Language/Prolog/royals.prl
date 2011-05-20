@@ -19,3 +19,6 @@ ouder(X,Y) :- ma(X,Y).
 
 voor(X,Y) :- ouder(X,Y).
 voor(X,Y) :- ouder(X,Z), voor(Z,Y).
+
+plus(zero,X,X).
+plus(succ(X), Y, succ(Z)) :- plus(X, Y,Z).
