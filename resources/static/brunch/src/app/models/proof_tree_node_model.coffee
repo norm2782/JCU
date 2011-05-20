@@ -4,7 +4,7 @@ class exports.ProofTreeNode extends Backbone.Model
   # childTerms :: BackBone.Collection
 
   initialize: =>
-    @set {childTerms: new Backbone.Collection()}
+    @resetChildren()
 
   hasTerm: =>
     @get('term')?
@@ -12,22 +12,12 @@ class exports.ProofTreeNode extends Backbone.Model
   getChildTerms: =>
     @get('childTerms')
 
+  resetChildren: =>
+    @set {childTerms: new Backbone.Collection()}
+
   setChildNo: (childNo) =>
-    newNo = childNo - @getChildTerms().length
-    @addRule(false) for i in [1..newNo] if newNo > 0
+    @resetChildren()
+    @addRule() for i in [1..childNo] if childNo > 0
 
-  addRule: (change) =>
+  addRule: =>
     @getChildTerms().add(new ProofTreeNode())
-    @change() if change
-
-  isValid: =>
-    return true # TODO: Remove
-    if !@hasTerm()
-      return false
-    # TODO: Make sure a Rule object is available here
-
-    @get('term').validate() && @getChildTerms().all((x) -> x.isValid())
-
-  clear: =>
-    @destroy()
-

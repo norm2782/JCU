@@ -1,4 +1,4 @@
 <span class="dropzone">
-  <input type="text" name="tree_rules" class="droppable" value="<%= @content.rule %>" />
+  <input type="text" name="tree_rules[]" class="droppable" value="<%= @content.rule %>" />
 </span>
 <input type="button" value="X" class="btnDeleteTree" />

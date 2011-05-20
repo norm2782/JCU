@@ -6,9 +6,6 @@ class exports.ProofTreeView extends Backbone.View
   tagName: 'ul'
   className: 'tree'
 
-  initialize: =>
-    @getRoot().get('childTerms').bind "change", @render
-
   getRoot: =>
     @model.get('treeRoot')
 
