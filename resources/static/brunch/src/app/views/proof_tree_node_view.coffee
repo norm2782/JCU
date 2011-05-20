@@ -49,7 +49,7 @@ class exports.ProofTreeNodeView extends Backbone.View
               alert "Cannot unify with an invalid term!"
               @
             else
-              view.unify(elem, elemVal, ui.draggable.find(".rule-text").html())
+              view.unify(elemVal, ui.draggable.find(".rule-text").html())
       }
 
     if @childTerms().length > 0
@@ -65,14 +65,13 @@ class exports.ProofTreeNodeView extends Backbone.View
   updateModel: =>
     @model.set {term: new Term({term: @$(@el).find("input[type='text']").val()})}
 
-  unify: (elem, term, rule) =>
+  unify: (term, rule) =>
     view = @
     callback = (data) ->
       if !data.unified
         alert "Failed to unify!"
       else
         view.model.setChildNo(data.children)
-        # elem.trigger('change') # DOM change, not Backbone change
 
     # TODO: Move this to a Model
     $.ajax
