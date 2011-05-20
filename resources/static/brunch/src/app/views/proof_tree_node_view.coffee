@@ -12,9 +12,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     "change input[type='text']" : "updateModel"
 
   initialize: =>
-    @childTerms().bind "add",    @render
-    @childTerms().bind "change", @render
-    @childTerms().bind "remove", @render
+    @childTerms().bind "refresh", @render
 
   childTerms: =>
     @model.getChildTerms()
@@ -35,7 +33,7 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   render: =>
     view = @
-    @$(@el).append proofTreeItemTemplate content: @model.toJSON()
+    @$(@el).html proofTreeItemTemplate content: @model.toJSON()
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
