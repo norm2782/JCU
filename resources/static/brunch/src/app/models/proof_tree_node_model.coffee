@@ -10,7 +10,7 @@ class exports.ProofTreeNode extends Backbone.Model
     @get('term')?
 
   addRule: =>
-    @get('childTerms').add (new ProofTreeNode())
+    @get('childTerms').add(new ProofTreeNode())
     @change()
 
   isValid: =>
