@@ -9,10 +9,9 @@ import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
+import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-{- import            Database.MongoDB as DB hiding (unpack, Value(..))-}
-import            Debug.Trace (trace) -- TODO: Remove
 import            JCU.Parser()
 import            JCU.Prolog
 import            JCU.Types
@@ -23,6 +22,7 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
+
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
 --
@@ -131,8 +131,11 @@ updateStoredRulesH = restrict forbiddenH undefined
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = restrict forbiddenH $ do
-  rule <- getParam "id"
-  trace ("deleteStoredRuleH: " ++ show rule) (return ())
+  rule  <- getParam "id"
+  rls   <- getRawRules
+  case rule of
+    Nothing  -> return ()
+    Just x   -> putRawRules (DL.delete x rls)
 
 addStoredRuleH :: Application ()
 addStoredRuleH = restrict forbiddenH $ do
