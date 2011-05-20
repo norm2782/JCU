@@ -1,24 +1,24 @@
 {-# LANGUAGE OverloadedStrings  #-}
 
-module JCU.Web.Handlers where
+module JCU.Handlers where
 
 import            Application (Application)
 import            Data.Aeson (encode, fromJSON, json)
 import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
-import            Data.ByteString as B (ByteString, length)
+import            Data.ByteString as B (ByteString)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
-import            Data.List as DL (delete, length)
+import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            JCU.Prolog.Parser
-import            JCU.Prolog.Prolog
-import            JCU.Prolog.Types
-import            JCU.Web.JSON
-import            JCU.Web.Types
-import            JCU.Web.Testing
-import            JCU.Web.Util
+import            JCU.Prolog
+import            JCU.Types
+import            JCU.JSON()
+import            JCU.Types
+import            JCU.Testing
+import            JCU.Util
+import            Language.Prolog.NanoProlog
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup, Document, MonadMongoDB, withDB')

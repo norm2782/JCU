@@ -1,10 +1,10 @@
-module JCU.Web.Testing where
+module JCU.Testing where
 
-import JCU.Prolog.Prolog
-import Data.Tree
-import JCU.Prolog.Types
-import JCU.Web.Types
-import JCU.Web.Util
+import            Data.Tree
+import            JCU.Prolog
+import            JCU.Types
+import            JCU.Util
+import            Language.Prolog.NanoProlog
 
 testSimpleRight :: PCheck
 testSimpleRight  =  checkProof testStoredRules
