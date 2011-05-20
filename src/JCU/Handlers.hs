@@ -139,9 +139,13 @@ deleteStoredRuleH = restrict forbiddenH $ do
 
 addStoredRuleH :: Application ()
 addStoredRuleH = restrict forbiddenH $ do
-  rule  <- getRequestBody
+  rqrl  <- getRequestBody
   rls   <- getRawRules
+  rule  <- mkRule rqrl
   putRawRules (rls ++ [pack . show $ rule])
+
+mkRule :: L.ByteString -> Application Rule
+mkRule = parseJSON fromJSON
 
 -- TODO: Eventually remove populateH
 populateH :: Application ()

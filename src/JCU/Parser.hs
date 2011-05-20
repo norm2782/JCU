@@ -41,8 +41,7 @@ instance FromJSON DropReq where
   parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"
 
 mkJSONDropReq :: String -> String -> DropReq
-mkJSONDropReq t r = DropReq (mkTerm t) (mkRule r)
-  where mkRule = fst . startParse pRule
+mkJSONDropReq t r = DropReq (mkJSONTerm t) (mkJSONRule r)
 
 instance ToJSON DropRes where
   toJSON (b, i) = object  [  "unified"   .= b
@@ -55,19 +54,26 @@ instance ToJSON PCheck where
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]
 
+instance FromJSON Rule where
+  parseJSON (Object o) = mkJSONRule <$> o .: "rule"
+
+-- TODO: Errors
+mkJSONRule :: String -> Rule
+mkJSONRule = fst . startParse pRule
+
 instance FromJSON Proof where
-  parseJSON (Object o) = mkProofTree <$> o .: "term" <*> o .: "childTerms"
+  parseJSON (Object o) = mkJSONProofTree <$> o .: "term" <*> o .: "childTerms"
 
 instance ToJSON Proof where
   toJSON (Node t ps) = object  [  "term"        .= show t
                                ,  "childTerms"  .= toJSON ps ]
 
-mkProofTree :: String -> Value -> Proof
-mkProofTree r rts = Node (mkTerm r) mkProofTrees
+mkJSONProofTree :: String -> Value -> Proof
+mkJSONProofTree r rts = Node (mkJSONTerm r) mkProofTrees
   where mkProofTrees = case fromJSON rts :: Result [Proof] of
                          (Success a)  -> a
                          _            -> error "failed!"
 
 -- TODO: Something with errors
-mkTerm :: String -> Term
-mkTerm = fst . startParse pTerm
+mkJSONTerm :: String -> Term
+mkJSONTerm = fst . startParse pTerm
