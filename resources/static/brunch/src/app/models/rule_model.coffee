@@ -4,6 +4,8 @@ class exports.Rule extends Backbone.Model
 
   validate: (str) =>
     if !str?
+      if !@get('term')?
+        return false
       str = @get "rule"
 
     # Token -> a word with possibly spaces in front and after
@@ -11,6 +13,6 @@ class exports.Rule extends Backbone.Model
     # Regex -> Rule {, Rule}* {. | :- { Rule {, | .} }* }
     token = "\\s*\\w+\\s*"
     rule  = token + "\\(" + token + "(," + token + ")*\\)\\s*"
-    regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)")
+    regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$")
     # regex = new RegExp(rule + "(," + rule + ")*" + "(\\.|:-(" + rule + "(,\\s*|\\.))*)") -- TODO: Enable after modifying server-side parser
     regex.test str
