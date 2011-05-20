@@ -20,11 +20,10 @@ pRules = pList pRule
 pRule :: Parser Rule
 pRule = (:<-:) <$> pFun <*> (pSymbol ":-" *> pTerms `opt` []) <* pDot
 
-pTerm, pCon, pVar, pFun :: Parser Term
-pTerm  =  pCon  <|>  pVar <|> pFun
-pCon   =  Con   <$>  pNatural
+pTerm, pVar, pFun :: Parser Term
+pTerm  =  pVar <|> pFun
 pVar   =  Var   <$>  lexeme (pList1 pUpper)
-pFun   =  Fun   <$>  pIdentifier <*> (pParens pTerms `opt` [])
+pFun   =  Fun   <$>  pLowerCase <*> (pParens pTerms `opt` [])
 
 pTerms :: Parser [Term]
 pTerms = pListSep pComma pTerm
@@ -34,8 +33,8 @@ startParse :: (ListLike s b, Show b)  => P (Str b s LineColPos) a -> s
 startParse p inp  =  parse ((,) <$> p <*> pEnd)
                   $  createStr (LineColPos 0 0 0) inp
 
-pIdentifier :: Parser String
-pIdentifier = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
+pLowerCase :: Parser String
+pLowerCase = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
 
 instance FromJSON DropReq where
   parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"
