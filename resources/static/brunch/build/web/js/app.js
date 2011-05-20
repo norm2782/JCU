@@ -11158,7 +11158,14 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTree = (function() {
     __extends(ProofTree, Backbone.Model);
     function ProofTree() {
+<<<<<<< HEAD
       this.isValid = __bind(this.isValid, this);
+=======
+<<<<<<< HEAD
+      this.isValid = __bind(this.isValid, this);
+=======
+>>>>>>> svn
+>>>>>>> master
       this.initialize = __bind(this.initialize, this);
       ProofTree.__super__.constructor.apply(this, arguments);
     }
@@ -11166,6 +11173,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.set({
         treeRoot: new ProofTreeNode()
       });
+<<<<<<< HEAD
+    };
+    ProofTree.prototype.isValid = function() {
+      return this.get('treeRoot').isValid();
+=======
+>>>>>>> svn
     };
     ProofTree.prototype.isValid = function() {
       return this.get('treeRoot').isValid();
@@ -11185,10 +11198,22 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTreeNode = (function() {
     __extends(ProofTreeNode, Backbone.Model);
     function ProofTreeNode() {
+<<<<<<< HEAD
       this.isValid = __bind(this.isValid, this);
       this.setChildNo = __bind(this.setChildNo, this);
       this.childTerms = __bind(this.childTerms, this);
       this.term = __bind(this.term, this);
+=======
+<<<<<<< HEAD
+      this.isValid = __bind(this.isValid, this);
+      this.setChildNo = __bind(this.setChildNo, this);
+      this.childTerms = __bind(this.childTerms, this);
+      this.term = __bind(this.term, this);
+=======
+      this.setChildNo = __bind(this.setChildNo, this);
+      this.getChildTerms = __bind(this.getChildTerms, this);
+>>>>>>> svn
+>>>>>>> master
       this.hasTerm = __bind(this.hasTerm, this);
       this.initialize = __bind(this.initialize, this);
       ProofTreeNode.__super__.constructor.apply(this, arguments);
@@ -11200,10 +11225,18 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNode.prototype.hasTerm = function() {
       return this.term != null;
+<<<<<<< HEAD
     };
     ProofTreeNode.prototype.term = function() {
       return this.get('term');
     };
+    ProofTreeNode.prototype.childTerms = function() {
+=======
+    };
+    ProofTreeNode.prototype.term = function() {
+      return this.get('term');
+    };
+<<<<<<< HEAD
     ProofTreeNode.prototype.childTerms = function() {
       return this.get('childTerms');
     };
@@ -11224,6 +11257,33 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.term().validate() && this.childTerms().reduce((function(c, xs) {
         return c.isValid() && xs;
       }), true);
+=======
+    ProofTreeNode.prototype.getChildTerms = function() {
+>>>>>>> master
+      return this.get('childTerms');
+    };
+    ProofTreeNode.prototype.setChildNo = function(childNo) {
+      var i, newChildren;
+      newChildren = new Array();
+      if (childNo > 0) {
+        for (i = 1; 1 <= childNo ? i <= childNo : i >= childNo; 1 <= childNo ? i++ : i--) {
+          newChildren.push(new ProofTreeNode());
+        }
+      }
+<<<<<<< HEAD
+      return this.childTerms().refresh(newChildren);
+    };
+    ProofTreeNode.prototype.isValid = function() {
+      if (!this.hasTerm()) {
+        return false;
+      }
+      return this.term().validate() && this.childTerms().reduce((function(c, xs) {
+        return c.isValid() && xs;
+      }), true);
+=======
+      return this.getChildTerms().refresh(newChildren);
+>>>>>>> svn
+>>>>>>> master
     };
     return ProofTreeNode;
   })();
@@ -11259,6 +11319,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return Rule;
   })();
 }).call(this);
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> master
 }, "models/term_model": function(exports, require, module) {(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
@@ -11289,6 +11353,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return Term;
   })();
 }).call(this);
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> svn
+>>>>>>> master
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
   var _safe = function(value) {
     if (typeof value === 'undefined' && value == null)
@@ -11349,8 +11418,18 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
+<<<<<<< HEAD
       _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_terms[]" class="droppable" value="'));
       _print(this.content.term);
+=======
+<<<<<<< HEAD
+      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_terms[]" class="droppable" value="'));
+      _print(this.content.term);
+=======
+      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_rules[]" class="droppable" value="'));
+      _print(this.content.rule);
+>>>>>>> svn
+>>>>>>> master
       _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
     }).call(this);
     
@@ -11427,7 +11506,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.HomeView = (function() {
     __extends(HomeView, Backbone.View);
     function HomeView() {
+<<<<<<< HEAD
       this.checkProof = __bind(this.checkProof, this);
+=======
+<<<<<<< HEAD
+      this.checkProof = __bind(this.checkProof, this);
+=======
+      this.checkRules = __bind(this.checkRules, this);
+>>>>>>> svn
+>>>>>>> master
       this.addStoreRule = __bind(this.addStoreRule, this);
       this.addEnterRule = __bind(this.addEnterRule, this);
       this.render = __bind(this.render, this);
@@ -11435,7 +11522,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     }
     HomeView.prototype.id = 'home-view';
     HomeView.prototype.events = {
+<<<<<<< HEAD
       'click #btnCheck': 'checkProof',
+=======
+<<<<<<< HEAD
+      'click #btnCheck': 'checkProof',
+=======
+      'click #btnCheck': 'checkRules',
+>>>>>>> svn
+>>>>>>> master
       'click #btnAddRule': 'addStoreRule',
       'keypress #txtAddRule': 'addEnterRule'
     };
@@ -11494,17 +11589,34 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           });
         }
       };
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> master
       if (app.models.tree.isValid()) {
         ;
       } else {
         return alert("Cannot check proof. You have one or more invalid rules in your tree.");
       }
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> svn
+>>>>>>> master
     };
     return HomeView;
   })();
 }).call(this);
 }, "views/proof_tree_node_view": function(exports, require, module) {(function() {
+<<<<<<< HEAD
   var ProofTreeNodeView, Term, proofTreeItemTemplate;
+=======
+<<<<<<< HEAD
+  var ProofTreeNodeView, Term, proofTreeItemTemplate;
+=======
+  var ProofTreeNodeView, Rule, proofTreeItemTemplate;
+>>>>>>> svn
+>>>>>>> master
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11515,7 +11627,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   proofTreeItemTemplate = require('templates/proof_tree_item');
   ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+<<<<<<< HEAD
   Term = require('models/term_model').Term;
+=======
+<<<<<<< HEAD
+  Term = require('models/term_model').Term;
+=======
+  Rule = require('models/rule_model').Rule;
+>>>>>>> svn
+>>>>>>> master
   exports.ProofTreeNodeView = (function() {
     __extends(ProofTreeNodeView, Backbone.View);
     function ProofTreeNodeView() {
@@ -11538,6 +11658,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.childTerms().bind("refresh", this.render);
     };
     ProofTreeNodeView.prototype.childTerms = function() {
+<<<<<<< HEAD
+      return this.model.childTerms();
+=======
+<<<<<<< HEAD
       return this.model.childTerms();
     };
     ProofTreeNodeView.prototype.checkTermSyntax = function() {
@@ -11545,6 +11669,21 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       fld = this.$(this.el).find("input[type='text']");
       tm = new Term();
       if (!tm.validate(fld.val())) {
+=======
+      return this.model.getChildTerms();
+>>>>>>> master
+    };
+    ProofTreeNodeView.prototype.checkTermSyntax = function() {
+      var bgc, fld, tm;
+      fld = this.$(this.el).find("input[type='text']");
+<<<<<<< HEAD
+      tm = new Term();
+      if (!tm.validate(fld.val())) {
+=======
+      rl = new Rule();
+      if (!rl.validate(fld.val())) {
+>>>>>>> svn
+>>>>>>> master
         bgc = "#faa";
       } else {
         bgc = "#fff";
@@ -11564,15 +11703,35 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.$(this.el).find(".dropzone").droppable({
         hoverClass: 'dropHover',
         drop: function(event, ui) {
+<<<<<<< HEAD
           var elem, elemVal, term;
+=======
+<<<<<<< HEAD
+          var elem, elemVal, term;
+=======
+          var elem, elemVal, rule;
+>>>>>>> svn
+>>>>>>> master
           elem = $(this).find("input[type='text']");
           if (!elem.val()) {
             alert("There needs to be a term in the text field!");
             return this;
           } else {
+<<<<<<< HEAD
             term = new Term();
             elemVal = elem.val();
             if (!term.validate(elemVal)) {
+=======
+<<<<<<< HEAD
+            term = new Term();
+            elemVal = elem.val();
+            if (!term.validate(elemVal)) {
+=======
+            rule = new Rule();
+            elemVal = elem.val();
+            if (!rule.validate(elemVal)) {
+>>>>>>> svn
+>>>>>>> master
               alert("Cannot unify with an invalid term!");
               return this;
             } else {

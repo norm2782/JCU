@@ -1,14 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module JCU.Web.JSON where
+module JCU.JSON where
 
 import            Control.Applicative
 import            Data.Aeson
 import            Data.Tree (Tree(..))
-import            JCU.Prolog.Parser
-import            JCU.Prolog.Types
-import            JCU.Web.Types
+import            JCU.Types
+import            Language.Prolog.NanoProlog
 
 instance FromJSON DropReq where
   parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"

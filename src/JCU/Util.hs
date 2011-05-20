@@ -1,14 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module JCU.Web.Util where
+module JCU.Util where
 
 import            Data.ByteString as B (ByteString, length)
-import            Data.ByteString.Char8 as B (unpack, pack)
+import            Data.ByteString.Char8 as B (unpack)
 import            Data.List as DL (length)
-import            Data.Tree (Tree(..))
-import            JCU.Prolog.Prolog
-import            JCU.Prolog.Types
-import            JCU.Web.Types
+import            JCU.Prolog
+import            JCU.Types
+import            Language.Prolog.NanoProlog
 import            Text.Email.Validate as E (isValid)
 
 getRhss :: Term -> Rule -> DropRes
