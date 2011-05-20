@@ -7,12 +7,16 @@ class exports.HomeView extends Backbone.View
   events:
     'click #btnCheck'   : 'checkRules'
     'click #btnAddRule' : 'addStoreRule'
+    'keypress #txtAddRule' : 'addEnterRule'
 
   render: =>
     @$(@.el).html homeTemplate
     @$('#proof-tree-div').append app.views.proofTree.render()
     @$('#rules-list-div').append app.views.rulesList.render().el
     @
+
+  addEnterRule: (evt) =>
+    @addStoreRule() if evt.which == 13
 
   addStoreRule: =>
     txtAddRule = @$('#txtAddRule')
@@ -34,6 +38,7 @@ class exports.HomeView extends Backbone.View
       color = "#faa"
 
     txtAddRule.css "background-color", color
+    txtAddRule.val("")
 
   # TODO: Rework this to use the new checking system.
   checkRules: =>
