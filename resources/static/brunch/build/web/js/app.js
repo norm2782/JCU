@@ -11378,19 +11378,26 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     function HomeView() {
       this.checkRules = __bind(this.checkRules, this);
       this.addStoreRule = __bind(this.addStoreRule, this);
+      this.addEnterRule = __bind(this.addEnterRule, this);
       this.render = __bind(this.render, this);
       HomeView.__super__.constructor.apply(this, arguments);
     }
     HomeView.prototype.id = 'home-view';
     HomeView.prototype.events = {
       'click #btnCheck': 'checkRules',
-      'click #btnAddRule': 'addStoreRule'
+      'click #btnAddRule': 'addStoreRule',
+      'keypress #txtAddRule': 'addEnterRule'
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
       this.$('#proof-tree-div').append(app.views.proofTree.render());
       this.$('#rules-list-div').append(app.views.rulesList.render().el);
       return this;
+    };
+    HomeView.prototype.addEnterRule = function(evt) {
+      if (evt.which === 13) {
+        return this.addStoreRule();
+      }
     };
     HomeView.prototype.addStoreRule = function() {
       var color, newRule, res, txtAddRule, txtVal;
@@ -11413,7 +11420,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       } else {
         color = "#faa";
       }
-      return txtAddRule.css("background-color", color);
+      txtAddRule.css("background-color", color);
+      return txtAddRule.val("");
     };
     HomeView.prototype.checkRules = function() {
       var callback;
@@ -11503,7 +11511,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           var elem, elemVal, rule;
           elem = $(this).find("input[type='text']");
           if (!elem.val()) {
-            alert("You need to have entered a term in the textfield!");
+            alert("There needs to be a term in the text field!");
             return this;
           } else {
             rule = new Rule();

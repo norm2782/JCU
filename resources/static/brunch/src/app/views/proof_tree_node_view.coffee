@@ -39,7 +39,7 @@ class exports.ProofTreeNodeView extends Backbone.View
       , drop: (event, ui) ->
           elem = $(this).find("input[type='text']")
           if !elem.val()
-            alert "You need to have entered a term in the textfield!"
+            alert "There needs to be a term in the text field!"
             @
           else
             rule = new Rule()
