@@ -14,5 +14,4 @@ class exports.Rule extends Backbone.Model
     token = "\\s*\\w+\\s*"
     rule  = token + "\\(" + token + "(," + token + ")*\\)\\s*"
     regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$")
-    # regex = new RegExp(rule + "(," + rule + ")*" + "(\\.|:-(" + rule + "(,\\s*|\\.))*)") -- TODO: Enable after modifying server-side parser
     regex.test str
