@@ -6,4 +6,4 @@ class exports.RulesList extends Backbone.Collection
   url: => '/rules/stored'
 
   parse: (resp) =>
-    _.map resp, (x) -> {rule: x}
+    _.map resp, (x) -> {id: x, rule: x}

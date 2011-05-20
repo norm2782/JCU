@@ -11069,6 +11069,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     RulesList.prototype.parse = function(resp) {
       return _.map(resp, function(x) {
         return {
+          id: x,
           rule: x
         };
       });
