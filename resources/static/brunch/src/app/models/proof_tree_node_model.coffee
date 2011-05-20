@@ -1,16 +1,17 @@
 class exports.ProofTreeNode extends Backbone.Model
   # Available attributes:
-  # term :: Term
+  # term :: String
   # childTerms :: BackBone.Collection
 
   initialize: =>
-    @set {childTerms: new Backbone.Collection()}
-
-  hasTerm: =>
-    @term?
+    @set { term: ""
+         , childTerms: new Backbone.Collection() }
 
   term: =>
     @get('term')
+
+  setTerm: (tm) =>
+    @set({term: tm})
 
   childTerms: =>
     @get('childTerms')
@@ -21,6 +22,13 @@ class exports.ProofTreeNode extends Backbone.Model
     @childTerms().refresh(newChildren)
 
   isValid: =>
-    if !@hasTerm()
+    str = @term()
+    if !str?
       return false
-    @term().validate() && @childTerms().reduce(((c, xs) -> c.isValid() && xs), true)
+
+    # Token -> a word with possibly spaces in front and after
+    # Term  -> Token ( Token {, Token}* ).
+    token = "\\s*\\w+\\s*"
+    regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$")
+    valid = regex.test str
+    valid && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
