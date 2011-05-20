@@ -11,14 +11,14 @@ class exports.ProofTreeNodeView extends Backbone.View
     "blur  .droppable"          : "checkTermSyntax"
     "change input[type='text']" : "updateModel"
 
-  initialize: ->
-    _.bindAll @, "render"
+  initialize: =>
+    _.bindAll @, "render", "childTerms", "checkTermSyntax"
     @childTerms().bind "change", @render
 
-  childTerms: ->
+  childTerms: =>
     @model.get('childTerms')
 
-  checkTermSyntax: ->
+  checkTermSyntax: =>
     fld = @$(@el).find("input[type='text']")
 
     if !@model.validate fld.val()
@@ -28,7 +28,7 @@ class exports.ProofTreeNodeView extends Backbone.View
 
     fld.css "background-color", bgc
 
-  deleteItem: ->
+  deleteItem: =>
     @model.destroy()
     @$(@el).remove()
 
@@ -61,14 +61,15 @@ class exports.ProofTreeNodeView extends Backbone.View
     view = new ProofTreeNodeView model: node
     @tmpUl.append view.render().el
 
-  updateModel: ->
+  updateModel: =>
     @model.set {rule: @$(@el).find("input[type='text']").val()}
 
-  unify: (term, rule) ->
+  unify: (term, rule) =>
     model = @
     callback = (data) ->
       console.log data # TODO: Finish
 
+    # TODO: Defer this to a Model
     $.ajax
       url:  '/rules/unify'
       type: 'POST'

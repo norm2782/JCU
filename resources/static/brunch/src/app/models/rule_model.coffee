@@ -2,7 +2,7 @@ class exports.Rule extends Backbone.Model
   # Attributes:
   # rule :: String
 
-  validate: (str) ->
+  validate: (str) =>
     if !str?
       str = @get "rule"
 
@@ -15,6 +15,6 @@ class exports.Rule extends Backbone.Model
     # regex = new RegExp(rule + "(," + rule + ")*" + "(\\.|:-(" + rule + "(,\\s*|\\.))*)") -- TODO: Enable after modifying server-side parser
     regex.test str
 
-  clear: ->
+  clear: =>
     @destroy()
     @view.remove()

@@ -3,18 +3,17 @@ class exports.ProofTreeNode extends Backbone.Model
   # term :: Term
   # childTerms :: BackBone.Collection
 
-  initialize: ->
-    # console.log attrs
+  initialize: =>
     @set {childTerms: new Backbone.Collection()}
 
-  hasTerm: ->
+  hasTerm: =>
     @get('term')?
 
-  addRule: ->
+  addRule: =>
     @get('childTerms').add (new ProofTreeNode())
     @change()
 
-  isValid: ->
+  isValid: =>
     return true # TODO: Remove
     if !@hasTerm()
       return false
@@ -22,6 +21,6 @@ class exports.ProofTreeNode extends Backbone.Model
 
     @get('term').validate() && @get('childTerms').all((x) -> x.isValid())
 
-  clear: ->
+  clear: =>
     @destroy()
 

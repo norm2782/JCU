@@ -8,13 +8,13 @@ class exports.HomeView extends Backbone.View
     'click #btnCheck'   : 'checkRules'
     'click #btnAddRule' : 'addStoreRule'
 
-  render: ->
+  render: =>
     @$(@.el).html homeTemplate
-    # @$('#proof-tree-div').append app.views.proofTree.render()
+    @$('#proof-tree-div').append app.views.proofTree.render()
     @$('#rules-list-div').append app.views.rulesList.render().el
     @
 
-  addStoreRule: ->
+  addStoreRule: =>
     txtAddRule = @$('#txtAddRule')
     txtVal = txtAddRule.val()
 
@@ -35,7 +35,7 @@ class exports.HomeView extends Backbone.View
 
     txtAddRule.css "background-color", color
 
-  checkRules: ->
+  checkRules: =>
     # TODO: Clicking check right after add doesn't color the added text field
     # Do we really want all of this here? Or do we want to delegate parts of
     # it all to the individual models?
@@ -52,6 +52,7 @@ class exports.HomeView extends Backbone.View
                $(this).css "background-color", "#faa"
         )
 
+    # TODO: Defer this to a Model
     if false # TODO: app.models.tree.allValid()
       alert "All fields must contain a valid expression before you can check them for correctness."
     else
