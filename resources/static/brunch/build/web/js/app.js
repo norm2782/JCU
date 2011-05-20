@@ -11180,16 +11180,16 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTreeNode = (function() {
     __extends(ProofTreeNode, Backbone.Model);
     function ProofTreeNode() {
-      this.addRule = __bind(this.addRule, this);
       this.setChildNo = __bind(this.setChildNo, this);
-      this.resetChildren = __bind(this.resetChildren, this);
       this.getChildTerms = __bind(this.getChildTerms, this);
       this.hasTerm = __bind(this.hasTerm, this);
       this.initialize = __bind(this.initialize, this);
       ProofTreeNode.__super__.constructor.apply(this, arguments);
     }
     ProofTreeNode.prototype.initialize = function() {
-      return this.resetChildren();
+      return this.set({
+        childTerms: new Backbone.Collection()
+      });
     };
     ProofTreeNode.prototype.hasTerm = function() {
       return this.get('term') != null;
@@ -11197,24 +11197,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeNode.prototype.getChildTerms = function() {
       return this.get('childTerms');
     };
-    ProofTreeNode.prototype.resetChildren = function() {
-      return this.set({
-        childTerms: new Backbone.Collection()
-      });
-    };
     ProofTreeNode.prototype.setChildNo = function(childNo) {
-      var i, _results;
-      this.resetChildren();
+      var i, newChildren;
+      newChildren = new Array();
       if (childNo > 0) {
-        _results = [];
         for (i = 1; 1 <= childNo ? i <= childNo : i >= childNo; 1 <= childNo ? i++ : i--) {
-          _results.push(this.addRule());
+          newChildren.push(new ProofTreeNode());
         }
-        return _results;
       }
-    };
-    ProofTreeNode.prototype.addRule = function() {
-      return this.getChildTerms().add(new ProofTreeNode());
+      return this.getChildTerms().refresh(newChildren);
     };
     return ProofTreeNode;
   })();
@@ -11480,9 +11471,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "change input[type='text']": "updateModel"
     };
     ProofTreeNodeView.prototype.initialize = function() {
-      this.childTerms().bind("add", this.render);
-      this.childTerms().bind("change", this.render);
-      return this.childTerms().bind("remove", this.render);
+      return this.childTerms().bind("refresh", this.render);
     };
     ProofTreeNodeView.prototype.childTerms = function() {
       return this.model.getChildTerms();
@@ -11505,7 +11494,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeNodeView.prototype.render = function() {
       var renderNode, ul, view;
       view = this;
-      this.$(this.el).append(proofTreeItemTemplate({
+      this.$(this.el).html(proofTreeItemTemplate({
         content: this.model.toJSON()
       }));
       this.$(this.el).find(".dropzone").droppable({
