@@ -12,7 +12,7 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            JCU.Parser()
+import            JCU.Parser
 import            JCU.Prolog
 import            JCU.Types
 import            Snap.Auth
@@ -164,6 +164,14 @@ rulesToDoc rls d = do
   let tsc = ["storedRules" =: rls]
   return $ tsc `MDB.merge` d
 
+getRules :: Application [Rule]
+getRules = restrict forbiddenH $ do
+  cau <- currentAuthUser
+  let rawRules = getStoredRules . snd . fromJust $ cau
+  -- TODO: Error handling
+  let rules = fmap (fst . startParse pRule . unpack) (fromMaybe [] rawRules)
+  return rules
+
 getRawRules :: Application [ByteString]
 getRawRules = restrict forbiddenH $ do
   cau <- currentAuthUser
@@ -178,8 +186,9 @@ getStoredRules = MDB.lookup "storedRules"
 checkProofH :: Application ()
 checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  proof <- mkRules =<< getRequestBody
-  writeLBS $ encode (checkProof testStoredRules proof) -- TODO: Grab rules from User
+  proof  <- mkRules =<< getRequestBody
+  rules  <- getRules
+  writeLBS $ encode (checkProof rules proof)
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do

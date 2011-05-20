@@ -37,10 +37,10 @@ pLowerCase :: Parser String
 pLowerCase = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
 
 instance FromJSON DropReq where
-  parseJSON (Object o) = mkDropReq <$> o .: "term" <*> o .: "rule"
+  parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"
 
-mkDropReq :: String -> String -> DropReq
-mkDropReq t r = DropReq (mkTerm t) (mkRule r)
+mkJSONDropReq :: String -> String -> DropReq
+mkJSONDropReq t r = DropReq (mkTerm t) (mkRule r)
   where mkRule = fst . startParse pRule
 
 instance ToJSON DropRes where
