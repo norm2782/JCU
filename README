@@ -64,17 +64,6 @@ using the credentials you have just entered during registration.
 
 * Using *
 After logging in, the main screen is visible. It is divided in two sections.
-On the left-hand side we have the derivation tree and on the right-hand side
-the list of rules. The derivation tree grows from top to bottom, where the top
-element is the original query the user enters. The list shows all stored rules
-in the environment. These rules can be dragged to textfields for convenience.
-The current iteration of the application is rather limited in what it can do.
-It only supports a fixed set of prolog rules and support for adding more rows
-to your derivation "tree" is limited. By default, a valid derivation is shown.
-Pressing the check button will verify whether the derivation is correct. The
-rules entered in the fields must be well-formed, otherwise they are not
-accepted.
-The hint button is currently not wired up to an action. Eventually, pressing it
-would spawn a popup with valid next steps in the derivation sequence, to aid
-users when they are really stuck. It can be argued that this feature would
-promote cheating and that student assistence should play this role.
+On the left-hand side we have the proof tree and on the right-hand side
+the list of rules.
+(TODO: Finish this bit)
