@@ -5,7 +5,6 @@ Rule = require('models/rule_model').Rule
 class exports.ProofTreeNodeView extends Backbone.View
 
   tagName: "li"
-  tmpUl: null
 
   events:
     "click .btnDeleteTree"      : "deleteItem"
@@ -13,10 +12,12 @@ class exports.ProofTreeNodeView extends Backbone.View
     "change input[type='text']" : "updateModel"
 
   initialize: =>
-    @model.bind "change", @render
+    @childTerms().bind "add",    @render
+    @childTerms().bind "change", @render
+    @childTerms().bind "remove", @render
 
   childTerms: =>
-    @model.get('childTerms')
+    @model.getChildTerms()
 
   checkTermSyntax: =>
     fld = @$(@el).find("input[type='text']")
@@ -33,9 +34,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @$(@el).remove()
 
   render: =>
-    console.log "render"
-
-    model = @
+    view = @
     @$(@el).append proofTreeItemTemplate content: @model.toJSON()
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
@@ -52,18 +51,18 @@ class exports.ProofTreeNodeView extends Backbone.View
               alert "Cannot unify with an invalid term!"
               @
             else
-              model.unify(elem, elemVal, ui.draggable.find(".rule-text").html())
+              view.unify(elem, elemVal, ui.draggable.find(".rule-text").html())
       }
 
-    @tmpUl = $('<ul></ul>')
-    @childTerms().each @renderNode
-    @$(@el).append @tmpUl
-    @tmpUl = null
-    @
+    if @childTerms().length > 0
+      ul = $('<ul></ul>')
+      renderNode = (node) ->
+        nodeView = new ProofTreeNodeView({model: node})
+        ul.append nodeView.render().el
 
-  renderNode: (node) =>
-    view = new ProofTreeNodeView model: node
-    @tmpUl.append view.render().el
+      @childTerms().each renderNode
+      @$(@el).append ul
+    @
 
   updateModel: =>
     @model.set {rule: @$(@el).find("input[type='text']").val()}
@@ -75,7 +74,7 @@ class exports.ProofTreeNodeView extends Backbone.View
         alert "Failed to unify!"
       else
         view.model.setChildNo(data.children)
-        elem.trigger('change') # DOM change, not Backbone change
+        # elem.trigger('change') # DOM change, not Backbone change
 
     # TODO: Move this to a Model
     $.ajax

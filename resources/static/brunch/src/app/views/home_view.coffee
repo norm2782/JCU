@@ -35,6 +35,7 @@ class exports.HomeView extends Backbone.View
 
     txtAddRule.css "background-color", color
 
+  # TODO: Rework this to use the new checking system.
   checkRules: =>
     # TODO: Clicking check right after add doesn't color the added text field
     # Do we really want all of this here? Or do we want to delegate parts of
@@ -53,13 +54,13 @@ class exports.HomeView extends Backbone.View
         )
 
     # TODO: Defer this to a Model
-    if false # TODO: app.models.tree.allValid()
-      alert "All fields must contain a valid expression before you can check them for correctness."
-    else
-      $.ajax
-        url:  '/rules/check'
-        type: 'POST'
-        contentType: 'application/json'
-        dataType: 'json'
-        data:     JSON.stringify app.models.tree.get('treeRoot')
-        success:  callback
+    # if false
+    #   alert "All fields must contain a valid expression before you can check them for correctness."
+    # else
+    #   $.ajax
+    #     url:  '/rules/check'
+    #     type: 'POST'
+    #     contentType: 'application/json'
+    #     dataType: 'json'
+    #     data:     JSON.stringify app.models.tree.get('treeRoot')
+    #     success:  callback
