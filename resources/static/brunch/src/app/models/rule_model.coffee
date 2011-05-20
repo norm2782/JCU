@@ -14,7 +14,3 @@ class exports.Rule extends Backbone.Model
     regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)")
     # regex = new RegExp(rule + "(," + rule + ")*" + "(\\.|:-(" + rule + "(,\\s*|\\.))*)") -- TODO: Enable after modifying server-side parser
     regex.test str
-
-  clear: =>
-    @destroy()
-    @view.remove()
