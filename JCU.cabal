@@ -80,4 +80,5 @@ Library
 
   Build-Depends:	  base >= 4.0 && < 5.0
   Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Prolog.Types, JCU.Prolog.Parser, JCU.Prolog.Prolog, JCU.Web.JSON
+  Exposed-modules:  JCU.Prolog.Types, JCU.Prolog.Parser, JCU.Prolog.Prolog,
+                    JCU.Web.JSON, JCU.Web.Types, JCU.Web.Testing, JCU.Web.Util
