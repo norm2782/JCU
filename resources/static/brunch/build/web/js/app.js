@@ -11110,7 +11110,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   app.styles = {};
   app.templates = {};
   RulesList = require('collections/rules_list_collection').RulesList;
-  ProofTree = require('models/proof_tree').ProofTree;
+  ProofTree = require('models/proof_tree_model').ProofTree;
   MainController = require('controllers/main_controller').MainController;
   HomeView = require('views/home_view').HomeView;
   RulesListView = require('views/rules_list_view').RulesListView;
@@ -11143,7 +11143,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return Backbone.history.start();
   });
 }).call(this);
-}, "models/proof_tree": function(exports, require, module) {(function() {
+}, "models/proof_tree_model": function(exports, require, module) {(function() {
   var ProofTreeNode;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
@@ -11153,7 +11153,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     child.__super__ = parent.prototype;
     return child;
   };
-  ProofTreeNode = require('models/proof_tree_node').ProofTreeNode;
+  ProofTreeNode = require('models/proof_tree_node_model').ProofTreeNode;
   exports.ProofTree = (function() {
     __extends(ProofTree, Backbone.Model);
     function ProofTree() {
@@ -11172,7 +11172,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     return ProofTree;
   })();
 }).call(this);
-}, "models/proof_tree_node": function(exports, require, module) {(function() {
+}, "models/proof_tree_node_model": function(exports, require, module) {(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11465,7 +11465,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   })();
 }).call(this);
 }, "views/proof_tree_node_view": function(exports, require, module) {(function() {
-  var ProofTreeNodeView, proofTreeItemTemplate;
+  var ProofTreeNodeView, Rule, proofTreeItemTemplate;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -11476,6 +11476,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   };
   proofTreeItemTemplate = require('templates/proof_tree_item');
   ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+  Rule = require('models/rule_model').Rule;
   exports.ProofTreeNodeView = (function() {
     __extends(ProofTreeNodeView, Backbone.View);
     function ProofTreeNodeView() {
@@ -11504,9 +11505,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.model.get('childTerms');
     };
     ProofTreeNodeView.prototype.checkTermSyntax = function() {
-      var bgc, fld;
+      var bgc, fld, rl;
       fld = this.$(this.el).find("input[type='text']");
-      if (!this.model.validate(fld.val())) {
+      rl = new Rule();
+      if (!rl.validate(fld.val())) {
         bgc = "#faa";
       } else {
         bgc = "#fff";
@@ -11518,15 +11520,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.$(this.el).remove();
     };
     ProofTreeNodeView.prototype.render = function() {
-      var btn, newNode;
-      newNode = function(e) {
-        var model;
-        model = e.data;
-        return model.addRule();
-      };
-      btn = $('<input type="button" value="+" />');
-      btn.click(this.model, newNode);
-      this.$(this.el).html(btn);
       this.$(this.el).append(proofTreeItemTemplate({
         content: this.model.toJSON()
       }));
@@ -11535,8 +11528,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         drop: function(event, ui) {
           var elem;
           elem = $(this).find("input[type='text']");
-          elem.val(ui.draggable.find(".rule-text").html());
-          return elem.trigger('change');
+          if (!elem.val()) {
+            alert("You need to have entered a term in the textfield!");
+            return this;
+          } else {
+            elem.val(ui.draggable.find(".rule-text").html());
+            return elem.trigger('change');
+          }
         }
       });
       this.tmpUl = $('<ul></ul>');

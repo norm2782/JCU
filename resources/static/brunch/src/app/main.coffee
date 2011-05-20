@@ -7,7 +7,7 @@ app.styles = {}
 app.templates = {}
 
 RulesList = require('collections/rules_list_collection').RulesList
-ProofTree = require('models/proof_tree').ProofTree
+ProofTree = require('models/proof_tree_model').ProofTree
 MainController = require('controllers/main_controller').MainController
 HomeView = require('views/home_view').HomeView
 RulesListView = require('views/rules_list_view').RulesListView

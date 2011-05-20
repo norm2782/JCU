@@ -1,5 +1,6 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
+Rule = require('models/rule_model').Rule
 
 class exports.ProofTreeNodeView extends Backbone.View
 
@@ -20,8 +21,8 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   checkTermSyntax: =>
     fld = @$(@el).find("input[type='text']")
-
-    if !@model.validate fld.val()
+    rl = new Rule()
+    if !rl.validate fld.val()
       bgc = "#faa"
     else
       bgc = "#fff"
@@ -33,22 +34,26 @@ class exports.ProofTreeNodeView extends Backbone.View
     @$(@el).remove()
 
   render: =>
-    newNode = (e) ->
-      model = e.data
-      model.addRule()
+    # newNode = (e) ->
+    #   model = e.data
+    #   model.addRule()
 
-    btn = $('<input type="button" value="+" />')
-    btn.click @model, newNode
+    # btn = $('<input type="button" value="+" />')
+    # btn.click @model, newNode
 
-    @$(@el).html btn
+    # @$(@el).html btn
 
     @$(@el).append proofTreeItemTemplate content: @model.toJSON()
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
           elem = $(this).find("input[type='text']")
-          elem.val ui.draggable.find(".rule-text").html()
-          elem.trigger('change') # DOM change, not Backbone change
+          if !elem.val()
+            alert "You need to have entered a term in the textfield!"
+            @
+          else
+            elem.val ui.draggable.find(".rule-text").html()
+            elem.trigger('change') # DOM change, not Backbone change
       }
 
     @tmpUl = $('<ul></ul>')
