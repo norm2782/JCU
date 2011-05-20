@@ -1,6 +1,5 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
-Term = require('models/term_model').Term
 
 class exports.ProofTreeNodeView extends Backbone.View
 
@@ -18,14 +17,13 @@ class exports.ProofTreeNodeView extends Backbone.View
     @model.childTerms()
 
   checkTermSyntax: =>
-    fld = @$(@el).find("input[type='text']")
-    tm = new Term()
-    if !tm.validate fld.val()
+    @updateModel()
+    if !@model.isValid()
       bgc = "#faa"
     else
       bgc = "#fff"
 
-    fld.css "background-color", bgc
+    @$(@el).find("input[type='text']").css "background-color", bgc
 
   deleteItem: =>
     @model.destroy()
@@ -37,15 +35,14 @@ class exports.ProofTreeNodeView extends Backbone.View
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
-          elem = $(this).find("input[type='text']")
-          if !elem.val()
+          elemVal = $(this).find("input[type='text']").val()
+          if !elemVal
             alert "There needs to be a term in the text field!"
             @
           else
-            term = new Term()
-            elemVal = elem.val()
+            view.model.setTerm elemVal
 
-            if !term.validate(elemVal)
+            if !view.model.isValid()
               alert "Cannot unify with an invalid term!"
               @
             else
@@ -63,7 +60,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @
 
   updateModel: =>
-    @model.set {term: new Term({term: @$(@el).find("input[type='text']").val()})}
+    @model.setTerm @$(@el).find("input[type='text']").val()
 
   unify: (term, rule) =>
     view = @
