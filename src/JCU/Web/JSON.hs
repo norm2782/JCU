@@ -1,40 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module JCU.Parser where
+module JCU.Web.JSON where
 
+import            Control.Applicative
 import            Data.Aeson
-import            Data.ListLike.Base (ListLike)
 import            Data.Tree (Tree(..))
-import            JCU.Types
-import            Text.ParserCombinators.UU
-import            Text.ParserCombinators.UU.BasicInstances
-import            Text.ParserCombinators.UU.Utils
-
-pRules :: Parser [Rule]
-pRules = pList pRule
-
--- TODO: Add support for rules with more pFuns before the :-
-pRule :: Parser Rule
-pRule = (:<-:) <$> pFun <*> (pSymbol ":-" *> pTerms `opt` []) <* pDot
-
-pTerm, pVar, pFun :: Parser Term
-pTerm  =  pVar <|> pFun
-pVar   =  Var   <$>  lexeme (pList1 pUpper)
-pFun   =  Fun   <$>  pLowerCase <*> (pParens pTerms `opt` [])
-
-pTerms :: Parser [Term]
-pTerms = pListSep pComma pTerm
-
-startParse :: (ListLike s b, Show b)  => P (Str b s LineColPos) a -> s
-                                      -> (a, [Error LineColPos])
-startParse p inp  =  parse ((,) <$> p <*> pEnd)
-                  $  createStr (LineColPos 0 0 0) inp
-
-pLowerCase :: Parser String
-pLowerCase = (:) <$> pLower <*> lexeme (pList (pLower <|> pUpper <|> pDigit))
+import            JCU.Prolog.Parser
+import            JCU.Prolog.Types
+import            JCU.Web.Types
 
 instance FromJSON DropReq where
   parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"
