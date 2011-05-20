@@ -13,7 +13,7 @@ module Router
 
 import            Application
 import            Control.Applicative
-import            JCU.Handlers
+import            JCU.Web.Handlers
 import            Snap.Util.FileServe
 import            Snap.Types
 
