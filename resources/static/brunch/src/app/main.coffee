@@ -26,11 +26,11 @@ $(document).ready ->
 
     app.controllers.main = new MainController()
 
-    app.models.tree = new ProofTree()
+    # app.models.tree = new ProofTree()
 
     app.views.home = new HomeView()
     app.views.rulesList = new RulesListView()
-    app.views.proofTree = new ProofTreeView({model: app.models.tree})
+    # app.views.proofTree = new ProofTreeView({model: app.models.tree})
 
     Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
   app.initialize()
