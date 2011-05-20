@@ -55,7 +55,8 @@
     module.exports = _;
     _._ = _;
   } else {
-    root._ = _;
+    // Exported as a string, for Closure Compiler "advanced" mode.
+    root['_'] = _;
   }
 
   // Current version.
@@ -73,7 +74,7 @@
       obj.forEach(iterator, context);
     } else if (_.isNumber(obj.length)) {
       for (var i = 0, l = obj.length; i < l; i++) {
-        if (iterator.call(context, obj[i], i, obj) === breaker) return;
+        if (i in obj && iterator.call(context, obj[i], i, obj) === breaker) return;
       }
     } else {
       for (var key in obj) {
@@ -249,6 +250,16 @@
       var a = left.criteria, b = right.criteria;
       return a < b ? -1 : a > b ? 1 : 0;
     }), 'value');
+  };
+
+  // Groups the object's values by a criterion produced by an iterator
+  _.groupBy = function(obj, iterator) {
+    var result = {};
+    each(obj, function(value, index) {
+      var key = iterator(value, index);
+      (result[key] || (result[key] = [])).push(value);
+    });
+    return result;
   };
 
   // Use a comparator function to figure out at what index an object should
@@ -502,7 +513,7 @@
     var funcs = slice.call(arguments);
     return function() {
       var args = slice.call(arguments);
-      for (var i=funcs.length-1; i >= 0; i--) {
+      for (var i = funcs.length - 1; i >= 0; i--) {
         args = [funcs[i].apply(this, args)];
       }
       return args[0];
@@ -805,3 +816,4 @@
   };
 
 })();
+
