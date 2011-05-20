@@ -10,7 +10,7 @@ import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.Map (Map, member, (!))
-import            Data.Maybe (fromJust)
+import            Data.Maybe (fromJust, fromMaybe)
 {- import            Database.MongoDB as DB hiding (unpack, Value(..))-}
 import            Debug.Trace (trace) -- TODO: Remove
 import            JCU.Parser()
@@ -127,7 +127,7 @@ readStoredRulesH = restrict forbiddenH $ do
   writeLBS $ encode rules
 
 updateStoredRulesH :: Application ()
-updateStoredRulesH = restrict forbiddenH $ do undefined
+updateStoredRulesH = restrict forbiddenH undefined
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = restrict forbiddenH $ do
@@ -162,14 +162,10 @@ getRules :: Application [ByteString]
 getRules = do
   cau <- currentAuthUser
   let rules = docToLst . snd . fromJust $ cau
-  return $ case rules of
-             Nothing  -> []
-             Just xs  -> xs
+  return $ fromMaybe [] rules
 
 docToLst :: Document -> Maybe [ByteString]
-docToLst d = do
-  sr <- MDB.lookup "storedRules" d
-  return sr
+docToLst = MDB.lookup "storedRules"
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
