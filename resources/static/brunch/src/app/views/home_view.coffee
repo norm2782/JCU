@@ -33,12 +33,12 @@ class exports.HomeView extends Backbone.View
 
       if !res?
         app.collections.rulesList.create newRule
+      txtAddRule.val("")
       color = "#fff"
     else
       color = "#faa"
 
     txtAddRule.css "background-color", color
-    txtAddRule.val("")
 
   # TODO: Rework this to use the new checking system.
   checkProof: =>

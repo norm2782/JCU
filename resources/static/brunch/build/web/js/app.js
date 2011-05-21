@@ -11280,7 +11280,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     Rule.prototype.validate = function(str) {
       var regex, rule, token;
       if (!(str != null)) {
-        if (!(this.get('term') != null)) {
+        if (!(this.get('rule') != null)) {
           return false;
         }
         str = this.get("rule");
@@ -11471,12 +11471,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         if (!(res != null)) {
           app.collections.rulesList.create(newRule);
         }
+        txtAddRule.val("");
         color = "#fff";
       } else {
         color = "#faa";
       }
-      txtAddRule.css("background-color", color);
-      return txtAddRule.val("");
+      return txtAddRule.css("background-color", color);
     };
     HomeView.prototype.checkProof = function() {
       var callback;

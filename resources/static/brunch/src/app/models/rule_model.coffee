@@ -4,7 +4,7 @@ class exports.Rule extends Backbone.Model
 
   validate: (str) =>
     if !str?
-      if !@get('term')?
+      if !@get('rule')?
         return false
       str = @get "rule"
 
