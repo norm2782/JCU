@@ -1,6 +1,7 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
+import            Debug.Trace
 import            JCU.Types
 import            Language.Prolog.NanoProlog
 
@@ -30,3 +31,9 @@ split :: [a] -> [(a, [a])]
 split xs = split' xs id
   where  split' (y:ys)  f  = (y, f ys) : split' ys (f.(y:))
          split' []      _  = []
+
+getRhss :: Term -> Rule -> DropRes
+getRhss t (c :<-: cs) =
+  case unify (t, c) (Just []) of
+    Nothing  -> DropRes False 0 [] []
+    Just x   -> DropRes True (length cs) cs (map (subst x) cs)

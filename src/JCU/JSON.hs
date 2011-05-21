@@ -16,8 +16,10 @@ mkJSONDropReq :: String -> String -> DropReq
 mkJSONDropReq t r = DropReq (mkJSONTerm t) (mkJSONRule r)
 
 instance ToJSON DropRes where
-  toJSON (b, i) = object  [  "unified"   .= b
-                          ,  "children"  .= i]
+  toJSON (DropRes b i ts uts) = object  [  "unified"   .= b
+                                        ,  "children"  .= i
+                                        ,  "rhss"      .= map show ts
+                                        ,  "urhss"     .= map show uts ]
 
 instance ToJSON PCheck where
   toJSON (Node st cs) = object  [  "status"    .= show st

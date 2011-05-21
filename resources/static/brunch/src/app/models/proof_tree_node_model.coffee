@@ -5,8 +5,7 @@ class exports.ProofTreeNode extends Backbone.Model
   # proofResult :: String
 
   initialize: =>
-    @set { term: ""
-         , childTerms: new Backbone.Collection() }
+    @set { childTerms: new Backbone.Collection() }
 
   term: =>
     @get('term')
@@ -20,10 +19,15 @@ class exports.ProofTreeNode extends Backbone.Model
   childTerms: =>
     @get('childTerms')
 
-  setChildNo: (childNo) =>
-    newChildren = new Array()
-    newChildren.push(new ProofTreeNode()) for i in [1..childNo] if childNo > 0
-    @childTerms().refresh(newChildren)
+  setChildren: (data) =>
+    childNo = data.children
+    # TODO: grab either rhss or urhss from data, depending on some global setting,
+    # and insert it as term in the new nodes
+    if childNo > 0
+      newChildren = new Array()
+      for i in [0..childNo-1]
+        newChildren.push(new ProofTreeNode({term: data.urhss[i]}))
+      @childTerms().refresh(newChildren)
 
   isValid: =>
     str = @term()

@@ -54,7 +54,7 @@ class exports.HomeView extends Backbone.View
         type: 'POST'
         contentType: 'application/json'
         dataType: 'json'
-        data:     JSON.stringify app.models.tree.root()
+        data:     JSON.stringify app.models.tree.treeRoot()
         success:  callback
     else
       alert "Cannot check proof. You have one or more invalid rules in your tree."

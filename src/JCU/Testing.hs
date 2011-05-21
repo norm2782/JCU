@@ -3,7 +3,6 @@ module JCU.Testing where
 import            Data.Tree
 import            JCU.Prolog
 import            JCU.Types
-import            JCU.Util
 import            Language.Prolog.NanoProlog
 
 testSimpleRight :: PCheck

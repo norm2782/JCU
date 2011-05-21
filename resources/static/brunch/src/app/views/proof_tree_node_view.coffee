@@ -15,14 +15,18 @@ class exports.ProofTreeNodeView extends Backbone.View
     @childTerms().bind "refresh", @render
     @model.bind "proof", @changeProofResult
 
+  setBgColor: (fld, cls) =>
+    fld.removeClass 'redField yellowField greenField whiteField'
+    fld.addClass cls
+
   changeProofResult: =>
     switch @model.proofResult()
-      when "Correct"    then bgc = '#66ff66'
-      when "Incomplete" then bgc = '#ffff66'
-      when "Invalid"    then bgc = '#ff6666'
-      else bgc = '#ffffff'
+      when "Correct"    then bgc = 'greenField'
+      when "Incomplete" then bgc = 'yellowField'
+      when "Invalid"    then bgc = 'redField'
+      else bgc = 'whiteField'
 
-    @$(@el).find("input[type='text']").css "background-color", bgc
+    @setBgColor @$(@el).find("input[type='text']"), bgc
 
   childTerms: =>
     @model.childTerms()
@@ -30,11 +34,11 @@ class exports.ProofTreeNodeView extends Backbone.View
   checkTermSyntax: =>
     @updateModel()
     if !@model.isValid()
-      bgc = "#faa"
+      bgc = "redField"
     else
-      bgc = "#fff"
+      bgc = "whiteField"
 
-    @$(@el).find("input[type='text']").css "background-color", bgc
+    @setBgColor @$(@el).find("input[type='text']"), bgc
 
   deleteItem: =>
     @model.destroy()
@@ -76,10 +80,11 @@ class exports.ProofTreeNodeView extends Backbone.View
   unify: (term, rule) =>
     view = @
     callback = (data) ->
+      console.log data
       if !data.unified
         alert "Failed to unify!"
       else
-        view.model.setChildNo(data.children)
+        view.model.setChildren(data)
 
     # TODO: Move this to a Model
     $.ajax
