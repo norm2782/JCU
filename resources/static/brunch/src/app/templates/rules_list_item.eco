@@ -1,4 +1,4 @@
 <div id="rule_<%= @content.rule.replace /[^a-zA-Z0-9]+/g, "" %>" class="draggable rule-list-item">
   <span class="rule-text"><%= @content.rule %></span>
-  <input class="btnDeleteList" type="button" value="X" />
+  <span class="buttons"><button class="btnDeleteList" type="button" value="X" /></span
 </div>

@@ -11353,9 +11353,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<span class="dropzone">\n  <input type="text" name="tree_terms[]" class="droppable" value="'));
+      _print(_safe('<span class="tree_item">\n  <span class="dropzone">\n    <input type="text" class="droppable" value="'));
       _print(this.content.term);
-      _print(_safe('" />\n</span>\n<input type="button" value="X" class="btnDeleteTree" />\n'));
+      _print(_safe('" />\n  </span>\n  <span class="buttons"><button type="button" value="X" class="btnDeleteTree" /></span>\n</span>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11398,7 +11398,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       _print(this.content.rule.replace(/[^a-zA-Z0-9]+/g, ""));
       _print(_safe('" class="draggable rule-list-item">\n  <span class="rule-text">'));
       _print(this.content.rule);
-      _print(_safe('</span>\n  <input class="btnDeleteList" type="button" value="X" />\n</div>\n'));
+      _print(_safe('</span>\n  <span class="buttons"><button class="btnDeleteList" type="button" value="X" /></span\n</div>\n'));
     }).call(this);
     
     return __out.join('');
