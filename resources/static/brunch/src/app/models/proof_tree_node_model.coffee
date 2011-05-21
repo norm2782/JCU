@@ -2,6 +2,7 @@ class exports.ProofTreeNode extends Backbone.Model
   # Available attributes:
   # term :: String
   # childTerms :: BackBone.Collection
+  # proofResult :: String
 
   initialize: =>
     @set { term: ""
@@ -9,6 +10,9 @@ class exports.ProofTreeNode extends Backbone.Model
 
   term: =>
     @get('term')
+
+  proofResult: =>
+    @get('proofResult')
 
   setTerm: (tm) =>
     @set({term: tm})
@@ -32,3 +36,9 @@ class exports.ProofTreeNode extends Backbone.Model
     regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$")
     valid = regex.test str
     valid && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
+
+  setProofResult: (data) =>
+    @set({proofResult: data.status})
+    @trigger('proof')
+    res = data.children
+    @childTerms().each((x) -> x.setProofResult(res.pop()))

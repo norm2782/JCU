@@ -5,9 +5,9 @@ class exports.HomeView extends Backbone.View
   id: 'home-view'
 
   events:
-    'click #btnCheck'   : 'checkProof'
-    'click #btnAddRule' : 'addStoreRule'
-    'keypress #txtAddRule' : 'addEnterRule'
+    'click #btnCheck'       : 'checkProof'
+    'click #btnAddRule'     : 'addStoreRule'
+    'keypress #txtAddRule'  : 'addEnterRule'
 
   render: =>
     @$(@.el).html homeTemplate
@@ -46,19 +46,16 @@ class exports.HomeView extends Backbone.View
     # Do we really want all of this here? Or do we want to delegate parts of
     # it all to the individual models?
     callback = (data) ->
-      flds = $('#rules-tree-div input[type="text"]')
-      if _.and data
-        alert "That's correct!"
-        flds.each( -> $(this).css "background-color", "#fff")
-      else
-        flds.each(
-          -> if data.shift()
-               $(this).css "background-color", "#afa"
-             else
-               $(this).css "background-color", "#faa"
-        )
-    if app.models.tree.isValid()
+      app.models.tree.setProofResult(data)
 
+    if app.models.tree.isValid()
+      $.ajax
+        url:  '/proof/check'
+        type: 'POST'
+        contentType: 'application/json'
+        dataType: 'json'
+        data:     JSON.stringify app.models.tree.root()
+        success:  callback
     else
       alert "Cannot check proof. You have one or more invalid rules in your tree."
 
