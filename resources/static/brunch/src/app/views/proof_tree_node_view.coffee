@@ -1,7 +1,6 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
 
-# TODO: Refactor setting background color. Instead of setting color, set CSS class
 class exports.ProofTreeNodeView extends Backbone.View
 
   tagName: "li"
@@ -15,14 +14,18 @@ class exports.ProofTreeNodeView extends Backbone.View
     @childTerms().bind "refresh", @render
     @model.bind "proof", @changeProofResult
 
+  setBgColor: (fld, cls) =>
+    fld.removeClass 'redField yellowField greenField whiteField'
+    fld.addClass cls
+
   changeProofResult: =>
     switch @model.proofResult()
-      when "Correct"    then bgc = '#66ff66'
-      when "Incomplete" then bgc = '#ffff66'
-      when "Invalid"    then bgc = '#ff6666'
-      else bgc = '#ffffff'
+      when "Correct"    then bgc = 'greenField'
+      when "Incomplete" then bgc = 'yellowField'
+      when "Invalid"    then bgc = 'redField'
+      else bgc = 'whiteField'
 
-    @$(@el).find("input[type='text']").css "background-color", bgc
+    @setBgColor @$(@el).find("input[type='text']"), bgc
 
   childTerms: =>
     @model.childTerms()
@@ -30,11 +33,11 @@ class exports.ProofTreeNodeView extends Backbone.View
   checkTermSyntax: =>
     @updateModel()
     if !@model.isValid()
-      bgc = "#faa"
+      bgc = "redField"
     else
-      bgc = "#fff"
+      bgc = "whiteField"
 
-    @$(@el).find("input[type='text']").css "background-color", bgc
+    @setBgColor @$(@el).find("input[type='text']"), bgc
 
   deleteItem: =>
     @model.destroy()

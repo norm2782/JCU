@@ -23,3 +23,7 @@ ul.tree li{margin:0;padding:0 12px;line-height:20px;background:url("/img/node.pn
 ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 #rules-list-view{margin:0;padding:0}
 #logout{float:right;vertical-align:middle}
+.redField{background-color:#f66}
+.yellowField{background-color:#ff6}
+.greenField{background-color:#6f6}
+.whiteField{background-color:#fff}
