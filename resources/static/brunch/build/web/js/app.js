@@ -11619,7 +11619,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       var callback, view;
       view = this;
       callback = function(data) {
-        console.log(data);
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
