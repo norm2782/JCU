@@ -37,7 +37,7 @@ class exports.ProofTreeNode extends Backbone.Model
     # Token -> a word with possibly spaces in front and after
     # Term  -> Token ( Token {, Token}* ).
     token = "\\s*\\w+\\s*"
-    regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$")
+    regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\.?\\s*$")
     valid = regex.test str
     valid && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
 

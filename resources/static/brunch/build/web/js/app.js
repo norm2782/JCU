@@ -11242,7 +11242,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         return false;
       }
       token = "\\s*\\w+\\s*";
-      regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$");
+      regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\.?\\s*$");
       valid = regex.test(str);
       return valid && this.childTerms().reduce((function(acc, nd) {
         return nd.isValid() && acc;
@@ -11287,7 +11287,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
       token = "\\s*\\w+\\s*";
       rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
-      regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$");
+      regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.?\\s*$");
+      console.log(regex);
       return regex.test(str);
     };
     return Rule;

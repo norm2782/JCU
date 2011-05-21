@@ -13,5 +13,7 @@ class exports.Rule extends Backbone.Model
     # Regex -> Rule {, Rule}* {. | :- { Rule {, | .} }* }
     token = "\\s*\\w+\\s*"
     rule  = token + "\\(" + token + "(," + token + ")*\\)\\s*"
-    regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$")
+    regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule +
+                       "\\s*))?\\s*\\.?\\s*$")
+    console.log regex
     regex.test str
