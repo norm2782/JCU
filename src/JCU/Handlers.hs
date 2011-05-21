@@ -6,18 +6,16 @@ import            Application (Application)
 import            Data.Aeson (encode, fromJSON, json)
 import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
-import            Data.ByteString as B (ByteString)
+import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            JCU.Prolog
-import            JCU.Types
 import            JCU.JSON()
-import            JCU.Types
+import            JCU.Prolog
 import            JCU.Testing
-import            JCU.Util
+import            JCU.Types
 import            Language.Prolog.NanoProlog
 import            Snap.Auth
 import            Snap.Auth.Handlers
@@ -25,6 +23,7 @@ import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup
 import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
+import            Text.Email.Validate as E (isValid)
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -80,6 +79,18 @@ redirHome = redirect "/"
 
 additionalUserFields :: User -> Document
 additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
+
+type FormValidator = [(ByteString, FormField)]
+data FormField = FormField  {  isRequired    :: Bool
+                            ,  fldValidator  :: ByteString -> Bool }
+
+-- TODO: Add support for multiple parameters with the same name
+-- TODO: Add support for returning validation errors.
+-- TODO: See what the Digestive Functors can do for form validation... it is
+-- much better suited for validation than this...
+formValidator :: FormValidator
+formValidator =  [  ("email",     FormField True (E.isValid . unpack))
+                 ,  ("password",  FormField True (\xs -> B.length xs >= 6)) ]
 
 valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
 valForm parms (fld, FormField req val)  | fld `member` parms  = val $ head (parms ! fld)

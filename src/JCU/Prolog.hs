@@ -30,3 +30,9 @@ split :: [a] -> [(a, [a])]
 split xs = split' xs id
   where  split' (y:ys)  f  = (y, f ys) : split' ys (f.(y:))
          split' []      _  = []
+
+getRhss :: Term -> Rule -> DropRes
+getRhss t (c :<-: cs) =
+  case unify (t, c) (Just []) of
+    Nothing  -> (False, 0)
+    Just _   -> (True, length cs)
