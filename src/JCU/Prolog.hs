@@ -1,6 +1,7 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
+import            Debug.Trace
 import            JCU.Types
 import            Language.Prolog.NanoProlog
 
@@ -34,5 +35,5 @@ split xs = split' xs id
 getRhss :: Term -> Rule -> DropRes
 getRhss t (c :<-: cs) =
   case unify (t, c) (Just []) of
-    Nothing  -> (False, 0)
-    Just _   -> (True, length cs)
+    Nothing  -> DropRes False 0 [] []
+    Just x   -> DropRes True (length cs) cs (map (subst x) cs)

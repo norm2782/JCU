@@ -79,10 +79,11 @@ class exports.ProofTreeNodeView extends Backbone.View
   unify: (term, rule) =>
     view = @
     callback = (data) ->
+      console.log data
       if !data.unified
         alert "Failed to unify!"
       else
-        view.model.setChildNo(data.children)
+        view.model.setChildren(data)
 
     # TODO: Move this to a Model
     $.ajax

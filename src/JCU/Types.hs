@@ -12,12 +12,13 @@ data User     = User  {  authUser     :: AuthUser
 data DropReq  = DropReq Term Rule
               deriving Show
 
-type DropRes  = (Bool, Int)
-
-type Proof    = Tree Term
-type PCheck   = Tree Status
+data DropRes  = DropRes Bool Int [Term] [Term]
+              deriving Show
 
 data Status   = Correct
               | Incomplete
               | Invalid
               deriving Show
+
+type Proof    = Tree Term
+type PCheck   = Tree Status
