@@ -11370,7 +11370,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     (function() {
       _print(_safe('<div id="rule_'));
       _print(this.content.rule.replace(/[^a-zA-Z0-9]+/g, ""));
-      _print(_safe('" class="draggable">\n  <span class="rule-text">'));
+      _print(_safe('" class="draggable rule-list-item">\n  <span class="rule-text">'));
       _print(this.content.rule);
       _print(_safe('</span>\n  <input class="btnDeleteList" type="button" value="X" />\n</div>\n'));
     }).call(this);

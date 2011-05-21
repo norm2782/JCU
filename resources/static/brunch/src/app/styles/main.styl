@@ -2,11 +2,6 @@
   margin auto /* center in viewport */
   width 970px /* fix page width */
 
-/* arbitrary content styling */
-#hd, .yui3-g .content, #ft
-  border 5px solid #ccc
-  margin-right 10px /* gutter between columns */
-
 #hd
   height 64px
 
@@ -22,16 +17,6 @@
 #proof-tree-view ol, ul, dl
 #rules-list-view ol, ul, dl
   margin 0 0 20px 0
-
-#rules-list-view li
-  height 30px
-
-#rules-list-view .ui-draggable
-  width 290px
-  padding 5px
-  margin 0px
-  border 1px solid black
-  background-color white
 
 #proof-tree-view .ui-droppable
   padding 5px
@@ -66,7 +51,19 @@
 #uulogo, #faccompsci
   vertical-align middle
 
+#hd
+  border-width 1px 1px 0px 1px
 
+#home-view
+  border-width 1px
+
+#ft
+  border-width 0px 1px 1px 1px
+
+#hd, #home-view, #ft
+  border-color black
+  border-style solid
+  padding 5px
 
 ul.tree, ul.tree ul
   list-style-type none
@@ -97,13 +94,30 @@ ul.tree li:last-child
   vertical-align middle
 
 .redField
-  background-color: #ff6666
+  background-color #ff6666
 
 .yellowField
-  background-color: #ffff66
+  background-color #ffff66
 
 .greenField
-  background-color: #66ff66
+  background-color #66ff66
 
 .whiteField
-  background-color: #ffffff
+  background-color #ffffff
+
+.rule-list-item
+  background-color #fafafa
+  width 290px
+  padding 5px
+  margin 0px
+  border 1px solid black
+  height 25px
+
+#rules-list-view li
+  height 35px
+
+.rule-list-item span, .rule-list-item input
+  vertical-align middle
+
+#rules-list-div
+  margin-bottom 10px

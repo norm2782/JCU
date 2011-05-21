@@ -1,12 +1,9 @@
 #doc{margin:auto;width:970px}
-#hd,.yui3-g .content,#ft{border:5px solid #ccc;margin-right:10px}
 #hd{height:64px}
 #ft{height:51px}
 #bd li{list-style-type:none}
 #proof-tree-view input[type=text]{width:250px}
 #proof-tree-view ol,ul,dl,#rules-list-view ol,ul,dl{margin:0 0 20px 0}
-#rules-list-view li{height:30px}
-#rules-list-view .ui-draggable{width:290px;padding:5px;margin:0;border:1px solid #000;background-color:#fff}
 #proof-tree-view .ui-droppable{padding:5px}
 .dropHover{background-color:#90ee90}
 .btnDeleteList{float:right}
@@ -17,6 +14,10 @@
 #txtAddRule{width:250px}
 #divListAdd{margin-bottom:20px}
 #uulogo,#faccompsci{vertical-align:middle}
+#hd{border-width:1px 1px 0 1px}
+#home-view{border-width:1px}
+#ft{border-width:0 1px 1px 1px}
+#hd,#home-view,#ft{border-color:#000;border-style:solid;padding:5px}
 ul.tree,ul.tree ul{list-style-type:none;background:url("/img/vline.png") repeat-y;margin:0;padding:0}
 ul.tree ul{margin-left:10px}
 ul.tree li{margin:0;padding:0 12px;line-height:20px;background:url("/img/node.png") no-repeat;color:#369;font-weight:bold}
@@ -27,3 +28,7 @@ ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 .yellowField{background-color:#ff6}
 .greenField{background-color:#6f6}
 .whiteField{background-color:#fff}
+.rule-list-item{background-color:#fafafa;width:290px;padding:5px;margin:0;border:1px solid #000;height:25px}
+#rules-list-view li{height:35px}
+.rule-list-item span,.rule-list-item input{vertical-align:middle}
+#rules-list-div{margin-bottom:10px}
