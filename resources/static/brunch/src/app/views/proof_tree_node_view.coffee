@@ -1,7 +1,6 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
 
-# TODO: Refactor setting background color. Instead of setting color, set CSS class
 class exports.ProofTreeNodeView extends Backbone.View
 
   tagName: "li"
@@ -80,7 +79,6 @@ class exports.ProofTreeNodeView extends Backbone.View
   unify: (term, rule) =>
     view = @
     callback = (data) ->
-      console.log data
       if !data.unified
         alert "Failed to unify!"
       else
