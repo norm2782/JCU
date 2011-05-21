@@ -82,14 +82,15 @@ main =
 
 
 loop :: [Rule] -> IO ()
-loop rules =  do  putStr "goals? "
-                  s <- getLine
-                  unless (s == "quit") $
-                    do  let (goals, errors) = startParse (pListSep pComma pFun) s 
-                        if null errors then printsolutions (solve rules  emptyEnv 0 goals)
-                        else do  putStrLn "Some goals were expected:"
-                                 mapM_ (putStrLn.show) errors
-                  loop rules
+loop rules = do  putStr "goals? "
+                 s <- getLine
+                 unless (s == "quit") $
+                   do  let (goals, errors) = startParse (pListSep pComma pFun) s
+                       if null errors
+                         then  printsolutions (solve rules  emptyEnv 0 goals)
+                         else  do  putStrLn "Some goals were expected:"
+                                   mapM_ (putStrLn.show) errors
+                 loop rules
 
 -- ** Printing the solutions
 
