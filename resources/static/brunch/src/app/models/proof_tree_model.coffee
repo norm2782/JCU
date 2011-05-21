@@ -7,5 +7,11 @@ class exports.ProofTree extends Backbone.Model
   initialize: =>
     @set({treeRoot: new ProofTreeNode()})
 
+  root: =>
+    @get('treeRoot')
+
   isValid: =>
-    @get('treeRoot').isValid()
+    @root().isValid()
+
+  setProofResult: (data) =>
+    @root().setProofResult(data)

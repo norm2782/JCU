@@ -1,6 +1,7 @@
 proofTreeItemTemplate = require('templates/proof_tree_item')
 ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView
 
+# TODO: Refactor setting background color. Instead of setting color, set CSS class
 class exports.ProofTreeNodeView extends Backbone.View
 
   tagName: "li"
@@ -12,6 +13,16 @@ class exports.ProofTreeNodeView extends Backbone.View
 
   initialize: =>
     @childTerms().bind "refresh", @render
+    @model.bind "proof", @changeProofResult
+
+  changeProofResult: =>
+    switch @model.proofResult()
+      when "Correct"    then bgc = '#66ff66'
+      when "Incomplete" then bgc = '#ffff66'
+      when "Invalid"    then bgc = '#ff6666'
+      else bgc = '#ffffff'
+
+    @$(@el).find("input[type='text']").css "background-color", bgc
 
   childTerms: =>
     @model.childTerms()

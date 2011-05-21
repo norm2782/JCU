@@ -57,9 +57,6 @@ forbiddenH = do
 siteIndex :: Application ()
 siteIndex = ifTop $ restrict loginRedir $ render "index"
 
-checkH :: Application ()
-checkH = render "check"
-
 loginH :: Application ()
 loginH = loginHandler "password" (Just "remember") failedLogin redirHome
 
