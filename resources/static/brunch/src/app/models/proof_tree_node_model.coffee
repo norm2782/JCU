@@ -26,7 +26,7 @@ class exports.ProofTreeNode extends Backbone.Model
     if childNo > 0
       newChildren = new Array()
       for i in [0..childNo-1]
-        newChildren.push(new ProofTreeNode({term: data.urhss[i]}))
+        newChildren.push(new ProofTreeNode({term: data.urhss[i] + "."}))
       @childTerms().refresh(newChildren)
 
   isValid: =>

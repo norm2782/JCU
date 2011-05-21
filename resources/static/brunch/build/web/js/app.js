@@ -11229,7 +11229,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         newChildren = new Array();
         for (i = 0, _ref = childNo - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
           newChildren.push(new ProofTreeNode({
-            term: data.urhss[i]
+            term: data.urhss[i] + "."
           }));
         }
         return this.childTerms().refresh(newChildren);
