@@ -14,7 +14,7 @@ ol,ul,dl,li{margin:0}
 .uured{color:#921525}
 #header{font-size:29px;vertical-align:middle}
 #header img{vertical-align:middle}
-#txtAddRule{width:250px}
+#txtAddRule{width:275px}
 #divListAdd{margin-bottom:20px}
 #uulogo,#faccompsci{vertical-align:middle}
 #hd{border-width:1px 1px 0 1px}
@@ -33,7 +33,7 @@ ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 .whiteField{background-color:#fff}
 .blueField{background-color:#8fffff}
 .box{width:12px;height:12px;border:1px solid #000;float:left;clear:both;margin-right:5px}
-.rule-list-item{background-color:#fafafa;width:290px;padding:5px;margin:0;border:1px solid #000;height:25px}
+.rule-list-item{background-color:#fafafa;width:330px;padding:5px;margin:0;border:1px solid #000;height:25px}
 #color-coding-list{margin-left:10px;padding-left:0}
 #rules-list-view li{height:35px}
 .rule-list-item span,.rule-list-item input{vertical-align:middle}

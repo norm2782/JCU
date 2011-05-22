@@ -142,14 +142,15 @@ mkRule = parseJSON fromJSON
 
 loadExampleH :: Application ()
 loadExampleH = restrict forbiddenH $ do
-  putRules royalFam
+  putRules exampleData
   redirHome
 
 cnst :: LowerCase -> Term
 cnst s = Fun s []
 
-royalFam :: [Rule]
-royalFam =
+exampleData :: [Rule]
+exampleData =
+  -- Dutch Royal family
   [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
   ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
   ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
@@ -166,7 +167,16 @@ royalFam =
   ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
                                             ,  Fun "voor"   [Var "Z",  Var "Y"] ]
   ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
-                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ] ]
+                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ]
+  -- List
+  ,  Fun "append" [cnst "nil", Var "X", Var "Y"] :<-: []
+  ,  Fun "append" [  Fun "cons" [Var "A", Var "X"]
+                  ,  Var "Y", Fun "cons" [Var "A", Var "Z"]] :<-: [Fun "append" [Var "X", Var "Y", Var "Z"]]
+
+  -- Natural numbers
+  ,  Fun "plus" [cnst "zero", Var "X", Var "X"] :<-: []
+  ,  Fun "plus" [Fun "succ" [Var "X"], Var "Y", Fun "succ" [Var "Z"]] :<-: [Fun "plus" [Var "X", Var "Y", Var "Z"]]
+  ]
 
 putRules :: [Rule] -> Application ()
 putRules = putRawRules . map (pack . show)
