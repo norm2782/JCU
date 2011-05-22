@@ -45,7 +45,9 @@ class exports.ProofTreeNode extends Backbone.Model
     @set({proofResult: data.status})
     @trigger('proof')
     res = data.children
-    @childTerms().each((x) -> x.setProofResult(res.pop()))
+    f = (x) ->
+      x.setProofResult(res.pop())
+    @childTerms().each f
 
   reset: =>
      @childTerms().refresh new Array()

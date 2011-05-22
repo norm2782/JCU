@@ -65,6 +65,7 @@ class exports.HomeView extends Backbone.View
     # Do we really want all of this here? Or do we want to delegate parts of
     # it all to the individual models?
     callback = (data) ->
+      console.log data
       app.models.tree.setProofResult(data)
 
     if app.models.tree.isValid()

@@ -12,6 +12,7 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
+import            Data.Tree (drawTree)
 import            JCU.Prolog
 import            JCU.Testing
 import            JCU.Types
@@ -24,6 +25,7 @@ import            Snap.Extension.Session.CookieSession (setSessionUserId, touchS
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
 
+import Debug.Trace
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -186,7 +188,8 @@ checkProofH = restrict forbiddenH $ do
   setTimeout 15
   proof  <- mkProof =<< getRequestBody
   rules  <- getRules
-  writeLBS $ encode (checkProof rules proof)
+  let prf = checkProof rules proof
+  writeLBS $ trace ("tree:\n" ++ drawTree (fmap show prf) ++ "\nJSON:\n" ++ (show . encode) prf) (encode prf)
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do
