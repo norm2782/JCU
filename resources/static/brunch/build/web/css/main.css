@@ -6,7 +6,7 @@
 #proof-tree-view input[type=text]{width:250px}
 #proof-tree-view ol,#proof-tree-view ul,#proof-tree-view dl,#rules-list-view ol,#proof-tree-view ul,#proof-tree-view dl{margin:0 0 20px 0}
 #proof-tree-view .ui-droppable{padding:5px}
-.dropHover{background-color:#90ee90}
+.dropHover{background-color:#d3d3d3}
 .btnDeleteList{float:right}
 #faccompsci{text-align:right;float:right;font-weight:bold}
 .uured{color:#921525}

@@ -92,7 +92,7 @@ formValidator :: FormValidator
 formValidator =  [  ("email",     E.isValid . unpack)
                  ,  ("password",  (>= 6) . B.length) ]
 
-valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
+valForm :: Ord k => Map k [ByteString] -> (k, ByteString -> Bool) -> Bool
 valForm params (fld, val)  | fld `member` params  = val $ head (params ! fld)
                            | otherwise            = False
 
