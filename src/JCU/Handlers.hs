@@ -84,20 +84,19 @@ redirHome = redirect "/"
 additionalUserFields :: User -> Document
 additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
 
-type FormValidator = [(ByteString, FormField)]
-data FormField = FormField (ByteString -> Bool)
+type FormValidator = [(ByteString, ByteString -> Bool)]
 
 -- TODO: Add support for multiple parameters with the same name
 -- TODO: Add support for returning validation errors.
 -- TODO: See what the Digestive Functors can do for form validation... it is
 -- much better suited for validation than this...
 formValidator :: FormValidator
-formValidator =  [  ("email",     FormField (E.isValid . unpack))
-                 ,  ("password",  FormField ((>= 6) . B.length)) ]
+formValidator =  [  ("email",     E.isValid . unpack)
+                 ,  ("password",  (>= 6) . B.length) ]
 
 valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
-valForm prms (fld, FormField vl)  | fld `member` prms  = vl $ head (prms ! fld)
-                                  | otherwise          = False
+valForm params (fld, val)  | fld `member` params  = val $ head (params ! fld)
+                           | otherwise            = False
 
 -- TODO: Look at digestive-functors for form validation
 signupH :: Application ()
