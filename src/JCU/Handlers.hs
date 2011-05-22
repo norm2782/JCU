@@ -72,8 +72,8 @@ redirIfLogin :: Application () -> Application ()
 redirIfLogin = flip restrict redirHome
 
 failedLogin :: MonadHeist n m => AuthFailure -> m ()
-failedLogin ExternalIdFailure = render "signup"
-failedLogin PasswordFailure   = render "login"
+failedLogin ExternalIdFailure  = render "signup"
+failedLogin PasswordFailure    = render "login"
 
 newSignupH :: Application ()
 newSignupH = redirIfLogin (render "signup")
@@ -86,8 +86,6 @@ additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
 
 type FormValidator = [(ByteString, ByteString -> Bool)]
 
--- TODO: Add support for multiple parameters with the same name
--- TODO: Add support for returning validation errors.
 -- TODO: See what the Digestive Functors can do for form validation... it is
 -- much better suited for validation than this...
 formValidator :: FormValidator
@@ -115,8 +113,8 @@ signupH = do
     else  redirect "/signup" -- TODO: Better handling of invalid forms
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
-makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) []
+makeUser email pwd = User (emptyAuthUser  {  userPassword  = fmap ClearText pwd
+                                          ,  userEmail     = email }) []
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
@@ -126,9 +124,6 @@ readStoredRulesH = restrict forbiddenH $ do
   rules <- getRawRules
   modifyResponse $ setContentType "application/json"
   writeLBS $ encode rules
-
-updateStoredRulesH :: Application ()
-updateStoredRulesH = restrict forbiddenH undefined
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = restrict forbiddenH $ do
