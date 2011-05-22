@@ -11242,13 +11242,14 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
     };
     ProofTreeNode.prototype.isValid = function() {
-      var regex, str, token, valid;
+      var fun, regex, str, token, valid;
       str = this.term();
       if (!(str != null)) {
         return false;
       }
       token = "\\s*\\w+\\s*";
-      regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\s*$");
+      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
+      regex = new RegExp("\\s*^" + token + "\\((" + fun + ",)*\\s*" + fun + "\\)\\s*\\s*$");
       valid = regex.test(str);
       return valid && this.childTerms().reduce((function(acc, nd) {
         return nd.isValid() && acc;
@@ -11289,7 +11290,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       Rule.__super__.constructor.apply(this, arguments);
     }
     Rule.prototype.validate = function(str) {
-      var regex, rule, token;
+      var fun, regex, rule, token;
       if (!(str != null)) {
         if (!(this.get('rule') != null)) {
           return false;
@@ -11297,7 +11298,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         str = this.get("rule");
       }
       token = "\\s*\\w+\\s*";
-      rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
+      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
+      rule = token + "\\(" + fun + "(," + fun + ")*\\)\\s*";
       regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.\\s*$");
       return regex.test(str);
     };
@@ -11325,7 +11327,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p style="width: 350px;text-align:justify;">\n      Example data of the Dutch royal family, as discussed in the JCU lecture\n      notes, can be loaded by <a href="/load-example">clicking this link</a>.\n      Beware that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-3-5">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p style="width: 350px;text-align:justify;">\n      Example data containing the Dutch royal family, the list structure and\n      the natural numbers (as discussed in the JCU lecture notes) can be loaded\n      by <a href="/load-example">clicking this link</a>. Beware that this will\n      replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-2-5">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');

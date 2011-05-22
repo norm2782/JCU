@@ -1,5 +1,5 @@
 <div class="yui3-g">
-  <div class="yui3-u-2-3">
+  <div class="yui3-u-3-5">
     <div class="content">
       <h2>Proof Tree</h2>
       <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
@@ -13,14 +13,15 @@
       </ul>
       <h3>Example data</h3>
       <p style="width: 350px;text-align:justify;">
-      Example data of the Dutch royal family, as discussed in the JCU lecture
-      notes, can be loaded by <a href="/load-example">clicking this link</a>.
-      Beware that this will replace all your existing rules!
+      Example data containing the Dutch royal family, the list structure and
+      the natural numbers (as discussed in the JCU lecture notes) can be loaded
+      by <a href="/load-example">clicking this link</a>. Beware that this will
+      replace all your existing rules!
       </p>
     </div>
   </div>
 
-  <div class="yui3-u-1-3">
+  <div class="yui3-u-2-5">
     <div class="content">
       <h2>Stored Rules</h2>
       <div id="rules-list-div"><!-- LIST GOES HERE --></div>
