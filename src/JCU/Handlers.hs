@@ -154,7 +154,8 @@ exampleData =
   [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
   ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
   ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "cons"]  :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "con"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "fri"]   :<-: []
   ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
   ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
   ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
@@ -172,6 +173,10 @@ exampleData =
   ,  Fun "append" [cnst "nil", Var "X", Var "Y"] :<-: []
   ,  Fun "append" [  Fun "cons" [Var "A", Var "X"]
                   ,  Var "Y", Fun "cons" [Var "A", Var "Z"]] :<-: [Fun "append" [Var "X", Var "Y", Var "Z"]]
+
+  -- List lookup
+  ,  Fun "elem" [Var "X", Fun "cons" [Var "X", Var "Y"]] :<-: []
+  ,  Fun "elem" [Var "X", Fun "cons" [Var "Z", Var "Y"]] :<-: [Fun "elem" [Var "X", Var "Y"]]
 
   -- Natural numbers
   ,  Fun "plus" [cnst "zero", Var "X", Var "X"] :<-: []
