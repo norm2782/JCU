@@ -42,8 +42,8 @@ instance ToJSON DropRes where
                                         ,  "urhss"     .= map show uts ]
 
 instance ToJSON PCheck where
-  toJSON (Node st cs) = object  [  "status"    .= show st
-                                ,  "children"  .= toJSON cs ]
+  toJSON (Node st cs) = object  [  "proofCheckResult"    .= show st
+                                ,  "proofCheckChildren"  .= toJSON cs ]
 
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]

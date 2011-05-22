@@ -189,7 +189,7 @@ checkProofH = restrict forbiddenH $ do
   proof  <- mkProof =<< getRequestBody
   rules  <- getRules
   let prf = checkProof rules proof
-  writeLBS $ trace ("tree:\n" ++ drawTree (fmap show prf) ++ "\nJSON:\n" ++ (show . encode) prf) (encode prf)
+  writeLBS $ encode prf
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do
