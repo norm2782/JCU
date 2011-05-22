@@ -65,14 +65,22 @@ logoutH = logoutHandler redirHome
 ------------------------------------------------------------------------------
 -- | Renders the login page
 newSessionH :: Application ()
-newSessionH = render "login"
+newSessionH = redirIfLogin (render "login")
+
+redirIfLogin :: Application () -> Application ()
+redirIfLogin app = do
+  touchSession
+  authed <- isLoggedIn
+  if authed
+    then redirHome
+    else app
 
 failedLogin :: MonadHeist n m => AuthFailure -> m ()
 failedLogin ExternalIdFailure = render "signup"
 failedLogin PasswordFailure   = render "login"
 
 newSignupH :: Application ()
-newSignupH = render "signup"
+newSignupH = redirIfLogin (render "signup")
 
 redirHome :: Application ()
 redirHome = redirect "/"

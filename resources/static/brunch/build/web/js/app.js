@@ -11288,7 +11288,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       token = "\\s*\\w+\\s*";
       rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
       regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.?\\s*$");
-      console.log(regex);
       return regex.test(str);
     };
     return Rule;
