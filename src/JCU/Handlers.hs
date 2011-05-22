@@ -12,7 +12,6 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            Data.Tree (drawTree)
 import            JCU.Prolog
 import            JCU.Testing
 import            JCU.Types
@@ -24,8 +23,6 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
-
-import Debug.Trace
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
