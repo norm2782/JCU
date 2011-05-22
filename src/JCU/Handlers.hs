@@ -12,7 +12,6 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            JCU.JSON()
 import            JCU.Prolog
 import            JCU.Testing
 import            JCU.Types
@@ -185,7 +184,7 @@ getStoredRules = MDB.lookup "storedRules"
 checkProofH :: Application ()
 checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  proof  <- mkRules =<< getRequestBody
+  proof  <- mkProof =<< getRequestBody
   rules  <- getRules
   writeLBS $ encode (checkProof rules proof)
 
@@ -206,8 +205,8 @@ parseJSON f raw =
         _            -> error500H
     _           -> error500H
 
-mkRules :: L.ByteString -> Application Proof
-mkRules = parseJSON fromJSON
+mkProof :: L.ByteString -> Application Proof
+mkProof = parseJSON fromJSON
 
 error500H :: Application a
 error500H = do
