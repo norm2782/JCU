@@ -1,8 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverlappingInstances #-}
 
 module Language.Prolog.NanoProlog (Term(..),Rule((:<-:)),LowerCase,unify,subst,startParse,pRule,pTerm) where
 
@@ -101,7 +99,7 @@ loop rules = do  putStr "goal? "
 -- | `printSolutions` performs a depth-first walk over the `Result` tree, while accumulating the rules that were applied on the path which was traversed from the root to the current node. At a successful leaf tis contains the full proof
 printSolutions :: IO () -> [String] -> Result -> IO ()
 printSolutions prProof _ (Done env)     = do prProof
-                                             print "solution: "
+                                             putStr "solution: "
                                              printEnv env
                                              getLine
                                              return ()
@@ -109,7 +107,7 @@ printSolutions _       _ None           = return ()
 printSolutions prProof (pr:prefixes) (ApplyRules  bs) 
     = sequence_ [ printSolutions (prProof >> putStrLn  (pr ++ " " ++ show rule))  (extraPrefixes++prefixes) result 
                 | (rule@(c :<-: cs), result) <-  bs
-                , let extraPrefixes = take (length cs) (map (\i -> pr ++ "." ++ show i) [1..])
+                , let extraPrefixes = take (length cs) (map (\i -> pr ++ "." ++ show i) [(1 :: Int) ..])
                 ]
 
 -- | `printEnv` prints a single solution, shwoing only the variables that were introduced in the original goal
