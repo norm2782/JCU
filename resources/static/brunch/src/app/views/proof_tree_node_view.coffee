@@ -6,8 +6,7 @@ class exports.ProofTreeNodeView extends Backbone.View
   tagName: "li"
 
   events:
-    "click .btnDeleteTree"      : "deleteItem"
-    "blur  .droppable"          : "checkTermSyntax"
+    "blur   .droppable"         : "checkTermSyntax"
     "change input[type='text']" : "updateModel"
 
   initialize: =>
@@ -39,10 +38,6 @@ class exports.ProofTreeNodeView extends Backbone.View
 
     @setBgColor @$(@el).find("input[type='text']"), bgc
 
-  deleteItem: =>
-    @model.destroy()
-    @$(@el).remove()
-
   render: =>
     view = @
     @$(@el).html proofTreeItemTemplate content: @model.toJSON()
@@ -66,7 +61,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     if @childTerms().length > 0
       ul = $('<ul></ul>')
       renderNode = (node) ->
-        nodeView = new ProofTreeNodeView({model: node})
+        nodeView = new ProofTreeNodeView({model: node, id: node.term()})
         ul.append nodeView.render().el
 
       @childTerms().each renderNode

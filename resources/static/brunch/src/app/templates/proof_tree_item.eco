@@ -1,6 +1,3 @@
-<span class="tree_item">
-  <span class="dropzone">
-    <input type="text" class="droppable" value="<%= @content.term %>" />
-  </span>
-  <span class="buttons"><button type="button" value="X" class="btnDeleteTree" /></span>
-</span>
+<div class="tree_item dropzone">
+  <input type="text" class="droppable" value="<%= @content.term %>" />
+</div>

@@ -7,6 +7,7 @@ class exports.HomeView extends Backbone.View
   events:
     'click #btnCheck'       : 'checkProof'
     'click #btnAddRule'     : 'addStoreRule'
+    'click #btnReset'       : 'resetTree'
     'keypress #txtAddRule'  : 'addEnterRule'
     "blur #txtAddRule"      : "checkRuleSyntax"
 
@@ -18,7 +19,6 @@ class exports.HomeView extends Backbone.View
 
   addEnterRule: (evt) =>
     @addStoreRule() if evt.which == 13
-
 
   setBgColor: (fld, cls) =>
     fld.removeClass 'redField yellowField greenField whiteField blueField'
@@ -37,6 +37,9 @@ class exports.HomeView extends Backbone.View
       bgc = "blueField"
 
     @setBgColor txtAddRule, bgc
+
+  resetTree: =>
+    app.models.tree.reset()
 
   addStoreRule: =>
     @checkRuleSyntax()

@@ -11161,6 +11161,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.setProofResult = __bind(this.setProofResult, this);
       this.isValid = __bind(this.isValid, this);
       this.treeRoot = __bind(this.treeRoot, this);
+      this.reset = __bind(this.reset, this);
       this.initialize = __bind(this.initialize, this);
       ProofTree.__super__.constructor.apply(this, arguments);
     }
@@ -11168,6 +11169,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.set({
         treeRoot: new ProofTreeNode()
       });
+    };
+    ProofTree.prototype.reset = function() {
+      this.treeRoot().setTerm("");
+      return this.treeRoot().reset();
     };
     ProofTree.prototype.treeRoot = function() {
       return this.get('treeRoot');
@@ -11193,6 +11198,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTreeNode = (function() {
     __extends(ProofTreeNode, Backbone.Model);
     function ProofTreeNode() {
+      this.reset = __bind(this.reset, this);
       this.setProofResult = __bind(this.setProofResult, this);
       this.isValid = __bind(this.isValid, this);
       this.setChildren = __bind(this.setChildren, this);
@@ -11229,7 +11235,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         newChildren = new Array();
         for (i = 0, _ref = childNo - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
           newChildren.push(new ProofTreeNode({
-            term: data.urhss[i] + "."
+            term: data.urhss[i]
           }));
         }
         return this.childTerms().refresh(newChildren);
@@ -11258,6 +11264,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.childTerms().each(function(x) {
         return x.setProofResult(res.pop());
       });
+    };
+    ProofTreeNode.prototype.reset = function() {
+      return this.childTerms().refresh(new Array());
     };
     return ProofTreeNode;
   })();
@@ -11314,7 +11323,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Correct, but incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11353,9 +11362,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<span class="tree_item">\n  <span class="dropzone">\n    <input type="text" class="droppable" value="'));
+      _print(_safe('<div class="tree_item dropzone">\n  <input type="text" class="droppable" value="'));
       _print(this.content.term);
-      _print(_safe('" />\n  </span>\n  <span class="buttons"><button type="button" value="X" class="btnDeleteTree" /></span>\n</span>\n'));
+      _print(_safe('" />\n</div>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11433,6 +11442,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     function HomeView() {
       this.checkProof = __bind(this.checkProof, this);
       this.addStoreRule = __bind(this.addStoreRule, this);
+      this.resetTree = __bind(this.resetTree, this);
       this.checkRuleSyntax = __bind(this.checkRuleSyntax, this);
       this.setBgColor = __bind(this.setBgColor, this);
       this.addEnterRule = __bind(this.addEnterRule, this);
@@ -11443,6 +11453,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     HomeView.prototype.events = {
       'click #btnCheck': 'checkProof',
       'click #btnAddRule': 'addStoreRule',
+      'click #btnReset': 'resetTree',
       'keypress #txtAddRule': 'addEnterRule',
       "blur #txtAddRule": "checkRuleSyntax"
     };
@@ -11475,6 +11486,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         bgc = "blueField";
       }
       return this.setBgColor(txtAddRule, bgc);
+    };
+    HomeView.prototype.resetTree = function() {
+      return app.models.tree.reset();
     };
     HomeView.prototype.addStoreRule = function() {
       var newRule, res, txtAddRule, txtVal;
@@ -11536,7 +11550,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.unify = __bind(this.unify, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
-      this.deleteItem = __bind(this.deleteItem, this);
       this.checkTermSyntax = __bind(this.checkTermSyntax, this);
       this.childTerms = __bind(this.childTerms, this);
       this.changeProofResult = __bind(this.changeProofResult, this);
@@ -11546,8 +11559,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     }
     ProofTreeNodeView.prototype.tagName = "li";
     ProofTreeNodeView.prototype.events = {
-      "click .btnDeleteTree": "deleteItem",
-      "blur  .droppable": "checkTermSyntax",
+      "blur   .droppable": "checkTermSyntax",
       "change input[type='text']": "updateModel"
     };
     ProofTreeNodeView.prototype.initialize = function() {
@@ -11588,10 +11600,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
       return this.setBgColor(this.$(this.el).find("input[type='text']"), bgc);
     };
-    ProofTreeNodeView.prototype.deleteItem = function() {
-      this.model.destroy();
-      return this.$(this.el).remove();
-    };
     ProofTreeNodeView.prototype.render = function() {
       var renderNode, ul, view;
       view = this;
@@ -11622,7 +11630,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         renderNode = function(node) {
           var nodeView;
           nodeView = new ProofTreeNodeView({
-            model: node
+            model: node,
+            id: node.term()
           });
           return ul.append(nodeView.render().el);
         };

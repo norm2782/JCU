@@ -2,7 +2,7 @@ class exports.ProofTreeNode extends Backbone.Model
   # Available attributes:
   # term :: String
   # childTerms :: BackBone.Collection
-  # proofResult :: String
+  # proofResult :: String, can be either Correct, Incomplete or Invalid
 
   initialize: =>
     @set { childTerms: new Backbone.Collection() }
@@ -26,7 +26,7 @@ class exports.ProofTreeNode extends Backbone.Model
     if childNo > 0
       newChildren = new Array()
       for i in [0..childNo-1]
-        newChildren.push(new ProofTreeNode({term: data.urhss[i] + "."}))
+        newChildren.push(new ProofTreeNode({term: data.urhss[i]}))
       @childTerms().refresh(newChildren)
 
   isValid: =>
@@ -46,3 +46,6 @@ class exports.ProofTreeNode extends Backbone.Model
     @trigger('proof')
     res = data.children
     @childTerms().each((x) -> x.setProofResult(res.pop()))
+
+  reset: =>
+     @childTerms().refresh new Array()

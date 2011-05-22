@@ -14,12 +14,17 @@
 .tree_item, .tree_item span, .tree_item input, .tree_item button
   vertical-align middle
 
+.tree_item
+  padding 2px
+
+.dropzone, .ui-droppable
+  height 20px
+
 #proof-tree-view input[type=text]
   width 250px
 
-#proof-tree-view ol, #proof-tree-view ul, #proof-tree-view dl
-#rules-list-view ol, #proof-tree-view ul, #proof-tree-view dl
-  margin 0 0 20px 0
+ol, ul, dl, li
+  margin 0px
 
 #proof-tree-view .ui-droppable
   padding 5px
@@ -79,7 +84,7 @@ ul.tree ul
 
 ul.tree li
   margin 0
-  padding 0 12px
+  padding 0px 5px
   line-height 20px
   background url(/img/node.png) no-repeat
   color #369
@@ -182,3 +187,6 @@ ul.tree li:last-child
     border none
     width 15px
     height 15px
+
+#proof-tree-div
+  margin-bottom 5px

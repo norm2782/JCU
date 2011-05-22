@@ -3,11 +3,11 @@
     <div class="content">
       <h2>Proof Tree</h2>
       <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
-      <input type="button" id="btnCheck" value="Check" />
+      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />
       <h3>Color coding help</h3>
       <ul id="color-coding-list">
         <li><div class="box redField"></div> Incorrect proof</li>
-        <li><div class="box yellowField"></div> Correct, but incomplete proof</li>
+        <li><div class="box yellowField"></div> Incomplete proof</li>
         <li><div class="box greenField"></div> Correct proof</li>
         <li><div class="box blueField"></div> Syntax error</li>
       </ul>
