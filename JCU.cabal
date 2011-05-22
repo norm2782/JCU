@@ -1,10 +1,18 @@
 Name:                JCU
 Version:             0.1
-Synopsis:            Project Synopsis Here
-Description:         Project Description Here
+Synopsis:            Very small  interpreter for a Prlog-like language
+Description:         This package was developed to demonstrate the ideas behind the Prolog language. It contains a very
+                     small interpreter (@Language.prolog.Nanoprolog@) which can be run on its own. It reads a file with definitions, and then prompts for a goal.
+                     All possibe solutions are printed, preceded by a tree showing which rules were applied in which order.
+                     .
+                     The rest of the package contains an environment cnstructed for the Junior College at Utrecht University. It provides a simpel environment
+                     in which rules can be defined, and proofs can be constructed interactively. The software can be sinatlled on a server, 
+                     so students do not have to install anything on their own machines.
+                     .
+                     In the future we may decide to distribute the code over two separate packages.
 License:             BSD3
 license-file:        LICENSE
-Author:              Jurriën Stutterheim
+Author:              Jurriën Stutterheim, Doaitse Swierstra
 Maintainer:          Jurriën Stutterheim
 Stability:           Experimental
 Category:            Web
@@ -40,7 +48,7 @@ Executable jcu
     mongoDB >= 0.9,
     bson >= 0.1.3,
     aeson >= 0.3,
-    uu-parsinglib >= 2.7,
+    uu-parsinglib >= 2.7.1,
     email-validate >= 0.2,
     containers >= 0.4,
     transformers >= 0.2,
@@ -84,5 +92,4 @@ Library
 
   Build-Depends:	  base >= 4.0 && < 5.0
   Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Types, JCU.Prolog, JCU.JSON, JCU.Testing,
-                    Language.Prolog.NanoProlog
+  Exposed-modules:  JCU.Types, JCU.Prolog, Language.Prolog.NanoProlog

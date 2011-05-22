@@ -11255,15 +11255,17 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }), true);
     };
     ProofTreeNode.prototype.setProofResult = function(data) {
-      var res;
+      var f, i;
       this.set({
-        proofResult: data.status
+        proofResult: data.proofCheckResult
       });
       this.trigger('proof');
-      res = data.children;
-      return this.childTerms().each(function(x) {
-        return x.setProofResult(res.pop());
-      });
+      i = 0;
+      f = function(x) {
+        x.setProofResult(data.proofCheckChildren[i]);
+        return i++;
+      };
+      return this.childTerms().each(f);
     };
     ProofTreeNode.prototype.reset = function() {
       return this.childTerms().refresh(new Array());

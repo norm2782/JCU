@@ -42,10 +42,13 @@ class exports.ProofTreeNode extends Backbone.Model
     valid && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
 
   setProofResult: (data) =>
-    @set({proofResult: data.status})
+    @set({proofResult: data.proofCheckResult})
     @trigger('proof')
-    res = data.children
-    @childTerms().each((x) -> x.setProofResult(res.pop()))
+    i = 0
+    f = (x) ->
+      x.setProofResult data.proofCheckChildren[i]
+      i++
+    @childTerms().each f
 
   reset: =>
      @childTerms().refresh new Array()
