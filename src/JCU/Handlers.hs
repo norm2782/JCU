@@ -12,7 +12,7 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            JCU.JSON()
+import            Data.Tree (drawTree)
 import            JCU.Prolog
 import            JCU.Testing
 import            JCU.Types
@@ -24,6 +24,8 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
+
+import Debug.Trace
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -65,14 +67,17 @@ logoutH = logoutHandler redirHome
 ------------------------------------------------------------------------------
 -- | Renders the login page
 newSessionH :: Application ()
-newSessionH = render "login"
+newSessionH = redirIfLogin (render "login")
+
+redirIfLogin :: Application () -> Application ()
+redirIfLogin = flip restrict redirHome
 
 failedLogin :: MonadHeist n m => AuthFailure -> m ()
-failedLogin ExternalIdFailure = render "signup"
-failedLogin PasswordFailure   = render "login"
+failedLogin ExternalIdFailure  = render "signup"
+failedLogin PasswordFailure    = render "login"
 
 newSignupH :: Application ()
-newSignupH = render "signup"
+newSignupH = redirIfLogin (render "signup")
 
 redirHome :: Application ()
 redirHome = redirect "/"
@@ -80,21 +85,17 @@ redirHome = redirect "/"
 additionalUserFields :: User -> Document
 additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
 
-type FormValidator = [(ByteString, FormField)]
-data FormField = FormField  {  isRequired    :: Bool
-                            ,  fldValidator  :: ByteString -> Bool }
+type FormValidator = [(ByteString, ByteString -> Bool)]
 
--- TODO: Add support for multiple parameters with the same name
--- TODO: Add support for returning validation errors.
 -- TODO: See what the Digestive Functors can do for form validation... it is
 -- much better suited for validation than this...
 formValidator :: FormValidator
-formValidator =  [  ("email",     FormField True (E.isValid . unpack))
-                 ,  ("password",  FormField True (\xs -> B.length xs >= 6)) ]
+formValidator =  [  ("email",     E.isValid . unpack)
+                 ,  ("password",  (>= 6) . B.length) ]
 
-valForm :: Ord k => Map k [ByteString] -> (k, FormField) -> Bool
-valForm parms (fld, FormField req val)  | fld `member` parms  = val $ head (parms ! fld)
-                                        | otherwise           = not req
+valForm :: Ord k => Map k [ByteString] -> (k, ByteString -> Bool) -> Bool
+valForm params (fld, val)  | fld `member` params  = val $ head (params ! fld)
+                           | otherwise            = False
 
 -- TODO: Look at digestive-functors for form validation
 signupH :: Application ()
@@ -113,8 +114,8 @@ signupH = do
     else  redirect "/signup" -- TODO: Better handling of invalid forms
 
 makeUser :: Maybe ByteString -> Maybe ByteString -> User
-makeUser email pwd = User (emptyAuthUser  { userPassword  = fmap ClearText pwd
-                                          , userEmail     = email }) []
+makeUser email pwd = User (emptyAuthUser  {  userPassword  = fmap ClearText pwd
+                                          ,  userEmail     = email }) []
 
 ------------------------------------------------------------------------------
 -- | Functions for handling reading and saving per-person rules
@@ -124,9 +125,6 @@ readStoredRulesH = restrict forbiddenH $ do
   rules <- getRawRules
   modifyResponse $ setContentType "application/json"
   writeLBS $ encode rules
-
-updateStoredRulesH :: Application ()
-updateStoredRulesH = restrict forbiddenH undefined
 
 deleteStoredRuleH :: Application ()
 deleteStoredRuleH = restrict forbiddenH $ do
@@ -188,9 +186,10 @@ getStoredRules = MDB.lookup "storedRules"
 checkProofH :: Application ()
 checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  proof  <- mkRules =<< getRequestBody
+  proof  <- mkProof =<< getRequestBody
   rules  <- getRules
-  writeLBS $ encode (checkProof rules proof)
+  let prf = checkProof rules proof
+  writeLBS $ trace ("tree:\n" ++ drawTree (fmap show prf) ++ "\nJSON:\n" ++ (show . encode) prf) (encode prf)
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do
@@ -209,8 +208,8 @@ parseJSON f raw =
         _            -> error500H
     _           -> error500H
 
-mkRules :: L.ByteString -> Application Proof
-mkRules = parseJSON fromJSON
+mkProof :: L.ByteString -> Application Proof
+mkProof = parseJSON fromJSON
 
 error500H :: Application a
 error500H = do

@@ -14,11 +14,15 @@ module Application
   ,  applicationInitializer
   )  where
 
+import            Control.Monad.Trans.Class (lift)
+import            Data.Text (Text)
 import            Snap.Auth
 import            Snap.Extension
 import            Snap.Extension.DB.MongoDB
 import            Snap.Extension.Heist.Impl
 import            Snap.Extension.Session.CookieSession
+import            Text.Templating.Heist
+import            Text.XmlHtml
 
 ------------------------------------------------------------------------------
 -- | 'Application' is our application's monad. It uses 'SnapExtend' from
@@ -64,9 +68,20 @@ instance HasHeistState Application ApplicationState where
 applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
     heist   <- heistInitializer "resources/templates"
+    registerSplices heist [("loginLogout", loginLogoutSplice)]
     cs      <- cookieSessionStateInitializer $ defCookieSessionState {
                     csTimeout     = Just $ 60 * 60 * 8 -- Set cookie timeout to 8 hours
                  ,  csKeyPath     = "config/site-key.txt"
                  ,  csCookieName  = "jcu-session" }
     mng     <- mongoDBInitializer (host "127.0.0.1") 27017 "jcu"
     return  $ ApplicationState heist cs mng
+
+link :: Text -> Text -> Node
+link target text = Element "a" [("href", target)] [TextNode text]
+
+loginLogoutSplice :: Splice Application
+loginLogoutSplice = do
+  user <- lift currentAuthUser
+  case user of
+    Nothing  -> return [link "/login"   "Login"]
+    Just _   -> return [link "/logout"  "Logout"]

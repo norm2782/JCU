@@ -14,18 +14,23 @@
 .tree_item, .tree_item span, .tree_item input, .tree_item button
   vertical-align middle
 
+.tree_item
+  padding 2px
+
+.dropzone, .ui-droppable
+  height 20px
+
 #proof-tree-view input[type=text]
   width 250px
 
-#proof-tree-view ol, ul, dl
-#rules-list-view ol, ul, dl
-  margin 0 0 20px 0
+ol, ul, dl, li
+  margin 0px
 
 #proof-tree-view .ui-droppable
   padding 5px
 
 .dropHover
-  background-color lightgreen
+  background-color lightgrey
 
 .btnDeleteList
   float right
@@ -79,7 +84,7 @@ ul.tree ul
 
 ul.tree li
   margin 0
-  padding 0 12px
+  padding 0px 5px
   line-height 20px
   background url(/img/node.png) no-repeat
   color #369
@@ -97,16 +102,27 @@ ul.tree li:last-child
   vertical-align middle
 
 .redField
-  background-color #ff6666
+  background-color rgb(255,127,190)
 
 .yellowField
-  background-color #ffff66
+  background-color rgb(229,255,79)
 
 .greenField
-  background-color #66ff66
+  background-color rgb(127,255,105)
 
 .whiteField
   background-color #ffffff
+
+.blueField
+  background-color rgb(143,255,255)
+
+.box
+  width 12px
+  height 12px
+  border 1px solid black
+  float left
+  clear both
+  margin-right 5px
 
 .rule-list-item
   background-color #fafafa
@@ -115,6 +131,10 @@ ul.tree li:last-child
   margin 0px
   border 1px solid black
   height 25px
+
+#color-coding-list
+  margin-left 10px
+  padding-left 0px
 
 #rules-list-view li
   height 35px
@@ -167,3 +187,6 @@ ul.tree li:last-child
     border none
     width 15px
     height 15px
+
+#proof-tree-div
+  margin-bottom 5px

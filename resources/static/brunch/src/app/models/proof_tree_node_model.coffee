@@ -2,7 +2,7 @@ class exports.ProofTreeNode extends Backbone.Model
   # Available attributes:
   # term :: String
   # childTerms :: BackBone.Collection
-  # proofResult :: String
+  # proofResult :: String, can be either Correct, Incomplete or Invalid
 
   initialize: =>
     @set { childTerms: new Backbone.Collection() }
@@ -26,7 +26,7 @@ class exports.ProofTreeNode extends Backbone.Model
     if childNo > 0
       newChildren = new Array()
       for i in [0..childNo-1]
-        newChildren.push(new ProofTreeNode({term: data.urhss[i] + "."}))
+        newChildren.push(new ProofTreeNode({term: data.urhss[i]}))
       @childTerms().refresh(newChildren)
 
   isValid: =>
@@ -35,9 +35,9 @@ class exports.ProofTreeNode extends Backbone.Model
       return false
 
     # Token -> a word with possibly spaces in front and after
-    # Term  -> Token ( Token {, Token}* ).
+    # Term  -> Token ( Token {, Token}* )
     token = "\\s*\\w+\\s*"
-    regex = new RegExp(token + "\\(" + token + "(," + token + ")*\\)\\.\\s*$")
+    regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\s*$")
     valid = regex.test str
     valid && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
 
@@ -45,4 +45,9 @@ class exports.ProofTreeNode extends Backbone.Model
     @set({proofResult: data.status})
     @trigger('proof')
     res = data.children
-    @childTerms().each((x) -> x.setProofResult(res.pop()))
+    f = (x) ->
+      x.setProofResult(res.pop())
+    @childTerms().each f
+
+  reset: =>
+     @childTerms().refresh new Array()

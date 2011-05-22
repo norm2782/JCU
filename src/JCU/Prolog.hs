@@ -1,7 +1,6 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
-import            Debug.Trace
 import            JCU.Types
 import            Language.Prolog.NanoProlog
 

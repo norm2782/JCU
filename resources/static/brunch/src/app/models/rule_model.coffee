@@ -4,14 +4,17 @@ class exports.Rule extends Backbone.Model
 
   validate: (str) =>
     if !str?
-      if !@get('term')?
+      if !@get('rule')?
         return false
       str = @get "rule"
 
     # Token -> a word with possibly spaces in front and after
     # Rule  -> Token ( Token {, Token}* )
-    # Regex -> Rule {, Rule}* {. | :- { Rule {, | .} }* }
+    # Regex -> TODO: Update regex grammar here
+    # TODO: Move all parsing to the server and give very detailed feedback of
+    # what went wrong.
     token = "\\s*\\w+\\s*"
     rule  = token + "\\(" + token + "(," + token + ")*\\)\\s*"
-    regex = new RegExp(rule + "(\\.|:-(" + rule + "(,\\s*|\\.))*)\\s*$")
+    regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule +
+                       "\\s*))?\\s*\\.\\s*$")
     regex.test str

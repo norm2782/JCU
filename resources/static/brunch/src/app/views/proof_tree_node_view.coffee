@@ -6,8 +6,7 @@ class exports.ProofTreeNodeView extends Backbone.View
   tagName: "li"
 
   events:
-    "click .btnDeleteTree"      : "deleteItem"
-    "blur  .droppable"          : "checkTermSyntax"
+    "blur   .droppable"         : "checkTermSyntax"
     "change input[type='text']" : "updateModel"
 
   initialize: =>
@@ -15,7 +14,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @model.bind "proof", @changeProofResult
 
   setBgColor: (fld, cls) =>
-    fld.removeClass 'redField yellowField greenField whiteField'
+    fld.removeClass 'redField yellowField greenField whiteField blueField'
     fld.addClass cls
 
   changeProofResult: =>
@@ -33,15 +32,11 @@ class exports.ProofTreeNodeView extends Backbone.View
   checkTermSyntax: =>
     @updateModel()
     if !@model.isValid()
-      bgc = "redField"
+      bgc = "blueField"
     else
       bgc = "whiteField"
 
     @setBgColor @$(@el).find("input[type='text']"), bgc
-
-  deleteItem: =>
-    @model.destroy()
-    @$(@el).remove()
 
   render: =>
     view = @
@@ -66,7 +61,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     if @childTerms().length > 0
       ul = $('<ul></ul>')
       renderNode = (node) ->
-        nodeView = new ProofTreeNodeView({model: node})
+        nodeView = new ProofTreeNodeView({model: node, id: node.term()})
         ul.append nodeView.render().el
 
       @childTerms().each renderNode

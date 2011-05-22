@@ -4,7 +4,6 @@
 
 module Language.Prolog.NanoProlog (Term(..),Rule((:<-:)),LowerCase,unify,subst,startParse,pRule,pTerm) where
 
-import            Data.Maybe
 import            Data.ListLike.Base (ListLike)
 import            Data.List (intercalate)
 import            Text.ParserCombinators.UU

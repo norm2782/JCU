@@ -3,10 +3,12 @@
 #ft{height:51px}
 #bd li{list-style-type:none}
 .tree_item,.tree_item span,.tree_item input,.tree_item button{vertical-align:middle}
+.tree_item{padding:2px}
+.dropzone,.ui-droppable{height:20px}
 #proof-tree-view input[type=text]{width:250px}
-#proof-tree-view ol,ul,dl,#rules-list-view ol,ul,dl{margin:0 0 20px 0}
+ol,ul,dl,li{margin:0}
 #proof-tree-view .ui-droppable{padding:5px}
-.dropHover{background-color:#90ee90}
+.dropHover{background-color:#d3d3d3}
 .btnDeleteList{float:right}
 #faccompsci{text-align:right;float:right;font-weight:bold}
 .uured{color:#921525}
@@ -21,15 +23,18 @@
 #hd,#home-view,#ft{border-color:#000;border-style:solid;padding:5px}
 ul.tree,ul.tree ul{list-style-type:none;background:url("/img/vline.png") repeat-y;margin:0;padding:0}
 ul.tree ul{margin-left:10px}
-ul.tree li{margin:0;padding:0 12px;line-height:20px;background:url("/img/node.png") no-repeat;color:#369;font-weight:bold}
+ul.tree li{margin:0;padding:0 5px;line-height:20px;background:url("/img/node.png") no-repeat;color:#369;font-weight:bold}
 ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 #rules-list-view{margin:0;padding:0}
 #logout{float:right;vertical-align:middle}
-.redField{background-color:#f66}
-.yellowField{background-color:#ff6}
-.greenField{background-color:#6f6}
+.redField{background-color:#ff7fbe}
+.yellowField{background-color:#e5ff4f}
+.greenField{background-color:#7fff69}
 .whiteField{background-color:#fff}
+.blueField{background-color:#8fffff}
+.box{width:12px;height:12px;border:1px solid #000;float:left;clear:both;margin-right:5px}
 .rule-list-item{background-color:#fafafa;width:290px;padding:5px;margin:0;border:1px solid #000;height:25px}
+#color-coding-list{margin-left:10px;padding-left:0}
 #rules-list-view li{height:35px}
 .rule-list-item span,.rule-list-item input{vertical-align:middle}
 #rules-list-div{margin-bottom:10px}
@@ -39,3 +44,4 @@ ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 .buttons button[type]{padding:5px;line-height:10px}
 *:first-child+html button[type]{padding:5px}
 .buttons button img,.buttons a img{margin:0 !important;padding:0;border:none;width:15px;height:15px}
+#proof-tree-div{margin-bottom:5px}

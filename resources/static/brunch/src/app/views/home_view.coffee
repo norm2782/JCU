@@ -7,7 +7,9 @@ class exports.HomeView extends Backbone.View
   events:
     'click #btnCheck'       : 'checkProof'
     'click #btnAddRule'     : 'addStoreRule'
+    'click #btnReset'       : 'resetTree'
     'keypress #txtAddRule'  : 'addEnterRule'
+    "blur #txtAddRule"      : "checkRuleSyntax"
 
   render: =>
     @$(@.el).html homeTemplate
@@ -18,7 +20,29 @@ class exports.HomeView extends Backbone.View
   addEnterRule: (evt) =>
     @addStoreRule() if evt.which == 13
 
+  setBgColor: (fld, cls) =>
+    fld.removeClass 'redField yellowField greenField whiteField blueField'
+    fld.addClass cls
+
+  # TODO: Refactor duplicate code
+  checkRuleSyntax: =>
+    txtAddRule = @$('#txtAddRule')
+    txtVal = txtAddRule.val()
+
+    newRule = new Rule({id: "", rule: txtVal})
+
+    if newRule.validate()
+      bgc = "whiteField"
+    else
+      bgc = "blueField"
+
+    @setBgColor txtAddRule, bgc
+
+  resetTree: =>
+    app.models.tree.reset()
+
   addStoreRule: =>
+    @checkRuleSyntax()
     txtAddRule = @$('#txtAddRule')
     txtVal = txtAddRule.val()
 
@@ -33,12 +57,7 @@ class exports.HomeView extends Backbone.View
 
       if !res?
         app.collections.rulesList.create newRule
-      color = "#fff"
-    else
-      color = "#faa"
-
-    txtAddRule.css "background-color", color
-    txtAddRule.val("")
+      txtAddRule.val("")
 
   # TODO: Rework this to use the new checking system.
   checkProof: =>
@@ -46,6 +65,7 @@ class exports.HomeView extends Backbone.View
     # Do we really want all of this here? Or do we want to delegate parts of
     # it all to the individual models?
     callback = (data) ->
+      console.log data
       app.models.tree.setProofResult(data)
 
     if app.models.tree.isValid()
