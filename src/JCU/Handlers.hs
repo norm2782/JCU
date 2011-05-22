@@ -13,7 +13,6 @@ import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
 import            JCU.Prolog
-import            JCU.Testing
 import            JCU.Types
 import            Language.Prolog.NanoProlog
 import            Snap.Auth
@@ -141,11 +140,33 @@ addStoredRuleH = restrict forbiddenH $ do
 mkRule :: L.ByteString -> Application Rule
 mkRule = parseJSON fromJSON
 
--- TODO: Eventually remove populateH
-populateH :: Application ()
-populateH = restrict forbiddenH $ do
-  putRules testStoredRules
-  writeLBS "populateH"
+loadExampleH :: Application ()
+loadExampleH = restrict forbiddenH $ do
+  putRules royalFam
+  redirHome
+
+cnst :: LowerCase -> Term
+cnst s = Fun s []
+
+royalFam :: [Rule]
+royalFam =
+  [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
+  ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "cons"]  :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ale"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ama"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ari"]   :<-: []
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "pa"     [Var "X",  Var "Y"] ]
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
+                                            ,  Fun "voor"   [Var "Z",  Var "Y"] ]
+  ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
+                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ] ]
 
 putRules :: [Rule] -> Application ()
 putRules = putRawRules . map (pack . show)

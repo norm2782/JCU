@@ -11,6 +11,12 @@
         <li><div class="box greenField"></div> Correct proof</li>
         <li><div class="box blueField"></div> Syntax error</li>
       </ul>
+      <h3>Example data</h3>
+      <p style="width: 350px;text-align:justify;">
+      Example data of the Dutch royal family, as discussed in the JCU lecture
+      notes, can be loaded by <a href="/load-example">clicking this link</a>.
+      Beware that this replaces all your existing rules!
+      </p>
     </div>
   </div>
 
