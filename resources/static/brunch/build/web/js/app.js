@@ -11242,13 +11242,14 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
     };
     ProofTreeNode.prototype.isValid = function() {
-      var regex, str, token, valid;
+      var fun, regex, str, token, valid;
       str = this.term();
       if (!(str != null)) {
         return false;
       }
       token = "\\s*\\w+\\s*";
-      regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\s*$");
+      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
+      regex = new RegExp("\\s*^" + token + "\\((" + fun + ",)*\\s*" + fun + "\\)\\s*\\s*$");
       valid = regex.test(str);
       return valid && this.childTerms().reduce((function(acc, nd) {
         return nd.isValid() && acc;
@@ -11289,7 +11290,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       Rule.__super__.constructor.apply(this, arguments);
     }
     Rule.prototype.validate = function(str) {
-      var regex, rule, token;
+      var fun, regex, rule, token;
       if (!(str != null)) {
         if (!(this.get('rule') != null)) {
           return false;
@@ -11297,7 +11298,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         str = this.get("rule");
       }
       token = "\\s*\\w+\\s*";
-      rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
+      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
+      rule = token + "\\(" + fun + "(," + fun + ")*\\)\\s*";
       regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.\\s*$");
       return regex.test(str);
     };
