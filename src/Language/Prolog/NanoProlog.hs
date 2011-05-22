@@ -46,9 +46,15 @@ data Result = None
             | Done Env 
             | ApplyRules [(Rule, Result)]
 
-subst :: Env -> Term -> Term
-subst env (Var x)     = maybe (Var x) (subst env) (lookup x env)
-subst env (Fun x cs)  = Fun x (map (subst env) cs)
+class Subst t where
+  subst :: Env -> t -> t
+
+instance Subst Term where
+  subst env (Var x)     = maybe (Var x) (subst env) (lookup x env)
+  subst env (Fun x cs)  = Fun x (map (subst env) cs)
+
+instance Subst Rule where
+  subst env (c :<-: cs) = subst env c :<-: map (subst env) cs
 
 unify :: (Term, Term) -> Maybe Env -> Maybe Env
 unify _       Nothing       = Nothing
@@ -89,27 +95,30 @@ loop rules = do  putStr "goal? "
                  unless (s == "quit") $
                    do  let (goal, errors) = startParse  pFun s
                        if null errors
-                         then  printSolutions (print goal) ["0"] (solve rules  emptyEnv 0 [goal])
+                         then  printSolutions [] ["0"] (solve rules  emptyEnv 0 [goal])
                          else  do  putStrLn "Some goals were expected:"
                                    mapM_ (putStrLn.show) errors
                        loop rules
 
 -- ** Printing the solutions
 -- | `printSolutions` performs a depth-first walk over the `Result` tree, while accumulating the rules that were applied on the path which was traversed from the root to the current node. At a successful leaf tis contains the full proof
-printSolutions :: IO () -> [String] -> Result -> IO ()
-printSolutions prProof _ (Done env)     = do prProof
+printSolutions :: [(String, Rule)] -> [String] -> Result -> IO ()
+printSolutions proofs _ (Done env)     = do  sequence_ [ putStrLn (prefix ++ " " ++  show (subst env pr))
+                                                       | (prefix, pr@(p :<-: pp)) <- reverse proofs
+--                                                       , length pp >0
+                                                       ]
                                              putStr "solution: "
                                              printEnv env
                                              getLine
                                              return ()
 printSolutions _       _ None           = return ()
-printSolutions prProof (pr:prefixes) (ApplyRules  bs) 
-    = sequence_ [ printSolutions (prProof >> putStrLn  (pr ++ " " ++ show rule))  (extraPrefixes++prefixes) result 
+printSolutions proofs (pr:prefixes) (ApplyRules  bs) 
+    = sequence_ [ printSolutions ((pr, rule):proofs)  (extraPrefixes++prefixes) result 
                 | (rule@(c :<-: cs), result) <-  bs
                 , let extraPrefixes = take (length cs) (map (\i -> pr ++ "." ++ show i) [(1 :: Int) ..])
                 ]
 
--- | `printEnv` prints a single solution, shwoing only the variables that were introduced in the original goal
+-- | `printEnv` prints a single solution, showing only the variables that were introduced in the original goal
 printEnv :: Env -> IO ()
 printEnv  bs =  putStr (intercalate ", " . filter (not.null) . map  showBdg $ bs)
              where  showBdg (    x,t)  | isGlobVar x =  x ++ " <- "++ showTerm t 
