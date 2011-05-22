@@ -15,7 +15,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @model.bind "proof", @changeProofResult
 
   setBgColor: (fld, cls) =>
-    fld.removeClass 'redField yellowField greenField whiteField'
+    fld.removeClass 'redField yellowField greenField whiteField blueField'
     fld.addClass cls
 
   changeProofResult: =>
@@ -33,7 +33,7 @@ class exports.ProofTreeNodeView extends Backbone.View
   checkTermSyntax: =>
     @updateModel()
     if !@model.isValid()
-      bgc = "redField"
+      bgc = "blueField"
     else
       bgc = "whiteField"
 

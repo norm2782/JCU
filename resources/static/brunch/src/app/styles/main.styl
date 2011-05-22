@@ -17,8 +17,8 @@
 #proof-tree-view input[type=text]
   width 250px
 
-#proof-tree-view ol, ul, dl
-#rules-list-view ol, ul, dl
+#proof-tree-view ol, #proof-tree-view ul, #proof-tree-view dl
+#rules-list-view ol, #proof-tree-view ul, #proof-tree-view dl
   margin 0 0 20px 0
 
 #proof-tree-view .ui-droppable
@@ -97,16 +97,27 @@ ul.tree li:last-child
   vertical-align middle
 
 .redField
-  background-color #ff6666
+  background-color rgb(255,127,190)
 
 .yellowField
-  background-color #ffff66
+  background-color rgb(229,255,79)
 
 .greenField
-  background-color #66ff66
+  background-color rgb(127,255,105)
 
 .whiteField
   background-color #ffffff
+
+.blueField
+  background-color rgb(143,255,255)
+
+.box
+  width 12px
+  height 12px
+  border 1px solid black
+  float left
+  clear both
+  margin-right 5px
 
 .rule-list-item
   background-color #fafafa
@@ -115,6 +126,10 @@ ul.tree li:last-child
   margin 0px
   border 1px solid black
   height 25px
+
+#color-coding-list
+  margin-left 10px
+  padding-left 0px
 
 #rules-list-view li
   height 35px

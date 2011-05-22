@@ -11242,7 +11242,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         return false;
       }
       token = "\\s*\\w+\\s*";
-      regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\.?\\s*$");
+      regex = new RegExp("\\s*^" + token + "\\(" + token + "(," + token + ")*\\)\\s*\\s*$");
       valid = regex.test(str);
       return valid && this.childTerms().reduce((function(acc, nd) {
         return nd.isValid() && acc;
@@ -11287,7 +11287,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
       token = "\\s*\\w+\\s*";
       rule = token + "\\(" + token + "(," + token + ")*\\)\\s*";
-      regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.?\\s*$");
+      regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.\\s*$");
       return regex.test(str);
     };
     return Rule;
@@ -11314,7 +11314,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-2-3">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n      <h3>Color coding</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Correct, but incomplete proof</li>\n        <li><div class="box greenField"></div> Correct and complete proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-3">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11433,6 +11433,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     function HomeView() {
       this.checkProof = __bind(this.checkProof, this);
       this.addStoreRule = __bind(this.addStoreRule, this);
+      this.checkRuleSyntax = __bind(this.checkRuleSyntax, this);
+      this.setBgColor = __bind(this.setBgColor, this);
       this.addEnterRule = __bind(this.addEnterRule, this);
       this.render = __bind(this.render, this);
       HomeView.__super__.constructor.apply(this, arguments);
@@ -11441,7 +11443,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     HomeView.prototype.events = {
       'click #btnCheck': 'checkProof',
       'click #btnAddRule': 'addStoreRule',
-      'keypress #txtAddRule': 'addEnterRule'
+      'keypress #txtAddRule': 'addEnterRule',
+      "blur #txtAddRule": "checkRuleSyntax"
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
@@ -11454,8 +11457,28 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         return this.addStoreRule();
       }
     };
+    HomeView.prototype.setBgColor = function(fld, cls) {
+      fld.removeClass('redField yellowField greenField whiteField blueField');
+      return fld.addClass(cls);
+    };
+    HomeView.prototype.checkRuleSyntax = function() {
+      var bgc, newRule, txtAddRule, txtVal;
+      txtAddRule = this.$('#txtAddRule');
+      txtVal = txtAddRule.val();
+      newRule = new Rule({
+        id: "",
+        rule: txtVal
+      });
+      if (newRule.validate()) {
+        bgc = "whiteField";
+      } else {
+        bgc = "blueField";
+      }
+      return this.setBgColor(txtAddRule, bgc);
+    };
     HomeView.prototype.addStoreRule = function() {
-      var color, newRule, res, txtAddRule, txtVal;
+      var newRule, res, txtAddRule, txtVal;
+      this.checkRuleSyntax();
       txtAddRule = this.$('#txtAddRule');
       txtVal = txtAddRule.val();
       newRule = new Rule({
@@ -11471,12 +11494,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         if (!(res != null)) {
           app.collections.rulesList.create(newRule);
         }
-        txtAddRule.val("");
-        color = "#fff";
-      } else {
-        color = "#faa";
+        return txtAddRule.val("");
       }
-      return txtAddRule.css("background-color", color);
     };
     HomeView.prototype.checkProof = function() {
       var callback;
@@ -11536,7 +11555,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.model.bind("proof", this.changeProofResult);
     };
     ProofTreeNodeView.prototype.setBgColor = function(fld, cls) {
-      fld.removeClass('redField yellowField greenField whiteField');
+      fld.removeClass('redField yellowField greenField whiteField blueField');
       return fld.addClass(cls);
     };
     ProofTreeNodeView.prototype.changeProofResult = function() {
@@ -11563,7 +11582,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       var bgc;
       this.updateModel();
       if (!this.model.isValid()) {
-        bgc = "redField";
+        bgc = "blueField";
       } else {
         bgc = "whiteField";
       }

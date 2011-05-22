@@ -8,6 +8,7 @@ class exports.HomeView extends Backbone.View
     'click #btnCheck'       : 'checkProof'
     'click #btnAddRule'     : 'addStoreRule'
     'keypress #txtAddRule'  : 'addEnterRule'
+    "blur #txtAddRule"      : "checkRuleSyntax"
 
   render: =>
     @$(@.el).html homeTemplate
@@ -18,7 +19,27 @@ class exports.HomeView extends Backbone.View
   addEnterRule: (evt) =>
     @addStoreRule() if evt.which == 13
 
+
+  setBgColor: (fld, cls) =>
+    fld.removeClass 'redField yellowField greenField whiteField blueField'
+    fld.addClass cls
+
+  # TODO: Refactor duplicate code
+  checkRuleSyntax: =>
+    txtAddRule = @$('#txtAddRule')
+    txtVal = txtAddRule.val()
+
+    newRule = new Rule({id: "", rule: txtVal})
+
+    if newRule.validate()
+      bgc = "whiteField"
+    else
+      bgc = "blueField"
+
+    @setBgColor txtAddRule, bgc
+
   addStoreRule: =>
+    @checkRuleSyntax()
     txtAddRule = @$('#txtAddRule')
     txtVal = txtAddRule.val()
 
@@ -34,11 +55,6 @@ class exports.HomeView extends Backbone.View
       if !res?
         app.collections.rulesList.create newRule
       txtAddRule.val("")
-      color = "#fff"
-    else
-      color = "#faa"
-
-    txtAddRule.css "background-color", color
 
   # TODO: Rework this to use the new checking system.
   checkProof: =>

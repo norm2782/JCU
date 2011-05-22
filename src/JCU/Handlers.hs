@@ -3,6 +3,7 @@
 module JCU.Handlers where
 
 import            Application (Application)
+import            Control.Monad.Trans.Class (lift)
 import            Data.Aeson (encode, fromJSON, json)
 import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
@@ -12,6 +13,8 @@ import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
+import            Data.Text (Text)
+import qualified  Data.Text as T
 import            JCU.JSON()
 import            JCU.Prolog
 import            JCU.Testing
@@ -24,6 +27,22 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
+import            Text.Templating.Heist
+import qualified  Text.XmlHtml as X
+
+link :: Text -> Text -> X.Node
+link target text = X.Element "a" [("href", target)] [X.TextNode text]
+
+loginLink :: X.Node
+loginLink = link "/login" "Login"
+
+logoutLink :: (AuthUser, a) -> X.Node
+logoutLink _ = link "/logout" "Logout"
+
+loginLogoutSplice :: Splice Application
+loginLogoutSplice = do
+  user <- lift currentAuthUser
+  return [maybe loginLink logoutLink user]
 
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
@@ -68,12 +87,7 @@ newSessionH :: Application ()
 newSessionH = redirIfLogin (render "login")
 
 redirIfLogin :: Application () -> Application ()
-redirIfLogin app = do
-  touchSession
-  authed <- isLoggedIn
-  if authed
-    then redirHome
-    else app
+redirIfLogin = (flip restrict) redirHome
 
 failedLogin :: MonadHeist n m => AuthFailure -> m ()
 failedLogin ExternalIdFailure = render "signup"

@@ -16,5 +16,5 @@ class exports.Rule extends Backbone.Model
     token = "\\s*\\w+\\s*"
     rule  = token + "\\(" + token + "(," + token + ")*\\)\\s*"
     regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule +
-                       "\\s*))?\\s*\\.?\\s*$")
+                       "\\s*))?\\s*\\.\\s*$")
     regex.test str
