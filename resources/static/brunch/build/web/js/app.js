@@ -11255,14 +11255,15 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }), true);
     };
     ProofTreeNode.prototype.setProofResult = function(data) {
-      var f, res;
+      var f, i;
       this.set({
-        proofResult: data.status
+        proofResult: data.proofCheckResult
       });
       this.trigger('proof');
-      res = data.children;
+      i = 0;
       f = function(x) {
-        return x.setProofResult(res.pop());
+        x.setProofResult(data.proofCheckChildren[i]);
+        return i++;
       };
       return this.childTerms().each(f);
     };
@@ -11515,7 +11516,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     HomeView.prototype.checkProof = function() {
       var callback;
       callback = function(data) {
-        console.log(data);
         return app.models.tree.setProofResult(data);
       };
       if (app.models.tree.isValid()) {
