@@ -3,7 +3,14 @@
     <div class="content">
       <h2>Proof Tree</h2>
       <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
-      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />
+      <input type="button" id="btnCheck" value="Check" />
+      <input type="button" id="btnReset" value="Reset" />
+      <h3>Note</h3>
+      <p class="lhsText">Due to limitations in the current version of the
+      software, you might see variables with the same name in different text
+      fields in the  tree. However, these are not necessarily the same
+      variable! Double-check to see which rules you can apply and which
+      variables those rules have.</p>
       <h3>Color coding help</h3>
       <ul id="color-coding-list">
         <li><div class="box redField"></div> Incorrect proof</li>
@@ -12,7 +19,7 @@
         <li><div class="box blueField"></div> Syntax error</li>
       </ul>
       <h3>Example data</h3>
-      <p style="width: 375px;text-align:justify;">
+      <p class="lhsText">
       Example data containing the Dutch royal family, the list structure and
       lookup, and the natural numbers (as discussed in the JCU lecture notes)
       can be loaded by <a href="/load-example">clicking this link</a>. Beware
@@ -24,6 +31,8 @@
   <div class="yui3-u-1-2">
     <div class="content">
       <h2>Stored Rules</h2>
+      <p>Drag a rule form the list below to a field containing a term in the
+      tree on the left.</p>
       <div id="rules-list-div"><!-- LIST GOES HERE --></div>
       <div id="divListAdd">
         <input type="text" id="txtAddRule" />
