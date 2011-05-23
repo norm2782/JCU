@@ -45,27 +45,9 @@ cnst s = Fun s []
 
 exampleData :: [Rule]
 exampleData =
-  -- Dutch Royal family
-  [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
-  ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "con"]   :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "fri"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ale"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ama"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ari"]   :<-: []
-  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "pa"     [Var "X",  Var "Y"] ]
-  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"] ]
-  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Y"] ]
-  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
-                                            ,  Fun "voor"   [Var "Z",  Var "Y"] ]
-  ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
-                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ]
+  [
   -- List
-  ,  Fun "append"  [  cnst "nil", Var "X", Var "Y"] :<-: []
+     Fun "append"  [  cnst "nil", Var "X", Var "Y"] :<-: []
   ,  Fun "append"  [  Fun "cons" [Var "A", Var "X"]
                    ,  Var "Y", Fun "cons" [Var "A", Var "Z"]]
                    :<-: [Fun "append" [Var "X", Var "Y", Var "Z"]]
@@ -80,10 +62,29 @@ exampleData =
   ,  Fun "plus"  [Fun "succ" [Var "X"], Var "Y", Fun "succ" [Var "Z"]]
                  :<-: [Fun "plus" [Var "X", Var "Y", Var "Z"]]
 
-  -- The men
+  -- Dutch Royal family
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "pa"     [Var "X",  Var "Y"] ]
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
+                                            ,  Fun "voor"   [Var "Z",  Var "Y"] ]
+  ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
+                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ]
   ,  Fun "man"   [Var "X"] :<-: [Fun "elem"  [Var "X",       Fun "cons"
                                              [cnst "claus",  Fun "cons"
                                              [cnst "alex",   Fun "cons"
                                              [cnst "con",    Fun "cons"
                                              [cnst "fri",    Fun "empty" []]]]]]]
+  ,  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
+  ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "con"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "fri"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ale"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ama"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ari"]   :<-: []
+
   ]
