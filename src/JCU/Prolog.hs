@@ -79,4 +79,11 @@ exampleData =
   ,  Fun "plus"  [cnst "zero", Var "X", Var "X"] :<-: []
   ,  Fun "plus"  [Fun "succ" [Var "X"], Var "Y", Fun "succ" [Var "Z"]]
                  :<-: [Fun "plus" [Var "X", Var "Y", Var "Z"]]
+  ,  Fun "man"   [Var "X"] :<-: [Fun "elem"  [Var "X",       Fun "cons"
+                                             [cnst "claus",  Fun "cons"
+                                             [cnst "alex",   Fun "cons"
+                                             [cnst "con",    Fun "cons"
+                                             [cnst "fri",    Fun "empty" []]]]]]]
   ]
+
+-- man(X) :- elem(X, cons(claus, cons(alex, cons(con, cons(fri, empty)))))
