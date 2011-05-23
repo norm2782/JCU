@@ -8,13 +8,13 @@ import            Data.Aeson.Types as AE (Result(..), Value(..))
 import            Data.Attoparsec.Lazy as L (Result(..), parse)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
-import qualified  Data.ByteString.Lazy.Char8 as L (ByteString)
+import qualified  Data.ByteString.Lazy.Char8 as L (unpack, ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
 import            JCU.Prolog
 import            JCU.Types
-import            Language.Prolog.NanoProlog
+import            Language.Prolog.NanoProlog.Lib
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup, Document, MonadMongoDB, withDB')
@@ -145,44 +145,6 @@ loadExampleH = restrict forbiddenH $ do
   putRules exampleData
   redirHome
 
-cnst :: LowerCase -> Term
-cnst s = Fun s []
-
-exampleData :: [Rule]
-exampleData =
-  -- Dutch Royal family
-  [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
-  ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "con"]   :<-: []
-  ,  Fun "ma"     [cnst "bea",   cnst "fri"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
-  ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ale"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ama"]   :<-: []
-  ,  Fun "pa"     [cnst "alex",  cnst "ari"]   :<-: []
-  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "pa"     [Var "X",  Var "Y"] ]
-  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"] ]
-  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Y"] ]
-  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
-                                            ,  Fun "voor"   [Var "Z",  Var "Y"] ]
-  ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
-                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ]
-  -- List
-  ,  Fun "append" [cnst "nil", Var "X", Var "Y"] :<-: []
-  ,  Fun "append" [  Fun "cons" [Var "A", Var "X"]
-                  ,  Var "Y", Fun "cons" [Var "A", Var "Z"]] :<-: [Fun "append" [Var "X", Var "Y", Var "Z"]]
-
-  -- List lookup
-  ,  Fun "elem" [Var "X", Fun "cons" [Var "X", Var "Y"]] :<-: []
-  ,  Fun "elem" [Var "X", Fun "cons" [Var "Z", Var "Y"]] :<-: [Fun "elem" [Var "X", Var "Y"]]
-
-  -- Natural numbers
-  ,  Fun "plus" [cnst "zero", Var "X", Var "X"] :<-: []
-  ,  Fun "plus" [Fun "succ" [Var "X"], Var "Y", Fun "succ" [Var "Z"]] :<-: [Fun "plus" [Var "X", Var "Y", Var "Z"]]
-  ]
-
 putRules :: [Rule] -> Application ()
 putRules = putRawRules . map (pack . show)
 
@@ -235,7 +197,7 @@ mkDropReq = parseJSON fromJSON
 parseJSON :: (Value -> AE.Result a) -> L.ByteString -> Application a
 parseJSON f raw =
   case L.parse json raw of
-    (Done _ r)  ->
+    (L.Done _ r)  ->
       case f r of
         (Success a)  -> return a
         _            -> error500H
@@ -250,3 +212,21 @@ error500H = do
   writeBS "500 internal server error"
   r <- getResponse
   finishWith r
+
+-- TODO: This is a mess... clean it up!
+checkSyntaxH :: Application ()
+checkSyntaxH = restrict forbiddenH $ do
+  ptype  <- getParam "type"
+  body   <- getRequestBody
+  case ptype of
+    Nothing  -> checkErr ["Unknown error."]
+    Just x   -> case x of
+                  "rule"  -> parseMsg pRule body
+                  "term"  -> parseMsg pTerm body
+                  _       -> checkErr ["Invalid type specified"]
+  where  writeRes  (_, [])  = writeLBS $ encRes (True, [""])
+         writeRes  (_, rs)  = checkErr rs
+         checkErr  msg      = writeLBS $ encRes (False, map show msg)
+         parseMsg  p txt    = writeRes $ startParse p (L.unpack txt)
+         encRes :: (Bool, [String]) -> L.ByteString
+         encRes = encode

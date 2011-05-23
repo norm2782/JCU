@@ -1,8 +1,9 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
+import            Debug.Trace
 import            JCU.Types
-import            Language.Prolog.NanoProlog
+import            Language.Prolog.NanoProlog.Lib
 
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
@@ -14,7 +15,7 @@ checkProof rls (Node tm cs)
 
 tryRule :: Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
-  case unify (tm, lhs) (Just []) of
+  case unify (tm, lhs) emptyEnv of
     Nothing  ->  False
     Just s   ->  let  newrhs = map (subst s) rhs
                  in   locateAll newrhs cs
@@ -24,7 +25,7 @@ locateAll []      _   = True
 locateAll (_:_)   []  = False
 locateAll (x:xs)  cs  = or  [  locateAll (map (subst e) xs) css
                             |  (c,css) <- split cs
-                            ,  Just e  <- [unify (x,c) (Just [])] ]
+                            ,  Just e  <- [unify (x, c) emptyEnv] ]
 
 split :: [a] -> [(a, [a])]
 split xs = split' xs id
@@ -32,7 +33,50 @@ split xs = split' xs id
          split' []      _  = []
 
 getRhss :: Term -> Rule -> DropRes
-getRhss t (c :<-: cs) =
-  case unify (t, c) (Just []) of
-    Nothing  -> DropRes False 0 [] []
-    Just x   -> DropRes True (length cs) cs (map (subst x) cs)
+getRhss tm rl =
+  let (c :<-: cs) = tag 0 rl -- TODO: Actually tag the entire tree
+  in  case unify (tm, c) emptyEnv of
+        Nothing  -> DropRes False 0 [] []
+        Just x   -> trace (show x) $ DropRes True (length cs) cs (subst x cs)
+
+
+cnst :: LowerCase -> Term
+cnst s = Fun s []
+
+exampleData :: [Rule]
+exampleData =
+  -- Dutch Royal family
+  [  Fun "ma"     [cnst "mien",  cnst "juul"]  :<-: []
+  ,  Fun "ma"     [cnst "juul",  cnst "bea"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "alex"]  :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "con"]   :<-: []
+  ,  Fun "ma"     [cnst "bea",   cnst "fri"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ale"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ama"]   :<-: []
+  ,  Fun "ma"     [cnst "max",   cnst "ari"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ale"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ama"]   :<-: []
+  ,  Fun "pa"     [cnst "alex",  cnst "ari"]   :<-: []
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "pa"     [Var "X",  Var "Y"] ]
+  ,  Fun "ouder"  [Var "X",  Var "Y"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Y"] ]
+  ,  Fun "voor"   [Var "X",  Var "Y"] :<-:  [  Fun "ouder"  [Var "X",  Var "Z"]
+                                            ,  Fun "voor"   [Var "Z",  Var "Y"] ]
+  ,  Fun "oma"    [Var "X",  Var "Z"] :<-:  [  Fun "ma"     [Var "X",  Var "Y"]
+                                            ,  Fun "ouder"  [Var "Y",  Var "Z"] ]
+  -- List
+  ,  Fun "append"  [  cnst "nil", Var "X", Var "Y"] :<-: []
+  ,  Fun "append"  [  Fun "cons" [Var "A", Var "X"]
+                   ,  Var "Y", Fun "cons" [Var "A", Var "Z"]]
+                   :<-: [Fun "append" [Var "X", Var "Y", Var "Z"]]
+
+  -- List lookup
+  ,  Fun "elem"  [Var "X", Fun "cons" [Var "X", Var "Y"]] :<-: []
+  ,  Fun "elem"  [Var "X", Fun "cons" [Var "Z", Var "Y"]]
+                 :<-: [Fun "elem" [Var "X", Var "Y"]]
+
+  -- Natural numbers
+  ,  Fun "plus"  [cnst "zero", Var "X", Var "X"] :<-: []
+  ,  Fun "plus"  [Fun "succ" [Var "X"], Var "Y", Fun "succ" [Var "Z"]]
+                 :<-: [Fun "plus" [Var "X", Var "Y", Var "Z"]]
+  ]

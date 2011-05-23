@@ -54,7 +54,8 @@ Executable jcu
     transformers >= 0.2,
     attoparsec >= 0.8.5 && < 0.9,
     ListLike >= 3.1 && < 3.2,
-    containers >= 0.4 && < 0.5
+    containers >= 0.4 && < 0.5,
+    NanoProlog >= 0.1.2
 
   extensions:
         TypeSynonymInstances
@@ -92,4 +93,4 @@ Library
 
   Build-Depends:	  base >= 4.0 && < 5.0
   Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Types, JCU.Prolog, Language.Prolog.NanoProlog
+  Exposed-modules:  JCU.Types, JCU.Prolog

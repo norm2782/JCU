@@ -10,5 +10,5 @@ class exports.ProofTreeView extends Backbone.View
     @model.get('treeRoot')
 
   render: =>
-    view = new ProofTreeNodeView model: @getRoot()
+    view = new ProofTreeNodeView({model: @getRoot(), id: "view_" + @getRoot().cid})
     @$(@el).html view.render().el

@@ -11559,12 +11559,16 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.changeProofResult = __bind(this.changeProofResult, this);
       this.setBgColor = __bind(this.setBgColor, this);
       this.initialize = __bind(this.initialize, this);
+      this.txtFld = __bind(this.txtFld, this);
       ProofTreeNodeView.__super__.constructor.apply(this, arguments);
     }
     ProofTreeNodeView.prototype.tagName = "li";
     ProofTreeNodeView.prototype.events = {
       "blur   .droppable": "checkTermSyntax",
       "change input[type='text']": "updateModel"
+    };
+    ProofTreeNodeView.prototype.txtFld = function() {
+      return this.$(this.el).find(".droppable:first");
     };
     ProofTreeNodeView.prototype.initialize = function() {
       this.childTerms().bind("refresh", this.render);
@@ -11589,7 +11593,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         default:
           bgc = 'whiteField';
       }
-      return this.setBgColor(this.$(this.el).find("input[type='text']"), bgc);
+      return this.setBgColor(this.txtFld(), bgc);
     };
     ProofTreeNodeView.prototype.childTerms = function() {
       return this.model.childTerms();
@@ -11602,7 +11606,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       } else {
         bgc = "whiteField";
       }
-      return this.setBgColor(this.$(this.el).find("input[type='text']"), bgc);
+      return this.setBgColor(this.txtFld(), bgc);
     };
     ProofTreeNodeView.prototype.render = function() {
       var renderNode, ul, view;
@@ -11614,7 +11618,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         hoverClass: 'dropHover',
         drop: function(event, ui) {
           var elemVal;
-          elemVal = $(this).find("input[type='text']").val();
+          elemVal = $(this).find("input[type='text']:first").val();
           if (!elemVal) {
             alert("There needs to be a term in the text field!");
             return this;
@@ -11635,7 +11639,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           var nodeView;
           nodeView = new ProofTreeNodeView({
             model: node,
-            id: node.term()
+            id: "view_" + node.cid
           });
           return ul.append(nodeView.render().el);
         };
@@ -11645,7 +11649,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this;
     };
     ProofTreeNodeView.prototype.updateModel = function() {
-      return this.model.setTerm(this.$(this.el).find("input[type='text']").val());
+      return this.model.setTerm(this.txtFld().val());
     };
     ProofTreeNodeView.prototype.unify = function(term, rule) {
       var callback, view;
@@ -11699,7 +11703,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeView.prototype.render = function() {
       var view;
       view = new ProofTreeNodeView({
-        model: this.getRoot()
+        model: this.getRoot(),
+        id: "view_" + this.getRoot().cid
       });
       return this.$(this.el).html(view.render().el);
     };

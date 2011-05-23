@@ -4,10 +4,10 @@
 module JCU.Types where
 
 import            Control.Applicative
-import            Data.Aeson
+import            Data.Aeson as AE
 import            Data.ByteString (ByteString)
 import            Data.Tree (Tree(..))
-import            Language.Prolog.NanoProlog
+import            Language.Prolog.NanoProlog.Lib
 import            Snap.Auth (AuthUser)
 
 data User     = User  {  authUser     :: AuthUser
@@ -66,7 +66,7 @@ instance ToJSON Proof where
 
 mkJSONProofTree :: String -> Value -> Proof
 mkJSONProofTree r rts = Node (mkJSONTerm r) mkProofTrees
-  where mkProofTrees = case fromJSON rts :: Result [Proof] of
+  where mkProofTrees = case fromJSON rts :: AE.Result [Proof] of
                          (Success a)  -> a
                          _            -> error "failed!"
 

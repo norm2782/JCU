@@ -9,6 +9,9 @@ class exports.ProofTreeNodeView extends Backbone.View
     "blur   .droppable"         : "checkTermSyntax"
     "change input[type='text']" : "updateModel"
 
+  txtFld: =>
+    @$(@el).find(".droppable:first")
+
   initialize: =>
     @childTerms().bind "refresh", @render
     @model.bind "proof", @changeProofResult
@@ -24,7 +27,7 @@ class exports.ProofTreeNodeView extends Backbone.View
       when "Invalid"    then bgc = 'redField'
       else bgc = 'whiteField'
 
-    @setBgColor @$(@el).find("input[type='text']"), bgc
+    @setBgColor @txtFld(), bgc
 
   childTerms: =>
     @model.childTerms()
@@ -35,8 +38,7 @@ class exports.ProofTreeNodeView extends Backbone.View
       bgc = "blueField"
     else
       bgc = "whiteField"
-
-    @setBgColor @$(@el).find("input[type='text']"), bgc
+    @setBgColor @txtFld(), bgc
 
   render: =>
     view = @
@@ -44,7 +46,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @$(@el).find(".dropzone").droppable {
         hoverClass: 'dropHover'
       , drop: (event, ui) ->
-          elemVal = $(this).find("input[type='text']").val()
+          elemVal = $(this).find("input[type='text']:first").val()
           if !elemVal
             alert "There needs to be a term in the text field!"
             @
@@ -61,7 +63,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     if @childTerms().length > 0
       ul = $('<ul></ul>')
       renderNode = (node) ->
-        nodeView = new ProofTreeNodeView({model: node, id: node.term()})
+        nodeView = new ProofTreeNodeView({model: node, id: "view_" + node.cid})
         ul.append nodeView.render().el
 
       @childTerms().each renderNode
@@ -69,7 +71,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     @
 
   updateModel: =>
-    @model.setTerm @$(@el).find("input[type='text']").val()
+    @model.setTerm @txtFld().val()
 
   unify: (term, rule) =>
     view = @
