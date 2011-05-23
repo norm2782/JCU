@@ -12,6 +12,7 @@ import qualified  Data.ByteString.Lazy.Char8 as L (unpack, ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
+import            Debug.Trace
 import            JCU.Prolog
 import            JCU.Types
 import            Language.Prolog.NanoProlog.Lib

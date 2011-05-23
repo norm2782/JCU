@@ -27,6 +27,7 @@ data Status   = Correct
 
 type Proof    = Tree Term
 type PCheck   = Tree Status
+type Cid      = String
 
 instance FromJSON DropReq where
   parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"

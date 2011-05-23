@@ -1,11 +1,13 @@
 class exports.ProofTreeNode extends Backbone.Model
   # Available attributes:
   # term :: String
+  # mcid :: String
   # childTerms :: BackBone.Collection
   # proofResult :: String, can be either Correct, Incomplete or Invalid
 
   initialize: =>
-    @set { childTerms: new Backbone.Collection() }
+    @set { childTerms: new Backbone.Collection()
+         , mcid: @cid}
 
   term: =>
     @get('term')

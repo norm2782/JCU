@@ -59,11 +59,7 @@ class exports.HomeView extends Backbone.View
         app.collections.rulesList.create newRule
       txtAddRule.val("")
 
-  # TODO: Rework this to use the new checking system.
   checkProof: =>
-    # TODO: Clicking check right after add doesn't color the added text field
-    # Do we really want all of this here? Or do we want to delegate parts of
-    # it all to the individual models?
     callback = (data) ->
       app.models.tree.setProofResult(data)
 
@@ -77,15 +73,3 @@ class exports.HomeView extends Backbone.View
         success:  callback
     else
       alert "Cannot check proof. You have one or more invalid rules in your tree."
-
-    # TODO: Defer this to a Model
-    # if false
-    #   alert "All fields must contain a valid expression before you can check them for correctness."
-    # else
-    #   $.ajax
-    #     url:  '/rules/check'
-    #     type: 'POST'
-    #     contentType: 'application/json'
-    #     dataType: 'json'
-    #     data:     JSON.stringify app.models.tree.get('treeRoot')
-    #     success:  callback
