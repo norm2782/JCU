@@ -15,6 +15,7 @@
         <td><input type="submit" value="Login" /> <input type="checkbox" value="1" name="remember" />Remember me?</td>
       </tr>
     </table>
+    No account? <a href="/signup">Sign up!</a>
     </form>
   </div>
 </apply>
