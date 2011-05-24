@@ -15,7 +15,7 @@ import            Data.Maybe (fromJust, fromMaybe)
 import            Debug.Trace
 import            JCU.Prolog
 import            JCU.Types
-import            Language.Prolog.NanoProlog.Lib
+import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup, Document, MonadMongoDB, withDB')

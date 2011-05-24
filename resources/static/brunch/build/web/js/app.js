@@ -11166,9 +11166,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       ProofTree.__super__.constructor.apply(this, arguments);
     }
     ProofTree.prototype.initialize = function() {
-      return this.set({
-        treeRoot: new ProofTreeNode()
+      this.set({
+        treeRoot: new ProofTreeNode({
+          treeLvl: 0,
+          treeLbl: "0"
+        })
       });
+      return console.log(this.treeRoot());
     };
     ProofTree.prototype.reset = function() {
       this.treeRoot().setTerm("");
@@ -11236,7 +11240,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         newChildren = new Array();
         for (i = 0, _ref = childNo - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
           newChildren.push(new ProofTreeNode({
-            term: data.urhss[i]
+            term: data.urhss[i],
+            treeLvl: this.get('treeLvl') + 1,
+            treeLbl: this.get('treeLbl') + "." + i
           }));
         }
         return this.childTerms().refresh(newChildren);
@@ -11244,6 +11250,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNode.prototype.isValid = function() {
       var fun, regex, str, token, valid;
+      return true;
       str = this.term();
       if (!(str != null)) {
         return false;
@@ -11328,7 +11335,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" /> <input type="button" id="btnReset" value="Reset" />\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p style="width: 375px;text-align:justify;">\n      Example data containing the Dutch royal family, the list structure and\n      lookup, and the natural numbers (as discussed in the JCU lecture notes)\n      can be loaded by <a href="/load-example">clicking this link</a>. Beware\n      that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <input type="button" id="btnCheck" value="Check" />\n      <input type="button" id="btnReset" value="Reset" />\n      <h3>Note</h3>\n      <p class="lhsText">Due to limitations in the current version of the\n      software, you might see variables with the same name in different text\n      fields in the  tree. However, these are not necessarily the same\n      variable! Double-check to see which rules you can apply and which\n      variables those rules have.</p>\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p class="lhsText">\n      Example data containing the Dutch royal family, the list structure and\n      lookup, and the natural numbers (as discussed in the JCU lecture notes)\n      can be loaded by <a href="/load-example">clicking this link</a>. Beware\n      that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <p>Drag a rule form the list below to a field containing a term in the\n      tree on the left.</p>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11368,7 +11375,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     (function() {
       _print(_safe('<div class="tree_item dropzone">\n  <input type="text" id="proof_'));
-      _print(this.content.mcid);
+      _print(this.content.treeLbl);
       _print(_safe('" class="droppable" value="'));
       _print(this.content.term);
       _print(_safe('" />\n</div>\n'));
@@ -11571,8 +11578,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "change input[type='text']": "updateModel"
     };
     ProofTreeNodeView.prototype.txtFld = function() {
-      console.log(this.$("#proof_" + this.model.cid));
-      return this.$("#proof_" + this.model.cid);
+      return this.$("#proof_" + this.model.treeLbl);
     };
     ProofTreeNodeView.prototype.initialize = function() {
       this.childTerms().bind("refresh", this.render);
@@ -11613,12 +11619,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.setBgColor(this.txtFld(), bgc);
     };
     ProofTreeNodeView.prototype.render = function() {
-      var cnt, renderNode, ul, view;
+      var renderNode, ul, view;
       view = this;
-      cnt = this.model.toJSON();
-      cnt.mcid = this.model.cid;
       this.$(this.el).html(proofTreeItemTemplate({
-        content: cnt
+        content: this.model.toJSON()
       }));
       this.$(this.el).find(".dropzone").droppable({
         hoverClass: 'dropHover',
@@ -11645,7 +11649,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           var nodeView;
           nodeView = new ProofTreeNodeView({
             model: node,
-            id: "view_" + node.cid
+            id: "view_" + node.treeLbl
           });
           return ul.append(nodeView.render().el);
         };

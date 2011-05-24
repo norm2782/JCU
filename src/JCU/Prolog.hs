@@ -1,31 +1,36 @@
 module JCU.Prolog where
 
 import            Data.Tree (Tree(..))
-import            Debug.Trace
 import            JCU.Types
-import            Language.Prolog.NanoProlog.Lib
+import            Language.Prolog.NanoProlog.NanoProlog
 
+-- | Check if the proof provided by the client is correct, incomplete or
+-- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned
+-- an indiviual status. The status is determined by examining a node's child
+-- nodes (containing terms) and see if they unify. If they do, that particular
+-- node is Correct. If a node does not have any more children, but has not
+-- reached a fact yet, it is Incomplete. If the child term is a non-unifyable
+-- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
   | rlsMatch   = Node Correct (map (checkProof rls) cs)
   | otherwise  = if null cs
                    then  Node Incomplete []
                    else  Node Invalid (map (checkProof rls) cs)
-  where rlsMatch = any (tryRule tm [c | Node c _ <- cs]) rls
+  where rlsMatch = any (tryRule tm (map rootLabel cs)) rls
 
 tryRule :: Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
   case unify (tm, lhs) emptyEnv of
     Nothing  ->  False
-    Just s   ->  let  newrhs = map (subst s) rhs
-                 in   locateAll newrhs cs
+    Just s   ->  locateAll (subst s rhs) cs
 
 locateAll :: [Term] -> [Term] -> Bool
 locateAll []      _   = True
 locateAll (_:_)   []  = False
-locateAll (x:xs)  cs  = or  [  locateAll (map (subst e) xs) css
-                            |  (c,css) <- split cs
-                            ,  Just e  <- [unify (x, c) emptyEnv] ]
+locateAll (x:xs)  cs  = or  [  locateAll (subst e xs) css
+                            |  (c, css)  <- split cs
+                            ,  Just e    <- [unify (x, c) emptyEnv] ]
 
 split :: [a] -> [(a, [a])]
 split xs = split' xs id
@@ -33,11 +38,10 @@ split xs = split' xs id
          split' []      _  = []
 
 getRhss :: Term -> Rule -> DropRes
-getRhss tm rl =
-  let (c :<-: cs) = tag 0 rl -- TODO: Actually tag the entire tree
-  in  case unify (tm, c) emptyEnv of
-        Nothing  -> DropRes False 0 [] []
-        Just x   -> trace (show x) $ DropRes True (length cs) cs (subst x cs)
+getRhss tm (c :<-: cs) =
+  case unify (tm, c) emptyEnv of
+    Nothing  -> DropRes False 0 [] []
+    Just x   -> DropRes True (length cs) cs (subst x cs)
 
 
 cnst :: LowerCase -> Term

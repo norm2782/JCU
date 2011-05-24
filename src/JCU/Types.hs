@@ -7,8 +7,9 @@ import            Control.Applicative
 import            Data.Aeson as AE
 import            Data.ByteString (ByteString)
 import            Data.Tree (Tree(..))
-import            Language.Prolog.NanoProlog.Lib
+import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth (AuthUser)
+
 
 data User     = User  {  authUser     :: AuthUser
                       ,  storedRules  :: [ByteString] }
@@ -30,11 +31,15 @@ type PCheck   = Tree Status
 type Cid      = String
 
 instance FromJSON DropReq where
-  parseJSON (Object o) = mkJSONDropReq <$> o .: "term" <*> o .: "rule"
-  parseJSON _          = fail "No parseJSON for DropReq"
+  parseJSON (Object o)  = mkJSONDropReq  <$> o .: "proofTree" <*> o .: "term"
+                                         <*> o .: "rule"
+  parseJSON _           = fail "No parseJSON for DropReq"
 
-mkJSONDropReq :: String -> String -> DropReq
-mkJSONDropReq t r = DropReq (mkJSONTerm t) (mkJSONRule r)
+mkJSONDropReq :: Value -> String -> String -> DropReq
+mkJSONDropReq prf tm rl = DropReq (mkJSONTerm tm) (mkJSONRule rl)
+  where mkProofTree = case fromJSON prf :: AE.Result Proof of
+                        (Success a)  -> a
+                        _            -> error "failed!"
 
 instance ToJSON DropRes where
   toJSON (DropRes b i ts uts) = object  [  "unified"   .= b
@@ -50,23 +55,24 @@ instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]
 
 instance FromJSON Rule where
-  parseJSON (Object o) = mkJSONRule <$> o .: "rule"
-  parseJSON _          = fail "No parseJSON for Rule"
+  parseJSON (Object o)  = mkJSONRule <$> o .: "rule"
+  parseJSON _           = fail "No parseJSON for Rule"
 
 -- TODO: Errors
 mkJSONRule :: String -> Rule
 mkJSONRule = fst . startParse pRule
 
 instance FromJSON Proof where
-  parseJSON (Object o) = mkJSONProofTree <$> o .: "term" <*> o .: "childTerms"
-  parseJSON _          = fail "No parseJSON for Proof"
+  parseJSON (Object o)  = mkJSONProofTree  <$>  o .: "term"     <*> o .: "childTerms" 
+                                           <*>  o .: "treeLvl"  <*> o .: "treeLbl"
+  parseJSON _           = fail "No parseJSON for Proof"
 
 instance ToJSON Proof where
   toJSON (Node t ps) = object  [  "term"        .= show t
                                ,  "childTerms"  .= toJSON ps ]
 
-mkJSONProofTree :: String -> Value -> Proof
-mkJSONProofTree r rts = Node (mkJSONTerm r) mkProofTrees
+mkJSONProofTree :: String -> Value -> Int -> String -> Proof
+mkJSONProofTree tm rts lvl lbl = Node (mkJSONTerm tm ) mkProofTrees
   where mkProofTrees = case fromJSON rts :: AE.Result [Proof] of
                          (Success a)  -> a
                          _            -> error "failed!"

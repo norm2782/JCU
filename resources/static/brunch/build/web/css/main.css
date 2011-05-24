@@ -45,3 +45,4 @@ ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 *:first-child+html button[type]{padding:5px}
 .buttons button img,.buttons a img{margin:0 !important;padding:0;border:none;width:15px;height:15px}
 #proof-tree-div{margin-bottom:5px}
+.lhsText{width:375px;text-align:justify}
