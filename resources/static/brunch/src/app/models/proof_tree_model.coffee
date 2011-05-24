@@ -17,5 +17,8 @@ class exports.ProofTree extends Backbone.Model
   isValid: =>
     @treeRoot().isValid()
 
+  isProved: =>
+    @treeRoot().isProved()
+
   setProofResult: (data) =>
     @treeRoot().setProofResult data

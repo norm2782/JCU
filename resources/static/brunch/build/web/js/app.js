@@ -11159,6 +11159,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     __extends(ProofTree, Backbone.Model);
     function ProofTree() {
       this.setProofResult = __bind(this.setProofResult, this);
+      this.isProved = __bind(this.isProved, this);
       this.isValid = __bind(this.isValid, this);
       this.treeRoot = __bind(this.treeRoot, this);
       this.reset = __bind(this.reset, this);
@@ -11182,6 +11183,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTree.prototype.isValid = function() {
       return this.treeRoot().isValid();
+    };
+    ProofTree.prototype.isProved = function() {
+      return this.treeRoot().isProved();
     };
     ProofTree.prototype.setProofResult = function(data) {
       return this.treeRoot().setProofResult(data);
@@ -11209,6 +11213,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.setChildren = __bind(this.setChildren, this);
       this.childTerms = __bind(this.childTerms, this);
       this.setTerm = __bind(this.setTerm, this);
+      this.isProved = __bind(this.isProved, this);
       this.proofResult = __bind(this.proofResult, this);
       this.term = __bind(this.term, this);
       this.initialize = __bind(this.initialize, this);
@@ -11225,6 +11230,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNode.prototype.proofResult = function() {
       return this.get('proofResult');
+    };
+    ProofTreeNode.prototype.isProved = function() {
+      var f;
+      f = function(acc, nd) {
+        return nd.isProved() && acc;
+      };
+      return (this.proofResult() === "Correct") && this.childTerms().reduce(f, true);
     };
     ProofTreeNode.prototype.setTerm = function(tm) {
       return this.set({
@@ -11526,7 +11538,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     HomeView.prototype.checkProof = function() {
       var callback;
       callback = function(data) {
-        return app.models.tree.setProofResult(data);
+        app.models.tree.setProofResult(data);
+        if (app.models.tree.isProved()) {
+          return alert("Congratulations! You have successfully completed your proof!");
+        }
       };
       if (app.models.tree.isValid()) {
         return $.ajax({

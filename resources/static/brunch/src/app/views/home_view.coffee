@@ -74,6 +74,8 @@ class exports.HomeView extends Backbone.View
   checkProof: =>
     callback = (data) ->
       app.models.tree.setProofResult(data)
+      if app.models.tree.isProved()
+        alert "Congratulations! You have successfully completed your proof!"
 
     if app.models.tree.isValid()
       $.ajax

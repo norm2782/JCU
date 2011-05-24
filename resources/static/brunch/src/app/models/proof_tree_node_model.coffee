@@ -15,6 +15,10 @@ class exports.ProofTreeNode extends Backbone.Model
   proofResult: =>
     @get('proofResult')
 
+  isProved: =>
+    f = (acc, nd) -> nd.isProved() && acc
+    (@proofResult() == "Correct") && @childTerms().reduce f, true
+
   setTerm: (tm) =>
     @set({term: tm})
 
