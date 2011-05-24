@@ -3,16 +3,13 @@
 module JCU.Handlers where
 
 import            Application (Application)
-import            Data.Aeson (encode, fromJSON, json)
-import            Data.Aeson.Types as AE (Result(..), Value(..))
-import            Data.Attoparsec.Lazy as L (Result(..), parse)
+import            Data.Aeson (encode)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import qualified  Data.ByteString.Lazy.Char8 as L (unpack, ByteString)
 import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!))
 import            Data.Maybe (fromJust, fromMaybe)
-import            Debug.Trace
 import            JCU.Prolog
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
@@ -135,11 +132,9 @@ addStoredRuleH :: Application ()
 addStoredRuleH = restrict forbiddenH $ do
   rqrl  <- getRequestBody
   rls   <- getRawRules
-  rule  <- mkRule rqrl
-  putRawRules (rls ++ [pack . show $ rule])
-
-mkRule :: L.ByteString -> Application Rule
-mkRule = parseJSON fromJSON
+  case mkRule rqrl of
+    Left   err   -> error500H err
+    Right  rule  -> putRawRules (rls ++ [pack . show $ rule])
 
 loadExampleH :: Application ()
 loadExampleH = restrict forbiddenH $ do
@@ -182,30 +177,19 @@ getStoredRules = MDB.lookup "storedRules"
 checkProofH :: Application ()
 checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  proof  <- mkProof =<< getRequestBody
-  rules  <- getRules
-  let prf = checkProof rules proof
-  writeLBS $ encode prf
+  body <- getRequestBody
+  case mkProof body of
+    Left   err    -> error500H err
+    Right  proof  -> do  rules  <- getRules
+                         let prf = checkProof rules proof
+                         writeLBS $ encode prf
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do
-  (DropReq tm rl) <- mkDropReq =<< getRequestBody
-  writeLBS $ encode (getRhss tm rl)
-
-mkDropReq :: L.ByteString -> Application DropReq
-mkDropReq = parseJSON fromJSON
-
-parseJSON :: (Value -> AE.Result a) -> L.ByteString -> Application a
-parseJSON f raw =
-  case L.parse json raw of
-    (L.Done _ r)  ->
-      case f r of
-        (Success a)  -> return a
-        _            -> error500H "Error converting ByteString to data type"
-    _           -> error500H "Error parsing raw JSON"
-
-mkProof :: L.ByteString -> Application Proof
-mkProof = parseJSON fromJSON
+  body <- getRequestBody
+  case mkDropReq body of
+    Left   err              -> error500H err
+    Right  (DropReq tm rl)  -> writeLBS $ encode (getRhss tm rl)
 
 error500H :: String -> Application a
 error500H msg = do
@@ -214,20 +198,9 @@ error500H msg = do
   r <- getResponse
   finishWith r
 
--- TODO: This is a mess... clean it up!
 checkSyntaxH :: Application ()
 checkSyntaxH = restrict forbiddenH $ do
   ptype  <- getParam "type"
   body   <- getRequestBody
-  case ptype of
-    Nothing  -> checkErr ["Unknown error."]
-    Just x   -> case x of
-                  "rule"  -> parseMsg pRule body
-                  "term"  -> parseMsg pTerm body
-                  _       -> checkErr ["Invalid type specified"]
-  where  writeRes  (_, [])  = writeLBS $ encRes (True, [""])
-         writeRes  (_, rs)  = checkErr rs
-         checkErr  msg      = writeLBS $ encRes (False, map show msg)
-         parseMsg  p txt    = writeRes $ startParse p (L.unpack txt)
-         encRes :: (Bool, [String]) -> L.ByteString
-         encRes = encode
+  let ret = parseCheck ptype body
+  writeLBS $ encode ret
