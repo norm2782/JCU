@@ -11204,6 +11204,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     function ProofTreeNode() {
       this.reset = __bind(this.reset, this);
       this.setProofResult = __bind(this.setProofResult, this);
+      this.isValid = __bind(this.isValid, this);
       this.setChildren = __bind(this.setChildren, this);
       this.childTerms = __bind(this.childTerms, this);
       this.setTerm = __bind(this.setTerm, this);
@@ -11247,6 +11248,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         return this.childTerms().refresh(newChildren);
       }
     };
+    ProofTreeNode.prototype.isValid = function() {
+      return this.get('valid') && this.childTerms().reduce((function(acc, nd) {
+        return nd.isValid() && acc;
+      }), true);
+    };
     ProofTreeNode.prototype.setProofResult = function(data) {
       var f, i;
       this.set({
@@ -11267,7 +11273,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   })();
 }).call(this);
 }, "models/rule_model": function(exports, require, module) {(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
     ctor.prototype = parent.prototype;
@@ -11278,23 +11284,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.Rule = (function() {
     __extends(Rule, Backbone.Model);
     function Rule() {
-      this.validate = __bind(this.validate, this);
       Rule.__super__.constructor.apply(this, arguments);
     }
-    Rule.prototype.validate = function(str) {
-      var fun, regex, rule, token;
-      if (!(str != null)) {
-        if (!(this.get('rule') != null)) {
-          return false;
-        }
-        str = this.get("rule");
-      }
-      token = "\\s*\\w+\\s*";
-      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
-      rule = token + "\\(" + fun + "(," + fun + ")*\\)\\s*";
-      regex = new RegExp("\\s*^" + rule + "(:-(" + rule + ",\\s*)*\\s*(" + rule + "\\s*))?\\s*\\.\\s*$");
-      return regex.test(str);
-    };
     return Rule;
   })();
 }).call(this);
@@ -11445,6 +11436,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.setBgColor = __bind(this.setBgColor, this);
       this.addEnterRule = __bind(this.addEnterRule, this);
       this.render = __bind(this.render, this);
+      this.initialize = __bind(this.initialize, this);
       HomeView.__super__.constructor.apply(this, arguments);
     }
     HomeView.prototype.id = 'home-view';
@@ -11454,6 +11446,9 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       'click #btnReset': 'resetTree',
       'keypress #txtAddRule': 'addEnterRule',
       "blur #txtAddRule": "checkRuleSyntax"
+    };
+    HomeView.prototype.initialize = function() {
+      return this.valid = false;
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
@@ -11471,42 +11466,50 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return fld.addClass(cls);
     };
     HomeView.prototype.checkRuleSyntax = function() {
-      var bgc, newRule, txtAddRule, txtVal;
+      var callback, txtAddRule, view;
       txtAddRule = this.$('#txtAddRule');
-      txtVal = txtAddRule.val();
-      newRule = new Rule({
-        id: "",
-        rule: txtVal
+      view = this;
+      callback = function(data) {
+        var bgc;
+        console.log(data);
+        if (data[0]) {
+          bgc = "whiteField";
+          view.valid = true;
+        } else {
+          bgc = "blueField";
+          view.valid = false;
+        }
+        return view.setBgColor(txtAddRule, bgc);
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/check-syntax/rule",
+        data: txtAddRule.val(),
+        contentType: 'application/json',
+        dataType: 'json',
+        success: callback
       });
-      if (newRule.validate()) {
-        bgc = "whiteField";
-      } else {
-        bgc = "blueField";
-      }
-      return this.setBgColor(txtAddRule, bgc);
     };
     HomeView.prototype.resetTree = function() {
       return app.models.tree.reset();
     };
     HomeView.prototype.addStoreRule = function() {
-      var newRule, res, txtAddRule, txtVal;
+      var res, val;
       this.checkRuleSyntax();
-      txtAddRule = this.$('#txtAddRule');
-      txtVal = txtAddRule.val();
-      newRule = new Rule({
-        id: "",
-        rule: txtVal
-      });
-      if (newRule.validate()) {
+      val = this.$('#txtAddRule').val();
+      if (this.valid) {
         res = app.collections.rulesList.find(function(x) {
-          var r;
-          r = x.get("rule");
-          return r === txtVal;
+          var rl, vl;
+          rl = x.get("rule").replace(/\s+/g, '');
+          vl = val.replace(/\s+/g, '');
+          return rl === vl;
         });
         if (!(res != null)) {
-          app.collections.rulesList.create(newRule);
+          app.collections.rulesList.create(new Rule({
+            rule: val
+          }));
         }
-        return txtAddRule.val("");
+        return this.$('#txtAddRule').val("");
       }
     };
     HomeView.prototype.checkProof = function() {
@@ -11596,15 +11599,20 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       var callback, view;
       view = this;
       callback = function(data) {
-        var bgc;
+        var bgc, valid;
         console.log(data);
         if (data[0]) {
           view.updateModel();
           bgc = "whiteField";
+          valid = true;
         } else {
           bgc = "blueField";
+          valid = false;
         }
-        return view.setBgColor(view.txtFld(), bgc);
+        view.setBgColor(view.txtFld(), bgc);
+        return view.model.set({
+          valid: valid
+        });
       };
       return $.ajax({
         type: 'POST',
@@ -11795,7 +11803,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       app.views.rulesList.render();
       return this.$('.draggable').draggable({
         revert: true,
-        revertDuration: 100
+        revertDuration: 100,
+        start: function() {
+          return $('#proof-tree-view input[type=text]').blur();
+        }
       });
     };
     return RulesListView;

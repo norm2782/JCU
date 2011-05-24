@@ -42,9 +42,12 @@ class exports.ProofTreeNodeView extends Backbone.View
       if data[0]
         view.updateModel()
         bgc = "whiteField"
+        valid = true
       else
         bgc = "blueField"
+        valid = false
       view.setBgColor view.txtFld(), bgc
+      view.model.set({valid: valid})
 
     $.ajax
       type:  'POST'

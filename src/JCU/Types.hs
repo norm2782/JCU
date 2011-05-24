@@ -31,15 +31,15 @@ type PCheck   = Tree Status
 type Cid      = String
 
 instance FromJSON DropReq where
-  parseJSON (Object o)  = mkJSONDropReq  <$> o .: "proofTree" <*> o .: "term"
+  parseJSON (Object o)  = mkJSONDropReq  <$> o .: "term"
                                          <*> o .: "rule"
   parseJSON _           = fail "No parseJSON for DropReq"
 
-mkJSONDropReq :: Value -> String -> String -> DropReq
-mkJSONDropReq prf tm rl = DropReq (mkJSONTerm tm) (mkJSONRule rl)
-  where mkProofTree = case fromJSON prf :: AE.Result Proof of
-                        (Success a)  -> a
-                        _            -> error "failed!"
+mkJSONDropReq :: String -> String -> DropReq
+mkJSONDropReq tm rl = DropReq (mkJSONTerm tm) (mkJSONRule rl)
+  {- where mkProofTree = case fromJSON prf :: AE.Result Proof of-}
+  {-                       (Success a)  -> a-}
+  {-                       _            -> error "failed!"-}
 
 instance ToJSON DropRes where
   toJSON (DropRes b i ts uts) = object  [  "unified"   .= b

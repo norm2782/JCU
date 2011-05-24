@@ -201,16 +201,16 @@ parseJSON f raw =
     (L.Done _ r)  ->
       case f r of
         (Success a)  -> return a
-        _            -> error500H
-    _           -> error500H
+        _            -> error500H "Error converting ByteString to data type"
+    _           -> error500H "Error parsing raw JSON"
 
 mkProof :: L.ByteString -> Application Proof
 mkProof = parseJSON fromJSON
 
-error500H :: Application a
-error500H = do
+error500H :: String -> Application a
+error500H msg = do
   modifyResponse $ setResponseStatus 500 "Internal server error"
-  writeBS "500 internal server error"
+  writeBS . B.pack $ "500 internal server error: " ++ msg
   r <- getResponse
   finishWith r
 

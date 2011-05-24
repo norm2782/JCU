@@ -21,4 +21,5 @@ class exports.RulesListView extends Backbone.View
   renderList: =>
     app.views.rulesList.render()
     @$('.draggable').draggable({ revert: true
-                               , revertDuration: 100 })
+                               , revertDuration: 100
+                               , start: -> $('#proof-tree-view input[type=text]').blur() })
