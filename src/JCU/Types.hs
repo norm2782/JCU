@@ -77,7 +77,7 @@ instance ToJSON Proof where
                                ,  "childTerms"  .= toJSON ps ]
 
 mkJSONProofTree :: String -> Value -> Int -> String -> Proof
-mkJSONProofTree tm rts lvl lbl = Node (mkJSONTerm tm ) mkProofTrees
+mkJSONProofTree tm rts lvl lbl = Node (mkJSONTerm tm) mkProofTrees
   where mkProofTrees = case fromJSON rts :: AE.Result [Proof] of
                          (Success a)  -> a
                          _            -> error "failed!"
@@ -103,7 +103,6 @@ processJSON f raw =
         (Success a)  -> Right a
         _            -> Left "Error converting ByteString to data type"
     _           -> Left "Error parsing raw JSON"
-
 
 -- TODO: Try to get rid of the explicit annotations...
 parseCheck :: Maybe ByteString -> L.ByteString -> (Bool, [String])
