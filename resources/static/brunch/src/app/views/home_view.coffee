@@ -12,7 +12,7 @@ class exports.HomeView extends Backbone.View
     "blur #txtAddRule"      : "checkRuleSyntax"
 
   initialize: =>
-    @valid = false
+    @validSyntax = false
 
   render: =>
     @$(@.el).html homeTemplate
@@ -33,15 +33,15 @@ class exports.HomeView extends Backbone.View
     view = @
     callback = (data) ->
        # TODO: Error message
-      console.log data
+      # console.log data
       # data[0] : Boolean indicating whether we have a successful parse or not
       # data[1] : List of error strings indicating what went wroning during parsing
       if data[0]
         bgc = "whiteField"
-        view.valid = true
+        view.validSyntax = true
       else
         bgc = "blueField"
-        view.valid = false
+        view.validSyntax = false
       view.setBgColor txtAddRule, bgc
 
     $.ajax
@@ -59,7 +59,7 @@ class exports.HomeView extends Backbone.View
     @checkRuleSyntax()
     val = @$('#txtAddRule').val()
 
-    if @valid
+    if @validSyntax
       res = app.collections.rulesList.find(
         (x) ->
           rl = x.get("rule").replace(/\s+/g, '')

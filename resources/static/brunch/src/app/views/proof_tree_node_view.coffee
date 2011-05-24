@@ -6,11 +6,10 @@ class exports.ProofTreeNodeView extends Backbone.View
   tagName: "li"
 
   events:
-    "blur   .droppable"         : "checkTermSyntax"
-    "change input[type='text']" : "updateModel"
+    "blur .droppable" : "onBlurCheckTermSyntax"
 
   txtFld: =>
-    @$("#proof_" + @model.get('treeLbl'))
+    $("input[id='proof_" + @model.get('treeLbl') + "']")
 
   initialize: =>
     @childTerms().bind "refresh", @render
@@ -32,22 +31,23 @@ class exports.ProofTreeNodeView extends Backbone.View
   childTerms: =>
     @model.childTerms()
 
-  checkTermSyntax: =>
+  onBlurCheckTermSyntax: =>
+    @model.setTerm @txtFld().val()
+
     view = @
     callback = (data) ->
        # TODO: Error message
-      console.log data
+      # console.log data
       # data[0] : Boolean indicating whether we have a successful parse or not
       # data[1] : List of error strings indicating what went wroning during parsing
       if data[0]
-        view.updateModel()
         bgc = "whiteField"
         valid = true
       else
         bgc = "blueField"
         valid = false
       view.setBgColor view.txtFld(), bgc
-      view.model.set({valid: valid})
+      view.model.setValidSyntax valid
 
     $.ajax
       type:  'POST'
@@ -70,7 +70,7 @@ class exports.ProofTreeNodeView extends Backbone.View
           else
             view.model.setTerm elemVal
 
-            if !view.model.isValid()
+            if !view.model.hasValidSyntax()
               alert "Cannot unify with an invalid term!"
               @
             else
@@ -80,15 +80,13 @@ class exports.ProofTreeNodeView extends Backbone.View
     if @childTerms().length > 0
       ul = $('<ul></ul>')
       renderNode = (node) ->
-        nodeView = new ProofTreeNodeView({model: node, id: "view_" + node.treeLbl})
+        nodeView = new ProofTreeNodeView({ model: node
+                                         , id: "view_" + node.treeLbl})
         ul.append nodeView.render().el
 
       @childTerms().each renderNode
       @$(@el).append ul
     @
-
-  updateModel: =>
-    @model.setTerm @txtFld().val()
 
   unify: (term, rule) =>
     view = @
@@ -96,7 +94,7 @@ class exports.ProofTreeNodeView extends Backbone.View
       if !data.unified
         alert "Failed to unify!"
       else
-        view.model.setChildren(data)
+        view.model.setChildren data
 
     # TODO: Move this to a Model
     $.ajax
@@ -104,5 +102,5 @@ class exports.ProofTreeNodeView extends Backbone.View
       type: 'POST'
       contentType: 'application/json'
       dataType: 'json'
-      data:     JSON.stringify {term: term, rule: rule}
+      data:     JSON.stringify {term: term, rule: rule, tree: JSON.stringify app.models.tree.treeRoot()}
       success:  callback

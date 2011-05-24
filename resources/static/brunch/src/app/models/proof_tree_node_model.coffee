@@ -7,7 +7,7 @@ class exports.ProofTreeNode extends Backbone.Model
 
   initialize: =>
     @set { childTerms: new Backbone.Collection()
-         , mcid: @cid}
+         , mcid: @cid }
 
   term: =>
     @get('term')
@@ -23,18 +23,26 @@ class exports.ProofTreeNode extends Backbone.Model
 
   setChildren: (data) =>
     childNo = data.children
-    # TODO: grab either rhss or urhss from data, depending on some global setting,
-    # and insert it as term in the new nodes
+    # TODO: grab either rhss or urhss from data, depending on some global
+    # setting, and insert it as term in the new nodes
     if childNo > 0
       newChildren = new Array()
-      for i in [0..childNo-1]
-        newChildren.push(new ProofTreeNode({ term: data.urhss[i]
+      for i in [1..childNo]
+        newChildren.push(new ProofTreeNode({ term: data.urhss[i - 1]
                                            , treeLvl: @get('treeLvl') + 1
-                                           , treeLbl: @get('treeLbl') + "." + i}))
+                                           , treeLbl: @get('treeLbl') + "." + i
+                                           , validSyntax: true }))
       @childTerms().refresh(newChildren)
 
+  setValidSyntax: (flag) =>
+    @set({validSyntax: flag})
+
+  hasValidSyntax: =>
+    @get('validSyntax')
+
   isValid: =>
-    @get('valid') && @childTerms().reduce(((acc, nd) -> nd.isValid() && acc), true)
+    f = (acc, nd) -> nd.isValid() && acc
+    @hasValidSyntax() && @childTerms().reduce f, true
 
   setProofResult: (data) =>
     @set({proofResult: data.proofCheckResult})

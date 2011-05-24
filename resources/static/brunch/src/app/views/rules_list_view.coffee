@@ -22,4 +22,4 @@ class exports.RulesListView extends Backbone.View
     app.views.rulesList.render()
     @$('.draggable').draggable({ revert: true
                                , revertDuration: 100
-                               , start: -> $('#proof-tree-view input[type=text]').blur() })
+                               , start: -> $(':focus').blur()})

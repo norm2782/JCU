@@ -6,10 +6,9 @@ class exports.ProofTree extends Backbone.Model
 
   initialize: =>
     @set({treeRoot: new ProofTreeNode({treeLvl: 0, treeLbl: "0"})})
-    console.log @treeRoot()
 
   reset: =>
-    @treeRoot().setTerm("")
+    @treeRoot().setTerm ""
     @treeRoot().reset()
 
   treeRoot: =>

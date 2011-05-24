@@ -11166,13 +11166,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       ProofTree.__super__.constructor.apply(this, arguments);
     }
     ProofTree.prototype.initialize = function() {
-      this.set({
+      return this.set({
         treeRoot: new ProofTreeNode({
           treeLvl: 0,
           treeLbl: "0"
         })
       });
-      return console.log(this.treeRoot());
     };
     ProofTree.prototype.reset = function() {
       this.treeRoot().setTerm("");
@@ -11205,6 +11204,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       this.reset = __bind(this.reset, this);
       this.setProofResult = __bind(this.setProofResult, this);
       this.isValid = __bind(this.isValid, this);
+      this.hasValidSyntax = __bind(this.hasValidSyntax, this);
+      this.setValidSyntax = __bind(this.setValidSyntax, this);
       this.setChildren = __bind(this.setChildren, this);
       this.childTerms = __bind(this.childTerms, this);
       this.setTerm = __bind(this.setTerm, this);
@@ -11234,24 +11235,35 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.get('childTerms');
     };
     ProofTreeNode.prototype.setChildren = function(data) {
-      var childNo, i, newChildren, _ref;
+      var childNo, i, newChildren;
       childNo = data.children;
       if (childNo > 0) {
         newChildren = new Array();
-        for (i = 0, _ref = childNo - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
+        for (i = 1; 1 <= childNo ? i <= childNo : i >= childNo; 1 <= childNo ? i++ : i--) {
           newChildren.push(new ProofTreeNode({
-            term: data.urhss[i],
+            term: data.urhss[i - 1],
             treeLvl: this.get('treeLvl') + 1,
-            treeLbl: this.get('treeLbl') + "." + i
+            treeLbl: this.get('treeLbl') + "." + i,
+            validSyntax: true
           }));
         }
         return this.childTerms().refresh(newChildren);
       }
     };
+    ProofTreeNode.prototype.setValidSyntax = function(flag) {
+      return this.set({
+        validSyntax: flag
+      });
+    };
+    ProofTreeNode.prototype.hasValidSyntax = function() {
+      return this.get('validSyntax');
+    };
     ProofTreeNode.prototype.isValid = function() {
-      return this.get('valid') && this.childTerms().reduce((function(acc, nd) {
+      var f;
+      f = function(acc, nd) {
         return nd.isValid() && acc;
-      }), true);
+      };
+      return this.hasValidSyntax() && this.childTerms().reduce(f, true);
     };
     ProofTreeNode.prototype.setProofResult = function(data) {
       var f, i;
@@ -11448,7 +11460,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "blur #txtAddRule": "checkRuleSyntax"
     };
     HomeView.prototype.initialize = function() {
-      return this.valid = false;
+      return this.validSyntax = false;
     };
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
@@ -11471,13 +11483,12 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       view = this;
       callback = function(data) {
         var bgc;
-        console.log(data);
         if (data[0]) {
           bgc = "whiteField";
-          view.valid = true;
+          view.validSyntax = true;
         } else {
           bgc = "blueField";
-          view.valid = false;
+          view.validSyntax = false;
         }
         return view.setBgColor(txtAddRule, bgc);
       };
@@ -11497,7 +11508,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       var res, val;
       this.checkRuleSyntax();
       val = this.$('#txtAddRule').val();
-      if (this.valid) {
+      if (this.validSyntax) {
         res = app.collections.rulesList.find(function(x) {
           var rl, vl;
           rl = x.get("rule").replace(/\s+/g, '');
@@ -11549,9 +11560,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     __extends(ProofTreeNodeView, Backbone.View);
     function ProofTreeNodeView() {
       this.unify = __bind(this.unify, this);
-      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
-      this.checkTermSyntax = __bind(this.checkTermSyntax, this);
+      this.onBlurCheckTermSyntax = __bind(this.onBlurCheckTermSyntax, this);
       this.childTerms = __bind(this.childTerms, this);
       this.changeProofResult = __bind(this.changeProofResult, this);
       this.setBgColor = __bind(this.setBgColor, this);
@@ -11561,11 +11571,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     }
     ProofTreeNodeView.prototype.tagName = "li";
     ProofTreeNodeView.prototype.events = {
-      "blur   .droppable": "checkTermSyntax",
-      "change input[type='text']": "updateModel"
+      "blur .droppable": "onBlurCheckTermSyntax"
     };
     ProofTreeNodeView.prototype.txtFld = function() {
-      return this.$("#proof_" + this.model.get('treeLbl'));
+      return $("input[id='proof_" + this.model.get('treeLbl') + "']");
     };
     ProofTreeNodeView.prototype.initialize = function() {
       this.childTerms().bind("refresh", this.render);
@@ -11595,14 +11604,13 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeNodeView.prototype.childTerms = function() {
       return this.model.childTerms();
     };
-    ProofTreeNodeView.prototype.checkTermSyntax = function() {
+    ProofTreeNodeView.prototype.onBlurCheckTermSyntax = function() {
       var callback, view;
+      this.model.setTerm(this.txtFld().val());
       view = this;
       callback = function(data) {
         var bgc, valid;
-        console.log(data);
         if (data[0]) {
-          view.updateModel();
           bgc = "whiteField";
           valid = true;
         } else {
@@ -11610,9 +11618,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           valid = false;
         }
         view.setBgColor(view.txtFld(), bgc);
-        return view.model.set({
-          valid: valid
-        });
+        return view.model.setValidSyntax(valid);
       };
       return $.ajax({
         type: 'POST',
@@ -11639,7 +11645,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
             return this;
           } else {
             view.model.setTerm(elemVal);
-            if (!view.model.isValid()) {
+            if (!view.model.hasValidSyntax()) {
               alert("Cannot unify with an invalid term!");
               return this;
             } else {
@@ -11663,9 +11669,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
       return this;
     };
-    ProofTreeNodeView.prototype.updateModel = function() {
-      return this.model.setTerm(this.txtFld().val());
-    };
     ProofTreeNodeView.prototype.unify = function(term, rule) {
       var callback, view;
       view = this;
@@ -11683,7 +11686,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         dataType: 'json',
         data: JSON.stringify({
           term: term,
-          rule: rule
+          rule: rule,
+          tree: JSON.stringify(app.models.tree.treeRoot())
         }),
         success: callback
       });
@@ -11805,7 +11809,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         revert: true,
         revertDuration: 100,
         start: function() {
-          return $('#proof-tree-view input[type=text]').blur();
+          return $(':focus').blur();
         }
       });
     };
