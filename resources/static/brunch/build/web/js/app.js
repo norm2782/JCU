@@ -11204,7 +11204,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     function ProofTreeNode() {
       this.reset = __bind(this.reset, this);
       this.setProofResult = __bind(this.setProofResult, this);
-      this.isValid = __bind(this.isValid, this);
       this.setChildren = __bind(this.setChildren, this);
       this.childTerms = __bind(this.childTerms, this);
       this.setTerm = __bind(this.setTerm, this);
@@ -11247,21 +11246,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         }
         return this.childTerms().refresh(newChildren);
       }
-    };
-    ProofTreeNode.prototype.isValid = function() {
-      var fun, regex, str, token, valid;
-      return true;
-      str = this.term();
-      if (!(str != null)) {
-        return false;
-      }
-      token = "\\s*\\w+\\s*";
-      fun = token + "(\\((" + token + ",\\s*)*" + token + "\\))?\\s*";
-      regex = new RegExp("\\s*^" + token + "\\((" + fun + ",)*\\s*" + fun + "\\)\\s*\\s*$");
-      valid = regex.test(str);
-      return valid && this.childTerms().reduce((function(acc, nd) {
-        return nd.isValid() && acc;
-      }), true);
     };
     ProofTreeNode.prototype.setProofResult = function(data) {
       var f, i;
@@ -11578,7 +11562,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       "change input[type='text']": "updateModel"
     };
     ProofTreeNodeView.prototype.txtFld = function() {
-      return this.$("#proof_" + this.model.treeLbl);
+      return this.$("#proof_" + this.model.get('treeLbl'));
     };
     ProofTreeNodeView.prototype.initialize = function() {
       this.childTerms().bind("refresh", this.render);
@@ -11609,14 +11593,27 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.model.childTerms();
     };
     ProofTreeNodeView.prototype.checkTermSyntax = function() {
-      var bgc;
-      this.updateModel();
-      if (!this.model.isValid()) {
-        bgc = "blueField";
-      } else {
-        bgc = "whiteField";
-      }
-      return this.setBgColor(this.txtFld(), bgc);
+      var callback, view;
+      view = this;
+      callback = function(data) {
+        var bgc;
+        console.log(data);
+        if (data[0]) {
+          view.updateModel();
+          bgc = "whiteField";
+        } else {
+          bgc = "blueField";
+        }
+        return view.setBgColor(view.txtFld(), bgc);
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/check-syntax/term",
+        data: this.model.term(),
+        contentType: 'application/json',
+        dataType: 'json',
+        success: callback
+      });
     };
     ProofTreeNodeView.prototype.render = function() {
       var renderNode, ul, view;

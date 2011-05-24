@@ -10,7 +10,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     "change input[type='text']" : "updateModel"
 
   txtFld: =>
-    @$("#proof_" + @model.treeLbl)
+    @$("#proof_" + @model.get('treeLbl'))
 
   initialize: =>
     @childTerms().bind "refresh", @render
@@ -33,12 +33,26 @@ class exports.ProofTreeNodeView extends Backbone.View
     @model.childTerms()
 
   checkTermSyntax: =>
-    @updateModel()
-    if !@model.isValid()
-      bgc = "blueField"
-    else
-      bgc = "whiteField"
-    @setBgColor @txtFld(), bgc
+    view = @
+    callback = (data) ->
+       # TODO: Error message
+      console.log data
+      # data[0] : Boolean indicating whether we have a successful parse or not
+      # data[1] : List of error strings indicating what went wroning during parsing
+      if data[0]
+        view.updateModel()
+        bgc = "whiteField"
+      else
+        bgc = "blueField"
+      view.setBgColor view.txtFld(), bgc
+
+    $.ajax
+      type:  'POST'
+      url:   "/check-syntax/term"
+      data:  @model.term()
+      contentType: 'application/json'
+      dataType: 'json'
+      success:  callback
 
   render: =>
     view = @
