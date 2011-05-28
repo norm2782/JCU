@@ -1,4 +1,5 @@
 Prolog for JCU
+==============
 
 This package was developed to demonstrate the ideas behind the Prolog language.
 It uses a very small interpreter (*Language.Prolog.Nanoprolog*) which can be
