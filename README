@@ -1,5 +1,15 @@
 Prolog for JCU
 
+This package was developed to demonstrate the ideas behind the Prolog language.
+It uses a very small interpreter (@Language.prolog.Nanoprolog@) which can be
+run on its own.
+
+This package contains an environment constructed for the Junior College at
+Utrecht University. It provides a simpel environment in which rules can be
+defined, and proofs can be constructed interactively. The software can be
+installed on a server, so students do not have to install anything on their own
+machines.
+
 
 Installation instructions:
 ==========================
