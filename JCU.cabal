@@ -16,6 +16,7 @@ License:             BSD3
 license-file:        LICENSE
 Author:              Jurriën Stutterheim, Doaitse Swierstra
 Maintainer:          Jurriën Stutterheim <j.stutterheim@uu.nl>
+Homepage:            http://www.cs.uu.nl/wiki/PrologJCU
 Stability:           Experimental
 Category:            Web
 Build-type:          Simple
