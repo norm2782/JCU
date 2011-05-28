@@ -3,7 +3,7 @@ Version:             0.2
 Synopsis:            Online application for visualizing Prolog proof trees.
 Description:         This package was developed to demonstrate the ideas behind
                      the Prolog language. It uses a very small interpreter
-                     (@Language.prolog.Nanoprolog@) which can be run on its
+                     (@Language.Prolog.Nanoprolog@) which can be run on its
                      own.
                      .
                      This package contains an environment constructed for the

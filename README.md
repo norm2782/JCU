@@ -1,7 +1,7 @@
 Prolog for JCU
 
 This package was developed to demonstrate the ideas behind the Prolog language.
-It uses a very small interpreter (@Language.prolog.Nanoprolog@) which can be
+It uses a very small interpreter (*Language.Prolog.Nanoprolog*) which can be
 run on its own.
 
 This package contains an environment constructed for the Junior College at
@@ -11,52 +11,58 @@ installed on a server, so students do not have to install anything on their own
 machines.
 
 
-Installation instructions:
-==========================
+Installation instructions
+=========================
 
 This software has been tested with Haskell Platform 2011.2.0.1, 32-bit on Mac
 OS X 10.6.7, using MongoDB 1.8.1. MongoDB was installed using Homebrew.
 
-* Install MongoDB *
+Install MongoDB
+---------------
 To install MongoDB using Homebrew, issue the following command:
 
-brew install mongodb
+> brew install mongodb
 
 When the installation is finished, follow the instructions on the screen.
 The application assumes that MongoDB listens on localhost:27017.
 
-* Install dependencies *
+Install dependencies
+--------------------
 The JCU packages relies on the snap-auth and snap-extension-mongodb packages,
 both of which are not yet available on hackage. If you have not installed them
-yet, issue a 'make deps' command. The latest version of these packages will be
+yet, issue a *make deps* command. The latest version of these packages will be
 fetched from git and be installed. A git client must be installed for this to
 work.
 
-* Install the JCU package *
-To install the JCU package in development mode, issue a 'make' command in the
+Install the JCU package
+-----------------------
+To install the JCU package in development mode, issue a *make* command in the
 project root. To install it in production mode, just issue cabal install in the
 project root.
 
 
-Usage instructions:
-===================
+Usage instructions
+==================
 Before you can use the application, you have to start it and register an
 account.
 
-* Starting *
+Starting
+--------
 After installation, just issue the
 
-jcu
+> jcu
 
 command. If you want to run the application in development mode, you should
 issue this command in the root directory of the project.
 
-* Accessing *
+Accessing
+---------
 The application can be viewed from your browser on the following address:
 
 http://localhost:8000/
 
-* Registering *
+Registering
+-----------
 Before you can use the application, you have to register an account. This
 can be done at
 
@@ -65,14 +71,16 @@ http://localhost:8000/signup
 Your username must be a valid email address and your password needs to be at
 least six characters long.
 
-* Logging in *
+Logging in
+----------
 After signup, you can log in at
 
 http://localhost:8000/login
 
 using the credentials you have just entered during registration.
 
-* Using *
+Using
+-----
 After logging in, the main screen is visible. It is divided in two sections.
 On the left-hand side we have the proof tree and on the right-hand side
 the list of rules.
