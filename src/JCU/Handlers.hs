@@ -66,8 +66,7 @@ redirIfLogin :: Application () -> Application ()
 redirIfLogin = flip restrict redirHome
 
 failedLogin :: MonadHeist n m => AuthFailure -> m ()
-failedLogin ExternalIdFailure  = render "signup"
-failedLogin PasswordFailure    = render "login"
+failedLogin _ = render "login"
 
 newSignupH :: Application ()
 newSignupH = redirIfLogin (render "signup")
