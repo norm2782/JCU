@@ -4,5 +4,5 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 else
   export LD_LIBRARY_PATH=/usr/local/lib
-  /home/jurrien/.cabal/bin/jcu -p 80 &
+  jcu -p 80 &
 fi
