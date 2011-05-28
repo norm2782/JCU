@@ -1,0 +1,6 @@
+* Use digestive-functors for form validation.
+* Add appropriate feedback on invalid forms.
+* Add a more sophisicated registration system with double-email address
+  and password entry, and confirmation email.
+* Create some sort of storage mechanism abstraction layer.
+* ... more?
