@@ -21,6 +21,7 @@ Stability:           Experimental
 Category:            Web
 Build-type:          Simple
 Cabal-version:       >= 1.6
+Extra-Source-Files:  README, examples/*
 
 Source-repository head
   Type:       git
