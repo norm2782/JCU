@@ -185,6 +185,7 @@ checkProofH = restrict forbiddenH $ do
 
 unifyH :: Application ()
 unifyH = restrict forbiddenH $ do
+  setTimeout 10
   body <- getRequestBody
   case mkDropReq body of
     Left   err              -> error500H err
