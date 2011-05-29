@@ -22,3 +22,7 @@ class exports.ProofTree extends Backbone.Model
 
   setProofResult: (data) =>
     @treeRoot().setProofResult data
+
+  setUnified: (tr) =>
+    console.log tr
+    @treeRoot().setUnified(tr)

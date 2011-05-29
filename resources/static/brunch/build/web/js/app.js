@@ -11163,6 +11163,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTree = (function() {
     __extends(ProofTree, Backbone.Model);
     function ProofTree() {
+      this.setUnified = __bind(this.setUnified, this);
       this.setProofResult = __bind(this.setProofResult, this);
       this.isProved = __bind(this.isProved, this);
       this.isValid = __bind(this.isValid, this);
@@ -11195,6 +11196,10 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTree.prototype.setProofResult = function(data) {
       return this.treeRoot().setProofResult(data);
     };
+    ProofTree.prototype.setUnified = function(tr) {
+      console.log(tr);
+      return this.treeRoot().setUnified(tr);
+    };
     return ProofTree;
   })();
 }).call(this);
@@ -11210,6 +11215,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.ProofTreeNode = (function() {
     __extends(ProofTreeNode, Backbone.Model);
     function ProofTreeNode() {
+      this.setUnified = __bind(this.setUnified, this);
       this.reset = __bind(this.reset, this);
       this.setProofResult = __bind(this.setProofResult, this);
       this.isValid = __bind(this.isValid, this);
@@ -11297,6 +11303,19 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     };
     ProofTreeNode.prototype.reset = function() {
       return this.childTerms().refresh(new Array());
+    };
+    ProofTreeNode.prototype.setUnified = function(tr) {
+      var f, i;
+      this.setTerm(tr.term);
+      if (tr.childTerms.length > 0) {
+        i = 0;
+        f = function(x) {
+          x.setUnified(tr.childTerms[i]);
+          return i++;
+        };
+        this.childTerms().each(f);
+      }
+      return this.trigger('refresh');
     };
     return ProofTreeNode;
   })();
@@ -11669,7 +11688,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
               alert("Cannot unify with an invalid term!");
               return this;
             } else {
-              return view.unify(elemVal, ui.draggable.find(".rule-text").html());
+              return view.unify(view.model.get("treeLvl"), elemVal, ui.draggable.find(".rule-text").html());
             }
           }
         }
@@ -11689,24 +11708,23 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       }
       return this;
     };
-    ProofTreeNodeView.prototype.unify = function(term, rule) {
+    ProofTreeNodeView.prototype.unify = function(treeLvl, term, rule) {
       var callback, reqData, view;
       view = this;
       callback = function(data) {
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
-          console.log(data);
+          app.models.tree.setUnified(data.nproof);
           return view.model.setChildren(data);
         }
       };
       reqData = {
         term: term,
         rule: rule,
-        proof: app.models.tree.treeRoot()
+        proof: app.models.tree.treeRoot(),
+        treeLvl: treeLvl
       };
-      console.log(reqData);
-      console.log(JSON.stringify(reqData));
       return $.ajax({
         url: '/rules/unify',
         type: 'POST',

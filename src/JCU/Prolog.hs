@@ -6,7 +6,7 @@ import            Data.Maybe (isJust, listToMaybe, mapMaybe)
 import            Data.Map (empty)
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
-
+import Debug.Trace (trace)
 -- | Check if the proof provided by the client is correct, incomplete or
 -- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned
 -- an indiviual status. The status is determined by examining a node's child
@@ -45,14 +45,13 @@ split xs = split' xs id
 instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (map (subst env) cs)
 
-getRhss :: Proof -> Term -> Rule -> DropRes
-getRhss prf tm (c :<-: cs) =
-  case unify (tm, c) emptyEnv of
-    Nothing   -> DropRes False 0 tm [] prf
-    Just env  -> DropRes True  (length cs) (subst env tm) (map (subst env) cs)
-                               (subst env prf)
-
-
+-- I first need to get the environment from the original proof tree.
+getRhss :: Int -> Proof -> Term -> Rule -> DropRes
+getRhss n prf tm rl =
+  let  (tc :<-: tcs) = tag (show $ n+1) rl
+  in   case unify (tm, tc) emptyEnv of
+         Nothing   -> DropRes False 0 [] prf
+         Just env  -> trace (show env) $ DropRes True (length tcs) (map (subst env) tcs) (subst env prf)
 
 -- Unify as before. Then subst the new env over the entire proof tree. Send
 -- completely new tree back. On client side, persist new terms over the entire

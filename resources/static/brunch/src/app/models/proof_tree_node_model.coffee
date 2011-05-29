@@ -38,13 +38,6 @@ class exports.ProofTreeNode extends Backbone.Model
                                            , validSyntax: true }))
     @childTerms().refresh(newChildren)
 
-  # setDummyChildren: (num) =>
-  #   newChildren = new Array()
-  #   if num > 0
-  #     for i in [1..num]
-  #       newChildren.push(new ProofTreeNode())
-  #   @childTerms().refresh(newChildren, true)
-
   setValidSyntax: (flag) =>
     @set({validSyntax: flag})
 
@@ -66,3 +59,14 @@ class exports.ProofTreeNode extends Backbone.Model
 
   reset: =>
      @childTerms().refresh new Array()
+
+  setUnified: (tr) =>
+    @setTerm(tr.term)
+    if tr.childTerms.length > 0
+      i = 0
+      f = (x) ->
+        x.setUnified tr.childTerms[i]
+        i++
+      @childTerms().each f
+    @trigger('refresh')
+

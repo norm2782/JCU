@@ -74,7 +74,7 @@ class exports.ProofTreeNodeView extends Backbone.View
               alert "Cannot unify with an invalid term!"
               @
             else
-              view.unify elemVal, ui.draggable.find(".rule-text").html()
+              view.unify view.model.get("treeLvl"), elemVal, ui.draggable.find(".rule-text").html()
       }
 
     if @childTerms().length > 0
@@ -88,22 +88,21 @@ class exports.ProofTreeNodeView extends Backbone.View
       @$(@el).append ul
     @
 
-  unify: (term, rule) =>
+  unify: (treeLvl, term, rule) =>
     view = @
     callback = (data) ->
       if !data.unified
         alert "Failed to unify!"
       else
-        console.log data
-        # view.model.setTerm data.pterm TODO: Persist over entire tree instead
+        app.models.tree.setUnified data.nproof
         view.model.setChildren data
 
     reqData = { term:  term
               , rule:  rule
               , proof: app.models.tree.treeRoot()
+              , treeLvl: treeLvl
               }
-    console.log reqData
-    console.log JSON.stringify reqData
+
     $.ajax
       url:  '/rules/unify'
       type: 'POST'
