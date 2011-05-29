@@ -11129,6 +11129,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
           return _.any(xs, _.identity);
         }
       });
+      _.mixin({
+        clone: function(obj) {
+          return $.extend(true, {}, obj);
+        }
+      });
       app.controllers.main = new MainController();
       app.models.tree = new ProofTree();
       app.views.home = new HomeView();
@@ -11249,8 +11254,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     ProofTreeNode.prototype.setChildren = function(data) {
       var childNo, i, newChildren;
       childNo = data.children;
+      newChildren = new Array();
       if (childNo > 0) {
-        newChildren = new Array();
         for (i = 1; 1 <= childNo ? i <= childNo : i >= childNo; 1 <= childNo ? i++ : i--) {
           newChildren.push(new ProofTreeNode({
             term: data.urhss[i - 1],
@@ -11259,8 +11264,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
             validSyntax: true
           }));
         }
-        return this.childTerms().refresh(newChildren);
       }
+      return this.childTerms().refresh(newChildren);
     };
     ProofTreeNode.prototype.setValidSyntax = function(flag) {
       return this.set({
@@ -11685,25 +11690,29 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this;
     };
     ProofTreeNodeView.prototype.unify = function(term, rule) {
-      var callback, view;
+      var callback, reqData, view;
       view = this;
       callback = function(data) {
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
+          console.log(data);
           return view.model.setChildren(data);
         }
       };
+      reqData = {
+        term: term,
+        rule: rule,
+        proof: app.models.tree.treeRoot()
+      };
+      console.log(reqData);
+      console.log(JSON.stringify(reqData));
       return $.ajax({
         url: '/rules/unify',
         type: 'POST',
         contentType: 'application/json',
         dataType: 'json',
-        data: JSON.stringify({
-          term: term,
-          rule: rule,
-          tree: JSON.stringify(app.models.tree.treeRoot())
-        }),
+        data: JSON.stringify(reqData),
         success: callback
       });
     };

@@ -14,43 +14,45 @@ import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth (AuthUser)
 import            Text.ParserCombinators.UU.BasicInstances (Parser())
+import Debug.Trace
 
-
-data User     = User  {  authUser     :: AuthUser
-                      ,  storedRules  :: [ByteString] }
+data User     =  User  {  authUser     :: AuthUser
+                       ,  storedRules  :: [ByteString] }
               deriving Show
 
-data DropReq  = DropReq Term Rule
+data DropReq  =  DropReq Term Rule Proof
               deriving Show
 
-data DropRes  = DropRes Bool Int [Term] [Term]
+data DropRes  =  DropRes Bool Int Term [Term] Proof
               deriving Show
 
-data Status   = Correct
-              | Incomplete
-              | Invalid
+data Status   =  Correct
+              |  Incomplete
+              |  Invalid
               deriving Show
 
-type Proof    = Tree Term
-type PCheck   = Tree Status
-type Cid      = String
+type Proof    =  Tree Term
+type PCheck   =  Tree Status
+type Cid      =  String
 
 instance FromJSON DropReq where
-  parseJSON (Object o)  = mkJSONDropReq  <$> o .: "term"
-                                         <*> o .: "rule"
-  parseJSON _           = fail "No parseJSON for DropReq"
+  parseJSON (Object o)  = mkJSONDropReq  <$>  o .: "term"
+                                         <*>  o .: "rule"
+                                         <*>  o .: "proof"
+  parseJSON val         = fail $ "No case for (FromJSON DropReq) with value: " ++ show val
 
-mkJSONDropReq :: String -> String -> DropReq
-mkJSONDropReq tm rl = DropReq (mkJSONTerm tm) (mkJSONRule rl)
-  {- where mkProofTree = case fromJSON prf :: AE.Result Proof of-}
-  {-                       (Success a)  -> a-}
-  {-                       _            -> error "failed!"-}
+{- mkJSONDropReq :: String -> String -> String -> DropReq-}
+mkJSONDropReq tm rl prf = DropReq (mkJSONTerm tm) (mkJSONRule rl) mkProofTree
+  where mkProofTree = case fromJSON prf :: AE.Result Proof of
+                        (Success a)  -> a
+                        (Error err)  -> error ("Error parsing drop request: " ++ err)
 
 instance ToJSON DropRes where
-  toJSON (DropRes b i ts uts) = object  [  "unified"   .= b
-                                        ,  "children"  .= i
-                                        ,  "rhss"      .= map show ts
-                                        ,  "urhss"     .= map show uts ]
+  toJSON (DropRes ufd cs tm uts prf) = object  [  "unified"   .= ufd
+                                               ,  "children"  .= cs
+                                               ,  "pterm"     .= show tm
+                                               ,  "urhss"     .= map show uts
+                                               ,  "nproof"    .= prf ]
 
 instance ToJSON PCheck where
   toJSON (Node st cs) = object  [  "proofCheckResult"    .= show st
@@ -61,26 +63,25 @@ instance ToJSON Rule where
 
 instance FromJSON Rule where
   parseJSON (Object o)  = mkJSONRule <$> o .: "rule"
-  parseJSON _           = fail "No parseJSON for Rule"
+  parseJSON val         = fail $ "No case for (FromJSON Rule) with value: " ++ show val
 
 -- TODO: Errors
 mkJSONRule :: String -> Rule
 mkJSONRule = fst . startParse pRule
 
 instance FromJSON Proof where
-  parseJSON (Object o)  = mkJSONProofTree  <$>  o .: "term"     <*> o .: "childTerms" 
-                                           <*>  o .: "treeLvl"  <*> o .: "treeLbl"
-  parseJSON _           = fail "No parseJSON for Proof"
+  parseJSON (Object o)  = mkJSONProofTree <$> o .: "term" <*> o .: "childTerms"
+  parseJSON val         = fail $ "No case for (FromJSON Proof) with value: " ++ show val
 
 instance ToJSON Proof where
   toJSON (Node t ps) = object  [  "term"        .= show t
                                ,  "childTerms"  .= toJSON ps ]
 
-mkJSONProofTree :: String -> Value -> Int -> String -> Proof
-mkJSONProofTree tm rts lvl lbl = Node (mkJSONTerm tm) mkProofTrees
+{- mkJSONProofTree :: String -> Value -> Proof-}
+mkJSONProofTree tm rts = Node (mkJSONTerm tm) mkProofTrees
   where mkProofTrees = case fromJSON rts :: AE.Result [Proof] of
                          (Success a)  -> a
-                         _            -> error "failed!"
+                         (Error err)  -> error ("Error parsing proof tree: " ++ err)
 
 -- TODO: Something with errors
 mkJSONTerm :: String -> Term
@@ -101,8 +102,8 @@ processJSON f raw =
     (AT.Done _ r)  ->
       case f r of
         (Success a)  -> Right a
-        _            -> Left "Error converting ByteString to data type"
-    _           -> Left "Error parsing raw JSON"
+        (Error err)  -> Left $ "Error converting ByteString to data type: " ++ err
+    (AT.Fail _ _ err) -> Left $ "Error parsing raw JSON: " ++ err
 
 -- TODO: Try to get rid of the explicit annotations...
 parseCheck :: Maybe ByteString -> L.ByteString -> (Bool, [String])

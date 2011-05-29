@@ -24,6 +24,9 @@ $(document).ready ->
     # _.or  :: [Bool] -> Bool
     _.mixin {or:  (xs) -> _.any xs, _.identity}
 
+    # Clone objects
+    _.mixin {clone: (obj) -> $.extend(true, {}, obj) }
+
     app.controllers.main = new MainController()
 
     app.models.tree = new ProofTree()

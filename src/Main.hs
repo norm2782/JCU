@@ -1,5 +1,7 @@
 {-# LANGUAGE CPP #-}
+#ifdef DEVELOPMENT
 {-# LANGUAGE TemplateHaskell #-}
+#endif
 
 {-|
 

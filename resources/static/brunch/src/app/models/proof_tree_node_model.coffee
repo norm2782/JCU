@@ -29,14 +29,21 @@ class exports.ProofTreeNode extends Backbone.Model
     childNo = data.children
     # TODO: grab either rhss or urhss from data, depending on some global
     # setting, and insert it as term in the new nodes
+    newChildren = new Array()
     if childNo > 0
-      newChildren = new Array()
       for i in [1..childNo]
         newChildren.push(new ProofTreeNode({ term: data.urhss[i - 1]
                                            , treeLvl: @get('treeLvl') + 1
                                            , treeLbl: @get('treeLbl') + "." + i
                                            , validSyntax: true }))
-      @childTerms().refresh(newChildren)
+    @childTerms().refresh(newChildren)
+
+  # setDummyChildren: (num) =>
+  #   newChildren = new Array()
+  #   if num > 0
+  #     for i in [1..num]
+  #       newChildren.push(new ProofTreeNode())
+  #   @childTerms().refresh(newChildren, true)
 
   setValidSyntax: (flag) =>
     @set({validSyntax: flag})

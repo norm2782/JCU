@@ -74,7 +74,7 @@ class exports.ProofTreeNodeView extends Backbone.View
               alert "Cannot unify with an invalid term!"
               @
             else
-              view.unify(elemVal, ui.draggable.find(".rule-text").html())
+              view.unify elemVal, ui.draggable.find(".rule-text").html()
       }
 
     if @childTerms().length > 0
@@ -94,13 +94,20 @@ class exports.ProofTreeNodeView extends Backbone.View
       if !data.unified
         alert "Failed to unify!"
       else
+        console.log data
+        # view.model.setTerm data.pterm TODO: Persist over entire tree instead
         view.model.setChildren data
 
-    # TODO: Move this to a Model
+    reqData = { term:  term
+              , rule:  rule
+              , proof: app.models.tree.treeRoot()
+              }
+    console.log reqData
+    console.log JSON.stringify reqData
     $.ajax
       url:  '/rules/unify'
       type: 'POST'
       contentType: 'application/json'
       dataType: 'json'
-      data:     JSON.stringify {term: term, rule: rule, tree: JSON.stringify app.models.tree.treeRoot()}
+      data:     JSON.stringify reqData
       success:  callback
