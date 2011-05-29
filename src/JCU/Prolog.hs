@@ -16,11 +16,17 @@ import Debug.Trace (trace)
 -- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
-  | rlsMatch   =  Node Correct (map (checkProof rls) cs)
+  | rlsMatch   =  let cs' = map (checkProof rls) cs
+                  in  if hasVars tm
+                        then Node Incomplete cs'
+                        else Node Correct cs'
   | otherwise  =  if null cs
                     then  Node Incomplete []
                     else  Node Invalid (map (checkProof rls) cs)
-  where rlsMatch = any (isJust . tryRule empty tm (map rootLabel cs)) rls
+  where  rlsMatch            = any (isJust . tryRule empty tm (map rootLabel cs)) rls
+         hasVars (Var _)     = True
+         hasVars (Fun _ [])  = False
+         hasVars (Fun _ xs)  = any hasVars xs
 
 tryRule :: Env -> Term -> [Term] -> Rule -> Maybe Env
 tryRule env tm cs (lhs :<-: rhs) =
@@ -45,25 +51,29 @@ split xs = split' xs id
 instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (map (subst env) cs)
 
--- I first need to get the environment from the original proof tree.
-getRhss :: Int -> Proof -> Term -> Rule -> DropRes
-getRhss n prf tm rl =
-  let  (tc :<-: tcs) = tag (show $ n+1) rl
-  in   case unify (tm, tc) emptyEnv of
+instance Taggable Proof where
+  tag n (Node tm cs) = Node (tag n tm) (map (tag (n ++ "1")) cs)
+
+dropUnify :: Int -> Proof -> Term -> Rule -> DropRes
+dropUnify n prf tm (c :<-: cs) =
+     case unify (tm, c) emptyEnv of
          Nothing   -> DropRes False 0 [] prf
-         Just env  -> trace (show env) $ DropRes True (length tcs) (map (subst env) tcs) (subst env prf)
+         Just env  -> -- trace ("tc: " ++ show tc ++ " tcs: " ++ (show $ subst env tcs) ++ " env: " ++ show env ) $
+                      DropRes True (length cs) (subst env cs) prf -- <- FIXME: This is wrong! We can't assume that the one substitution for the rule and term applies to the entire tree. The variable names clash
 
--- Unify as before. Then subst the new env over the entire proof tree. Send
--- completely new tree back. On client side, persist new terms over the entire
--- tree, but without creating new objects. Just replace the existing values.
-
+-- get a tagged tcs. unify and zip with tcs.
 
 
-
-
-
-
-
+{-
+n: 0
+fromList [("X00",bea),("Y00",ama)]
+n: 1
+fromList [("X01",bea),("Z0",Y01)]
+n: 1
+fromList [("Y01",ama),("Y1",X01)]
+n: 2
+fromList [("X1",X02),("Y02",ama)]
+-}
 
 -- TODO:
 -- This is wrong. It should return an entirely new tree. Other variables in the

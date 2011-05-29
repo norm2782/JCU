@@ -42,7 +42,7 @@ instance FromJSON DropReq where
                                          <*>  o .: "treeLvl"
   parseJSON val         = fail $ "No case for (FromJSON DropReq) with value: " ++ show val
 
-{- mkJSONDropReq :: String -> String -> String -> DropReq-}
+mkJSONDropReq :: String -> String -> Value -> Int -> DropReq
 mkJSONDropReq tm rl prf lvl = DropReq (mkJSONTerm tm) (mkJSONRule rl) mkProofTree lvl
   where mkProofTree = case fromJSON prf :: AE.Result Proof of
                         (Success a)  -> a
@@ -77,7 +77,7 @@ instance ToJSON Proof where
   toJSON (Node t ps) = object  [  "term"        .= show t
                                ,  "childTerms"  .= toJSON ps ]
 
-{- mkJSONProofTree :: String -> Value -> Proof-}
+mkJSONProofTree :: String -> Value -> Proof
 mkJSONProofTree tm rts = Node (mkJSONTerm tm) mkProofTrees
   where mkProofTrees = case fromJSON rts :: AE.Result [Proof] of
                          (Success a)  -> a

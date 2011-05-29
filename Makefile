@@ -11,7 +11,7 @@ dist:
 	cabal sdist
 
 install:
-	cabal install -fdevelopment
+	cabal install -fdevelopment --disable-documentation
 	
 clean:
 	cabal clean
