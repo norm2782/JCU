@@ -53,6 +53,7 @@ class exports.ProofTreeNodeView extends Backbone.View
       type:  'POST'
       url:   "/check-syntax/term"
       data:  @model.term()
+      async: false
       contentType: 'application/json'
       dataType: 'json'
       success:  callback
@@ -106,6 +107,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     $.ajax
       url:  '/rules/unify'
       type: 'POST'
+      async: false
       contentType: 'application/json'
       dataType: 'json'
       data:     JSON.stringify reqData

@@ -3,8 +3,9 @@
     <div class="content">
       <h2>Proof Tree</h2>
       <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
-      <input type="button" id="btnCheck" value="Check" />
-      <input type="button" id="btnReset" value="Reset" />
+      <div id="subst">Substitute <input type="text" style="width: 50px" /> for <input type="text" style="width: 50px" /> <input type="button" value="Substitute" /> (e.g. substitute bea for X0)</div>
+      <input type="button" id="btnCheck" value="Check Proof" />
+      <input type="button" id="btnReset" value="Reset Tree" />
       <h3>Note</h3>
       <p class="lhsText">Due to limitations in the current version of the
       software, you might see variables with the same name in different text
