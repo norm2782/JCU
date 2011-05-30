@@ -26,7 +26,7 @@ checkProof rls (Node tm cs)
          mkNode st  = Node st (map (checkProof rls) cs)
 
 hasVars :: Term -> Bool
-hasVars (Var v)     = True
+hasVars (Var _)     = True
 hasVars (Fun _ [])  = False
 hasVars (Fun _ xs)  = any hasVars xs
 
