@@ -24,5 +24,4 @@ class exports.ProofTree extends Backbone.Model
     @treeRoot().setProofResult data
 
   setUnified: (tr) =>
-    console.log tr
     @treeRoot().setUnified(tr)

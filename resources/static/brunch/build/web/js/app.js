@@ -11198,7 +11198,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.treeRoot().setProofResult(data);
     };
     ProofTree.prototype.setUnified = function(tr) {
-      console.log(tr);
       return this.treeRoot().setUnified(tr);
     };
     return ProofTree;
