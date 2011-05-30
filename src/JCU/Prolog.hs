@@ -49,7 +49,7 @@ dropUnify prf tns@(_:ns)  (t :<-: ts)  |  isNothing tmnd  = DropRes False prf
                         ntg         = intersperse '.' $ concatMap show tns
                         ncs         = map (flip Node []) (tag ntg ts)
                         mkPrf' env  = subst env (insertNode prf ns ncs)
-                   in   case unify (tm, tag ntg t) emptyEnv of
+                   in   case unify (tag ntg t, tm) emptyEnv of
                           Nothing   -> DropRes False  prf
                           Just env  -> DropRes True   (mkPrf' env)
 
