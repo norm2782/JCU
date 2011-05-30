@@ -18,7 +18,7 @@ import            Language.Prolog.NanoProlog.NanoProlog
 -- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
-  | rlsMatch   =  if (not . S.null) (vars tm)
+  | rlsMatch   =  if hasVars tm
                     then  mkNode Incomplete
                     else  mkNode Correct
   | otherwise  =  if null cs
@@ -26,6 +26,11 @@ checkProof rls (Node tm cs)
                     else  mkNode Invalid
   where  rlsMatch   = any (tryRule tm (map rootLabel cs)) rls
          mkNode st  = Node st (map (checkProof rls) cs)
+
+hasVars :: Term -> Bool
+hasVars (Var v)     = True
+hasVars (Fun _ [])  = False
+hasVars (Fun _ xs)  = any hasVars xs
 
 tryRule ::  Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
@@ -59,30 +64,6 @@ getNode node         []      =  Just node
 insertNode :: Proof -> [Int] -> [Proof] -> Proof
 insertNode (Node t ys)  (x:xs)  cs = Node t (take (x-1) ys ++ insertNode (ys !! (x-1)) xs cs : drop x ys)
 insertNode (Node t _)   []      cs = Node t cs
-
-{-
-0 voor(bea, ama):-ouder(bea, alex), voor(alex, ama).
-0.1 ouder(bea, alex):-ma(bea, alex).
-0.1.1 ma(bea, alex).
-0.2 voor(alex, ama):-ouder(alex, ama).
-0.2.1 ouder(alex, ama):-pa(alex, ama).
-0.2.1.1 pa(alex, ama).
--}
-
-{- dropUnify :: Int -> Proof -> Term -> Rule -> DropRes-}
-{- dropUnify n prf tm rl =-}
-{-   let  (c :<-: cs) = tag (show n) rl-}
-{-   in   case unify (tm, c) emptyEnv of-}
-{-           Nothing   ->  DropRes False 0 [] prf-}
-{-           Just env  ->  let  subcs  = subst env cs-}
-{-                              newcs  = zipWith (\nm cm -> tag ('.' : show nm) cm) ([1..] :: [Int]) subcs-}
-{-                              vs xs  = S.toList . S.unions $ map vars xs-}
-{-                              zippd  = foldr (\(x, y) e -> M.insert x (Var y) e) env (zip (vs subcs) (vs newcs))-}
-{-                         in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)-}
-
-vars :: Term -> Set String
-vars (Fun _ ts)  = S.unions $ map vars ts
-vars (Var v)     = S.singleton v
 
 cnst :: LowerCase -> Term
 cnst s = Fun s []
