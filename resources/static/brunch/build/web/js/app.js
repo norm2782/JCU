@@ -11176,7 +11176,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.set({
         treeRoot: new ProofTreeNode({
           treeLvl: 0,
-          treeLbl: "0"
+          treeLbl: "0",
+          disabled: false
         })
       });
     };
@@ -11267,7 +11268,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
             term: data.urhss[i - 1],
             treeLvl: this.get('treeLvl') + 1,
             treeLbl: this.get('treeLbl') + "." + i,
-            validSyntax: true
+            validSyntax: true,
+            disabled: true
           }));
         }
       }
@@ -11399,7 +11401,11 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
     (function() {
       _print(_safe('<div class="tree_item dropzone">\n  <input type="text" id="proof_'));
       _print(this.content.treeLbl);
-      _print(_safe('" class="droppable" value="'));
+      _print(_safe('"\n  '));
+      if (this.content.disabled) {
+        _print(_safe('disabled="disabled"'));
+      }
+      _print(_safe(' class="droppable"\n  value="'));
       _print(this.content.term);
       _print(_safe('" />\n</div>\n'));
     }).call(this);

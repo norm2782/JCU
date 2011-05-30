@@ -35,7 +35,8 @@ class exports.ProofTreeNode extends Backbone.Model
         newChildren.push(new ProofTreeNode({ term: data.urhss[i - 1]
                                            , treeLvl: @get('treeLvl') + 1
                                            , treeLbl: @get('treeLbl') + "." + i
-                                           , validSyntax: true }))
+                                           , validSyntax: true
+                                           , disabled: true }))
     @childTerms().refresh(newChildren)
 
   setValidSyntax: (flag) =>

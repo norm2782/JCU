@@ -5,7 +5,7 @@ class exports.ProofTree extends Backbone.Model
   # treeRoot :: RuleTreeNode
 
   initialize: =>
-    @set({treeRoot: new ProofTreeNode({treeLvl: 0, treeLbl: "0"})})
+    @set({treeRoot: new ProofTreeNode({treeLvl: 0, treeLbl: "0", disabled: false})})
 
   reset: =>
     @treeRoot().setTerm ""
