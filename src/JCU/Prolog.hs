@@ -1,15 +1,14 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module JCU.Prolog where
 
-import            Data.List (nub)
-import            Data.Maybe (isJust, listToMaybe, mapMaybe)
-import qualified  Data.Map as M (empty, unions, null, insert)
+import            Data.Maybe (isJust)
+import qualified  Data.Map as M (insert)
 import            Data.Set (Set)
 import qualified  Data.Set as S (unions, singleton, toList)
 import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
-import Debug.Trace (trace)
+
 -- | Check if the proof provided by the client is correct, incomplete or
 -- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned
 -- an indiviual status. The status is determined by examining a node's child
@@ -28,6 +27,7 @@ checkProof  rls (Node tm cs)
   where  rlsMatch            = any (tryRule  tm (map rootLabel cs)) rls
          cs'                 = map (checkProof rls) cs
 
+hasVars :: Term -> Bool
 hasVars (Var _)     = True
 hasVars (Fun _ [])  = False
 hasVars (Fun _ xs)  = any hasVars xs
@@ -35,8 +35,8 @@ hasVars (Fun _ xs)  = any hasVars xs
 tryRule ::  Term -> [Term] -> Rule ->Bool
 tryRule tm cs (lhs :<-: rhs) =
   case matches (lhs, tm) emptyEnv of
-    Nothing  ->  False
-    Just e   ->   length cs == length rhs && isJust (foldr matches (Just e) (zip rhs cs))
+    Nothing  -> False
+    env      -> length cs == length rhs && isJust (foldr matches env (zip rhs cs))
 
 
 instance Subst Proof where
@@ -51,7 +51,7 @@ dropUnify n prf tm rl =
   in   case unify (tm, c) emptyEnv of
           Nothing   ->  DropRes False 0 [] prf
           Just env  ->  let  subcs  = subst env cs
-                             newcs  = zipWith (\n c -> tag ("." ++ show n) c) [1..] subcs
+                             newcs  = zipWith (\nm cm -> tag ('.' : show nm) cm) ([1..] :: [Int]) subcs
                              vs xs  = S.toList . S.unions $ map vars xs
                              zippd  = foldr (\(x, y) e -> M.insert x (Var y) e) env (zip (vs subcs) (vs newcs))
                         in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)

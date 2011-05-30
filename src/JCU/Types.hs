@@ -14,7 +14,6 @@ import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth (AuthUser)
 import            Text.ParserCombinators.UU.BasicInstances (Parser())
-import Debug.Trace
 
 data User     =  User  {  authUser     :: AuthUser
                        ,  storedRules  :: [ByteString] }

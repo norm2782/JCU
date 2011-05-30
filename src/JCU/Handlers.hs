@@ -19,7 +19,7 @@ import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
-import Debug.Trace
+
 -- TODO: Add a consistent naming scheme and rename all functions here
 --
 --
