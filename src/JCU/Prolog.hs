@@ -4,7 +4,7 @@ module JCU.Prolog where
 import            Data.Maybe (isJust)
 import qualified  Data.Map as M (insert)
 import            Data.Set (Set)
-import qualified  Data.Set as S (unions, singleton, toList)
+import qualified  Data.Set as S (unions, singleton, toList, null)
 import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
@@ -17,8 +17,8 @@ import            Language.Prolog.NanoProlog.NanoProlog
 -- reached a fact yet, it is Incomplete. If the child term is a non-unifyable
 -- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
-checkProof  rls (Node tm cs)
-  | rlsMatch   =  if hasVars tm
+checkProof rls (Node tm cs)
+  | rlsMatch   =  if (not . S.null) (vars tm)
                     then  mkNode Incomplete
                     else  mkNode Correct
   | otherwise  =  if null cs
@@ -27,17 +27,11 @@ checkProof  rls (Node tm cs)
   where  rlsMatch   = any (tryRule tm (map rootLabel cs)) rls
          mkNode st  = Node st (map (checkProof rls) cs)
 
-hasVars :: Term -> Bool
-hasVars (Var _)     = True
-hasVars (Fun _ [])  = False
-hasVars (Fun _ xs)  = any hasVars xs
-
 tryRule ::  Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
   case matches (lhs, tm) emptyEnv of
     Nothing  -> False
     env      -> length cs == length rhs && isJust (foldr matches env (zip rhs cs))
-
 
 instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (map (subst env) cs)
@@ -57,8 +51,8 @@ dropUnify n prf tm rl =
                         in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)
 
 vars :: Term -> Set String
-vars (Fun _ ts) = S.unions $ map vars ts
-vars (Var v)    = S.singleton v
+vars (Fun _ ts)  = S.unions $ map vars ts
+vars (Var v)     = S.singleton v
 
 cnst :: LowerCase -> Term
 cnst s = Fun s []
