@@ -11359,7 +11359,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <div id="subst">Substitute <input type="text" style="width: 50px" /> for <input type="text" style="width: 50px" /> <input type="button" value="Substitute" /> (e.g. substitute bea for X0)</div>\n      <input type="button" id="btnCheck" value="Check Proof" />\n      <input type="button" id="btnReset" value="Reset Tree" />\n      <h3>Note</h3>\n      <p class="lhsText">Due to limitations in the current version of the\n      software, you might see variables with the same name in different text\n      fields in the  tree. However, these are not necessarily the same\n      variable! Double-check to see which rules you can apply and which\n      variables those rules have.</p>\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p class="lhsText">\n      Example data containing the Dutch royal family, the list structure and\n      lookup, and the natural numbers (as discussed in the JCU lecture notes)\n      can be loaded by <a href="/load-example">clicking this link</a>. Beware\n      that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <p>Drag a rule form the list below to a field containing a term in the\n      tree on the left.</p>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
+      _print(_safe('<div class="yui3-g">\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <div id="subst">Substitute\n        <input type="text" id="txtSubstSub" style="width: 50px" /> for\n        <input type="text" id="txtSubstFor" style="width: 50px" />\n        <input type="button" id="btnSubst" value="Substitute" />\n        (e.g. substitute bea for X0)\n      </div>\n      <input type="button" id="btnCheck" value="Check Proof" />\n      <input type="button" id="btnReset" value="Reset Tree" />\n      <h3>Note</h3>\n      <p class="lhsText">Due to limitations in the current version of the\n      software, you might see variables with the same name in different text\n      fields in the  tree. However, these are not necessarily the same\n      variable! Double-check to see which rules you can apply and which\n      variables those rules have.</p>\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect proof</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct proof</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p class="lhsText">\n      Example data containing the Dutch royal family, the list structure and\n      lookup, and the natural numbers (as discussed in the JCU lecture notes)\n      can be loaded by <a href="/load-example">clicking this link</a>. Beware\n      that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <p>Drag a rule form the list below to a field containing a term in the\n      tree on the left.</p>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n'));
     }).call(this);
     
     return __out.join('');
@@ -11482,6 +11482,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
   exports.HomeView = (function() {
     __extends(HomeView, Backbone.View);
     function HomeView() {
+      this.subst = __bind(this.subst, this);
       this.checkProof = __bind(this.checkProof, this);
       this.addStoreRule = __bind(this.addStoreRule, this);
       this.resetTree = __bind(this.resetTree, this);
@@ -11498,7 +11499,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       'click #btnAddRule': 'addStoreRule',
       'click #btnReset': 'resetTree',
       'keypress #txtAddRule': 'addEnterRule',
-      "blur #txtAddRule": "checkRuleSyntax"
+      "blur #txtAddRule": "checkRuleSyntax",
+      "click #btnSubst": 'subst'
     };
     HomeView.prototype.initialize = function() {
       return this.validSyntax = false;
@@ -11584,6 +11586,22 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       } else {
         return alert("Cannot check proof. You have one or more invalid rules in your tree.");
       }
+    };
+    HomeView.prototype.subst = function() {
+      var callback, sfor, ssub;
+      ssub = $('#txtSubstSub').val();
+      sfor = $('#txtSubstFor').val();
+      callback = function(data) {
+        return app.models.tree.setUnified(data);
+      };
+      return $.ajax({
+        url: '/subst/' + ssub + '/' + sfor,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(app.models.tree.treeRoot()),
+        success: callback
+      });
     };
     return HomeView;
   })();

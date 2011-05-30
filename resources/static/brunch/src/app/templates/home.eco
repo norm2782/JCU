@@ -3,7 +3,12 @@
     <div class="content">
       <h2>Proof Tree</h2>
       <div id="proof-tree-div"><!-- TREE GOES HERE --></div>
-      <div id="subst">Substitute <input type="text" style="width: 50px" /> for <input type="text" style="width: 50px" /> <input type="button" value="Substitute" /> (e.g. substitute bea for X0)</div>
+      <div id="subst">Substitute
+        <input type="text" id="txtSubstSub" style="width: 50px" /> for
+        <input type="text" id="txtSubstFor" style="width: 50px" />
+        <input type="button" id="btnSubst" value="Substitute" />
+        (e.g. substitute bea for X0)
+      </div>
       <input type="button" id="btnCheck" value="Check Proof" />
       <input type="button" id="btnReset" value="Reset Tree" />
       <h3>Note</h3>

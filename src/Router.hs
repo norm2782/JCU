@@ -33,6 +33,7 @@ router =  route  [  ("/",           siteIndex)
                  ,  ("/proof/check",   method POST  checkProofH)
                  ,  ("/rules/unify",   method POST  unifyH)
                  ,  ("/load-example",  method GET loadExampleH)
-                 ,  ("/check-syntax/:type", method POST checkSyntaxH)
+                 ,  ("/check-syntax/:type",  method POST checkSyntaxH)
+                 ,  ("/subst/:sub/:for",     method POST substH)
                  ]
           <|> serveDirectory "resources/static"

@@ -10,6 +10,7 @@ class exports.HomeView extends Backbone.View
     'click #btnReset'       : 'resetTree'
     'keypress #txtAddRule'  : 'addEnterRule'
     "blur #txtAddRule"      : "checkRuleSyntax"
+    "click #btnSubst"       : 'subst'
 
   initialize: =>
     @validSyntax = false
@@ -87,3 +88,19 @@ class exports.HomeView extends Backbone.View
         success:  callback
     else
       alert "Cannot check proof. You have one or more invalid rules in your tree."
+
+  subst: =>
+    ssub = $('#txtSubstSub').val()
+    sfor = $('#txtSubstFor').val()
+
+    callback = (data) ->
+      app.models.tree.setUnified data
+
+    $.ajax
+      url:  '/subst/' + ssub + '/' + sfor
+      type: 'POST'
+      contentType: 'application/json'
+      dataType: 'json'
+      data:     JSON.stringify app.models.tree.treeRoot()
+      success:  callback
+

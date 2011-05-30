@@ -7,7 +7,7 @@ import            Data.Aeson (encode)
 import            Data.ByteString as B (ByteString, length)
 import            Data.ByteString.Char8 as B (unpack, pack)
 import            Data.List as DL (delete)
-import            Data.Map (Map, member, (!))
+import            Data.Map (Map, member, (!), fromList)
 import            Data.Maybe (fromJust, fromMaybe)
 import            JCU.Prolog
 import            JCU.Types
@@ -203,3 +203,14 @@ checkSyntaxH = restrict forbiddenH $ do
   body   <- getRequestBody
   let ret = parseCheck ptype body
   writeLBS $ encode ret
+
+substH :: Application ()
+substH = restrict forbiddenH $ do
+  body  <- getRequestBody
+  sub   <- getParam "sub"
+  for   <- getParam "for"
+  case mkProof body of
+    Left   err    ->  error500H err
+    Right  proof  ->  let  unjust  = B.unpack . fromJust
+                           stree   = subst (fromList [(unjust for, Var $ unjust sub)]) proof
+                      in   writeLBS $ encode stree
