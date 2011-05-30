@@ -19,9 +19,9 @@
       variables those rules have.</p>
       <h3>Color coding help</h3>
       <ul id="color-coding-list">
-        <li><div class="box redField"></div> Incorrect proof</li>
+        <li><div class="box redField"></div> Incorrect rule application</li>
         <li><div class="box yellowField"></div> Incomplete proof</li>
-        <li><div class="box greenField"></div> Correct proof</li>
+        <li><div class="box greenField"></div> Correct rule</li>
         <li><div class="box blueField"></div> Syntax error</li>
       </ul>
       <h3>Example data</h3>

@@ -1,13 +1,14 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module JCU.Prolog where
 
-import            Data.Maybe (isJust)
+import            Data.Maybe (isJust, isNothing)
 import qualified  Data.Map as M (insert)
 import            Data.Set (Set)
 import qualified  Data.Set as S (unions, singleton, toList, null)
 import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
+import Debug.Trace
 
 -- | Check if the proof provided by the client is correct, incomplete or
 -- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned
@@ -34,21 +35,51 @@ tryRule tm cs (lhs :<-: rhs) =
     env      -> length cs == length rhs && isJust (foldr matches env (zip rhs cs))
 
 instance Subst Proof where
-  subst env (Node tm cs) = Node (subst env tm) (map (subst env) cs)
+  subst env (Node tm cs) = Node (subst env tm) (subst env cs)
 
-instance Taggable Proof where
-  tag n (Node tm cs) = Node (tag n tm) (map (tag (n ++ "1")) cs)
 
-dropUnify :: Int -> Proof -> Term -> Rule -> DropRes
-dropUnify n prf tm rl =
-  let  (c :<-: cs) = tag (show n) rl
-  in   case unify (tm, c) emptyEnv of
-          Nothing   ->  DropRes False 0 [] prf
-          Just env  ->  let  subcs  = subst env cs
-                             newcs  = zipWith (\nm cm -> tag ('.' : show nm) cm) ([1..] :: [Int]) subcs
-                             vs xs  = S.toList . S.unions $ map vars xs
-                             zippd  = foldr (\(x, y) e -> M.insert x (Var y) e) env (zip (vs subcs) (vs newcs))
-                        in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)
+-- TODO: Still need to tag stuff!
+dropUnify :: Proof -> [Int] -> Rule -> DropRes
+dropUnify prf []          _                               = DropRes False prf
+dropUnify prf tns@(_:ns)  (t :<-: ts)  |  isNothing tmnd  = DropRes False prf
+                                       |  otherwise       = drprs
+  where  tmnd   =  getNode prf ns
+         drprs  =  let  (Just (Node tm cs)) = tmnd
+                        ncs         = map (flip Node []) ts
+                        mkPrf' env  = subst env (insertNode prf ns ncs)
+                   in   case unify (tm, t) emptyEnv of -- TODO Do we need to tag first?
+                          Nothing   -> DropRes False  prf
+                          Just env  -> DropRes True   (mkPrf' env)
+
+getNode :: Proof -> [Int] -> Maybe Proof
+getNode (Node _ [])  (_:_)   =  Nothing
+getNode (Node _ ys)  (x:xs)  |  length ys >= x  = getNode (ys !! (x-1)) xs
+                             |  otherwise       = Nothing
+getNode node         []      =  Just node
+
+insertNode :: Proof -> [Int] -> [Proof] -> Proof
+insertNode (Node t ys)  (x:xs)  cs = Node t (take (x-1) ys ++ insertNode (ys !! (x-1)) xs cs : drop x ys)
+insertNode (Node t _)   []      cs = Node t cs
+
+{-
+0 voor(bea, ama):-ouder(bea, alex), voor(alex, ama).
+0.1 ouder(bea, alex):-ma(bea, alex).
+0.1.1 ma(bea, alex).
+0.2 voor(alex, ama):-ouder(alex, ama).
+0.2.1 ouder(alex, ama):-pa(alex, ama).
+0.2.1.1 pa(alex, ama).
+-}
+
+{- dropUnify :: Int -> Proof -> Term -> Rule -> DropRes-}
+{- dropUnify n prf tm rl =-}
+{-   let  (c :<-: cs) = tag (show n) rl-}
+{-   in   case unify (tm, c) emptyEnv of-}
+{-           Nothing   ->  DropRes False 0 [] prf-}
+{-           Just env  ->  let  subcs  = subst env cs-}
+{-                              newcs  = zipWith (\nm cm -> tag ('.' : show nm) cm) ([1..] :: [Int]) subcs-}
+{-                              vs xs  = S.toList . S.unions $ map vars xs-}
+{-                              zippd  = foldr (\(x, y) e -> M.insert x (Var y) e) env (zip (vs subcs) (vs newcs))-}
+{-                         in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)-}
 
 vars :: Term -> Set String
 vars (Fun _ ts)  = S.unions $ map vars ts

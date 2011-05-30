@@ -187,8 +187,8 @@ unifyH = restrict forbiddenH $ do
   setTimeout 10
   body <- getRequestBody
   case mkDropReq body of
-    Left   err                      -> error500H err
-    Right  (DropReq tm rl prf lvl)  -> writeLBS $ encode (dropUnify lvl prf tm rl)
+    Left   err                   -> error500H err
+    Right  (DropReq prf lvl rl)  -> writeLBS $ encode (dropUnify prf lvl rl)
 
 error500H :: String -> Application a
 error500H msg = do

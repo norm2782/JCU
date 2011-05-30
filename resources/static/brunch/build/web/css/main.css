@@ -21,10 +21,7 @@ ol,ul,dl,li{margin:0}
 #home-view{border-width:1px}
 #ft{border-width:0 1px 1px 1px}
 #hd,#home-view,#ft{border-color:#000;border-style:solid;padding:5px}
-ul.tree,ul.tree ul{list-style-type:none;background:url("/img/vline.png") repeat-y;margin:0;padding:0}
-ul.tree ul{margin-left:10px}
-ul.tree li{margin:0;padding:0 5px;line-height:20px;background:url("/img/node.png") no-repeat;color:#369;font-weight:bold}
-ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
+ul.tree,ul.tree ul{list-style-type:none;margin:0;padding:0}
 #rules-list-view{margin:0;padding:0}
 #logout{float:right;vertical-align:middle}
 .redField{background-color:#ff7fbe}
@@ -46,3 +43,5 @@ ul.tree li:last-child{background:#fff url("/img/lastnode.png") no-repeat}
 .buttons button img,.buttons a img{margin:0 !important;padding:0;border:none;width:15px;height:15px}
 #proof-tree-div{margin-bottom:5px}
 .lhsText{width:375px;text-align:justify}
+#proof_0{border:1px solid #000}
+input[disabled="disabled"]{border:1px solid #666;color:#111}

@@ -19,10 +19,10 @@ data User     =  User  {  authUser     :: AuthUser
                        ,  storedRules  :: [ByteString] }
               deriving Show
 
-data DropReq  =  DropReq Term Rule Proof Int
+data DropReq  =  DropReq Proof [Int] Rule
               deriving Show
 
-data DropRes  =  DropRes Bool Int [Term] Proof
+data DropRes  =  DropRes Bool Proof
               deriving Show
 
 data Status   =  Correct
@@ -35,23 +35,20 @@ type PCheck   =  Tree Status
 type Cid      =  String
 
 instance FromJSON DropReq where
-  parseJSON (Object o)  = mkJSONDropReq  <$>  o .: "term"
-                                         <*>  o .: "rule"
-                                         <*>  o .: "proof"
+  parseJSON (Object o)  = mkJSONDropReq  <$>  o .: "proof"
                                          <*>  o .: "treeLvl"
+                                         <*>  o .: "rule"
+
   parseJSON val         = fail $ "No case for (FromJSON DropReq) with value: " ++ show val
 
-mkJSONDropReq :: String -> String -> Value -> Int -> DropReq
-mkJSONDropReq tm rl prf lvl = DropReq (mkJSONTerm tm) (mkJSONRule rl) mkProofTree lvl
+mkJSONDropReq :: Value -> [Int] -> String -> DropReq
+mkJSONDropReq prf lvl rl = DropReq mkProofTree lvl (mkJSONRule rl)
   where mkProofTree = case fromJSON prf :: AE.Result Proof of
                         (Success a)  -> a
                         (Error err)  -> error ("Error parsing drop request: " ++ err)
 
 instance ToJSON DropRes where
-  toJSON (DropRes ufd cs uts prf) = object  [  "unified"   .= ufd
-                                            ,  "children"  .= cs
-                                            ,  "urhss"     .= map show uts
-                                            ,  "nproof"    .= prf ]
+  toJSON (DropRes ufd prf) = object ["unified" .= ufd, "nproof" .= prf]
 
 instance ToJSON PCheck where
   toJSON (Node st cs) = object  [  "proofCheckResult"    .= show st

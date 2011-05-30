@@ -1,5 +1,5 @@
 <div class="tree_item dropzone">
-  <input type="text" id="proof_<%= @content.treeLbl %>"
+  <%= @content.treeLbl %>. <input type="text" id="proof_<%= @content.treeLbl %>"
   <% if @content.disabled: %>disabled="disabled"<% end %> class="droppable"
   value="<%= @content.term %>" />
 </div>

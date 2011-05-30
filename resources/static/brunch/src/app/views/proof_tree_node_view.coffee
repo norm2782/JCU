@@ -96,10 +96,9 @@ class exports.ProofTreeNodeView extends Backbone.View
         alert "Failed to unify!"
       else
         app.models.tree.setUnified data.nproof
-        view.model.setChildren data
+        console.log data.nproof
 
-    reqData = { term:  term
-              , rule:  rule
+    reqData = { rule:  rule
               , proof: app.models.tree.treeRoot()
               , treeLvl: treeLvl
               }
