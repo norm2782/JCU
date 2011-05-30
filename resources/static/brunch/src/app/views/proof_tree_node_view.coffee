@@ -12,6 +12,7 @@ class exports.ProofTreeNodeView extends Backbone.View
     $("input[id='proof_" + @model.get('treeLbl') + "']")
 
   initialize: =>
+    # TODO Don't render on refresh. Render once after drop
     @childTerms().bind "refresh", @render
     @model.bind "proof", @changeProofResult
 
@@ -96,7 +97,6 @@ class exports.ProofTreeNodeView extends Backbone.View
         alert "Failed to unify!"
       else
         app.models.tree.setUnified data.nproof
-        console.log data.nproof
 
     reqData = { rule:  rule
               , proof: app.models.tree.treeRoot()

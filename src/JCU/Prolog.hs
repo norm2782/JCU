@@ -1,14 +1,13 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module JCU.Prolog where
 
+import            Data.List (intersperse)
 import            Data.Maybe (isJust, isNothing)
-import qualified  Data.Map as M (insert)
 import            Data.Set (Set)
-import qualified  Data.Set as S (unions, singleton, toList, null)
+import qualified  Data.Set as S (unions, singleton, null)
 import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
-import Debug.Trace
 
 -- | Check if the proof provided by the client is correct, incomplete or
 -- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned
@@ -38,16 +37,16 @@ instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (subst env cs)
 
 
--- TODO: Still need to tag stuff!
 dropUnify :: Proof -> [Int] -> Rule -> DropRes
 dropUnify prf []          _                               = DropRes False prf
 dropUnify prf tns@(_:ns)  (t :<-: ts)  |  isNothing tmnd  = DropRes False prf
                                        |  otherwise       = drprs
   where  tmnd   =  getNode prf ns
-         drprs  =  let  (Just (Node tm cs)) = tmnd
-                        ncs         = map (flip Node []) ts
+         drprs  =  let  (Just (Node tm _)) = tmnd
+                        ntg         = intersperse '.' $ concatMap show tns
+                        ncs         = map (flip Node []) (tag ntg ts)
                         mkPrf' env  = subst env (insertNode prf ns ncs)
-                   in   case unify (tm, t) emptyEnv of -- TODO Do we need to tag first?
+                   in   case unify (tm, tag ntg t) emptyEnv of
                           Nothing   -> DropRes False  prf
                           Just env  -> DropRes True   (mkPrf' env)
 

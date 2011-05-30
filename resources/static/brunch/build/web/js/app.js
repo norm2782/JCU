@@ -11732,8 +11732,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
-          app.models.tree.setUnified(data.nproof);
-          return console.log(data.nproof);
+          return app.models.tree.setUnified(data.nproof);
         }
       };
       reqData = {
