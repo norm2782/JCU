@@ -19,20 +19,20 @@ import            Language.Prolog.NanoProlog.NanoProlog
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof  rls (Node tm cs)
   | rlsMatch   =  if hasVars tm
-                    then  Node Incomplete cs'
-                    else  Node Correct cs'
+                    then  mkNode Incomplete
+                    else  mkNode Correct
   | otherwise  =  if null cs
-                    then  Node Incomplete []
-                    else  Node Invalid cs'
-  where  rlsMatch            = any (tryRule  tm (map rootLabel cs)) rls
-         cs'                 = map (checkProof rls) cs
+                    then  mkNode Incomplete
+                    else  mkNode Invalid
+  where  rlsMatch   = any (tryRule tm (map rootLabel cs)) rls
+         mkNode st  = Node st (map (checkProof rls) cs)
 
 hasVars :: Term -> Bool
 hasVars (Var _)     = True
 hasVars (Fun _ [])  = False
 hasVars (Fun _ xs)  = any hasVars xs
 
-tryRule ::  Term -> [Term] -> Rule ->Bool
+tryRule ::  Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
   case matches (lhs, tm) emptyEnv of
     Nothing  -> False
