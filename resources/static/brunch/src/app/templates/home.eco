@@ -11,12 +11,14 @@
       </div>
       <input type="button" id="btnCheck" value="Check Proof" />
       <input type="button" id="btnReset" value="Reset Tree" />
+      <!--
       <h3>Note</h3>
       <p class="lhsText">Due to limitations in the current version of the
       software, you might see variables with the same name in different text
       fields in the  tree. However, these are not necessarily the same
       variable! Double-check to see which rules you can apply and which
       variables those rules have.</p>
+      -->
       <h3>Color coding help</h3>
       <ul id="color-coding-list">
         <li><div class="box redField"></div> Incorrect rule application</li>
