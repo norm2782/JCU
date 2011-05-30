@@ -1,9 +1,12 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module JCU.Prolog where
 
-import            Data.Tree (Tree(..))
+import            Data.List (nub)
 import            Data.Maybe (isJust, listToMaybe, mapMaybe)
-import            Data.Map (empty)
+import qualified  Data.Map as M (empty, unions, null, insert)
+import            Data.Set (Set)
+import qualified  Data.Set as S (unions, singleton, toList)
+import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
 import Debug.Trace (trace)
@@ -16,14 +19,14 @@ import Debug.Trace (trace)
 -- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
 checkProof rls (Node tm cs)
-  | rlsMatch   =  let cs' = map (checkProof rls) cs
-                  in  if hasVars tm
-                        then Node Incomplete cs'
-                        else Node Correct cs'
+  | rlsMatch   =  if hasVars tm
+                    then  Node Incomplete cs'
+                    else  Node Correct cs'
   | otherwise  =  if null cs
                     then  Node Incomplete []
-                    else  Node Invalid (map (checkProof rls) cs)
-  where  rlsMatch            = any (isJust . tryRule empty tm (map rootLabel cs)) rls
+                    else  Node Invalid cs'
+  where  rlsMatch            = any (isJust . tryRule M.empty tm (map rootLabel cs)) rls
+         cs'                 = map (checkProof rls) cs
          hasVars (Var _)     = True
          hasVars (Fun _ [])  = False
          hasVars (Fun _ xs)  = any hasVars xs
@@ -32,7 +35,7 @@ tryRule :: Env -> Term -> [Term] -> Rule -> Maybe Env
 tryRule env tm cs (lhs :<-: rhs) =
   case unify (tm, lhs) (Just env) of
     Nothing  ->  Nothing
-    Just s   ->  locateAll empty (subst s rhs) cs
+    Just e   ->  locateAll M.empty (subst e rhs) cs
 
 locateAll :: Env -> [Term] -> [Term] -> Maybe Env
 locateAll env  []      _   =  Just env
@@ -55,66 +58,19 @@ instance Taggable Proof where
   tag n (Node tm cs) = Node (tag n tm) (map (tag (n ++ "1")) cs)
 
 dropUnify :: Int -> Proof -> Term -> Rule -> DropRes
-dropUnify n prf tm (c :<-: cs) =
-     case unify (tm, c) emptyEnv of
-         Nothing   -> DropRes False 0 [] prf
-         Just env  -> -- trace ("tc: " ++ show tc ++ " tcs: " ++ (show $ subst env tcs) ++ " env: " ++ show env ) $
-                      DropRes True (length cs) (subst env cs) prf -- <- FIXME: This is wrong! We can't assume that the one substitution for the rule and term applies to the entire tree. The variable names clash
+dropUnify n prf tm rl =
+  let  (c :<-: cs) = tag (show n) rl
+  in   case unify (tm, c) emptyEnv of
+          Nothing   ->  DropRes False 0 [] prf
+          Just env  ->  let  subcs  = subst env cs
+                             newcs  = zipWith (\n c -> tag ("." ++ show n) c) [1..] subcs
+                             vs xs  = S.toList . S.unions $ map vars xs
+                             zippd  = foldr (\(x, y) e -> M.insert x (Var y) e) env (zip (vs subcs) (vs newcs))
+                        in   DropRes True (length cs) (subst zippd newcs) (subst zippd prf)
 
--- get a tagged tcs. unify and zip with tcs.
-
-
-{-
-n: 0
-fromList [("X00",bea),("Y00",ama)]
-n: 1
-fromList [("X01",bea),("Z0",Y01)]
-n: 1
-fromList [("Y01",ama),("Y1",X01)]
-n: 2
-fromList [("X1",X02),("Y02",ama)]
--}
-
--- TODO:
--- This is wrong. It should return an entirely new tree. Other variables in the
--- tree may be affected by the resulting env.
--- Also, on the client side we don't have to add fake child nodes. It will all
--- be unified anyway.
--- So, try to unify with env obtained from checking tree, then apply a subst
--- with the env resulting from _that_ over the entire tree again.
-{- getRhss :: Proof -> [Rule] -> Term -> Rule -> DropRes-}
-{- getRhss prf rls tm (c :<-: cs) =-}
-{-   let  prfRes    = checkProof' empty rls prf-}
-{-        falseRes  = DropRes False 0 []-}
-{-   in   case prfRes of-}
-{-          Nothing  ->  falseRes-}
-{-          justenv  ->  case unify (tm, c) justenv of-}
-{-                          Nothing    -> falseRes-}
-{-                          Just env'  -> DropRes True (length cs) (subst env' cs)-}
-
-{- checkProof' :: Env -> [Rule] -> Proof -> Maybe Env-}
-{- checkProof' env rls (Node tm cs) =-}
-{-   let  envs = mapMaybe (tryRule env tm (map rootLabel cs)) rls-}
-{-   in   case envs of-}
-{-          []        -> Nothing-}
-{-          (env':_)  -> listToMaybe (mapMaybe (checkProof' env' rls) cs)-}
-
-
-{-
-Approach for drag and drop unification:
-
-Client-side:
-- Clone tree using _.clone
-- If non-fact, split rule up and add rhs as childnode(s), sans dot
-- Send tree, together with rule and term server-side
-
-Server-side:
-- Execute checkUnify on cloned tree
-- Checkunify does the same as checkProof, but substs the new term with the
-  env first. It then proceeds with checkProof functionality. An invalid tree
-  means unification failed. Anything else means sucess.
-
--}
+vars :: Term -> Set String
+vars (Fun _ ts) = S.unions $ map vars ts
+vars (Var v)    = S.singleton v
 
 cnst :: LowerCase -> Term
 cnst s = Fun s []
