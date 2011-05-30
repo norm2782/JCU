@@ -3,8 +3,6 @@ module JCU.Prolog where
 
 import            Data.List (intersperse)
 import            Data.Maybe (isJust, isNothing)
-import            Data.Set (Set)
-import qualified  Data.Set as S (unions, singleton, null)
 import            Data.Tree (Tree(..))
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
