@@ -18,38 +18,26 @@ import Debug.Trace (trace)
 -- reached a fact yet, it is Incomplete. If the child term is a non-unifyable
 -- term, it is Incorrect.
 checkProof :: [Rule] -> Proof -> PCheck
-checkProof rls (Node tm cs)
+checkProof  rls (Node tm cs)
   | rlsMatch   =  if hasVars tm
                     then  Node Incomplete cs'
                     else  Node Correct cs'
   | otherwise  =  if null cs
                     then  Node Incomplete []
                     else  Node Invalid cs'
-  where  rlsMatch            = any (isJust . tryRule M.empty tm (map rootLabel cs)) rls
+  where  rlsMatch            = any (tryRule  tm (map rootLabel cs)) rls
          cs'                 = map (checkProof rls) cs
-         hasVars (Var _)     = True
-         hasVars (Fun _ [])  = False
-         hasVars (Fun _ xs)  = any hasVars xs
 
-tryRule :: Env -> Term -> [Term] -> Rule -> Maybe Env
-tryRule env tm cs (lhs :<-: rhs) =
-  case unify (tm, lhs) (Just env) of
-    Nothing  ->  Nothing
-    Just e   ->  locateAll M.empty (subst e rhs) cs
+hasVars (Var _)     = True
+hasVars (Fun _ [])  = False
+hasVars (Fun _ xs)  = any hasVars xs
 
-locateAll :: Env -> [Term] -> [Term] -> Maybe Env
-locateAll env  []      _   =  Just env
-locateAll _    (_:_)   []  =  Nothing
-locateAll _    (t:ts)  cs  =  listToMaybe located
-  where located =  [ env'  |  (c, css)   <- split cs
-                           ,  Just env   <- [unify (t, c) emptyEnv]
-                           ,  Just env'  <- [locateAll env (subst env ts) css]
-                   ]
+tryRule ::  Term -> [Term] -> Rule ->Bool
+tryRule tm cs (lhs :<-: rhs) =
+  case matches (lhs, tm) emptyEnv of
+    Nothing  ->  False
+    Just e   ->   length cs == length rhs && isJust (foldr matches (Just e) (zip rhs cs))
 
-split :: [a] -> [(a, [a])]
-split xs = split' xs id
-  where  split' (y:ys)  f  = (y, f ys) : split' ys (f.(y:))
-         split' []      _  = []
 
 instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (map (subst env) cs)

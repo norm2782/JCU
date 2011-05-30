@@ -179,7 +179,7 @@ checkProofH = restrict forbiddenH $ do
   case mkProof body of
     Left   err    -> error500H err
     Right  proof  -> do  rules  <- getRules
-                         let prf = checkProof rules proof
+                         let prf = checkProof rules  proof
                          writeLBS $ encode prf
 
 unifyH :: Application ()
