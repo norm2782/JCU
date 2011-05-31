@@ -4,4 +4,5 @@
   and password entry, and confirmation email.
 * Create some sort of storage mechanism abstraction layer.
 * Proper error handling for parsing etc.
+* Replace manual tree navigation by zippers (rosezipper?)
 * ... more?

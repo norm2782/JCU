@@ -5,7 +5,7 @@
 .tree_item,.tree_item span,.tree_item input,.tree_item button{vertical-align:middle}
 .tree_item{padding:2px}
 .dropzone,.ui-droppable{height:20px}
-#proof-tree-view input[type=text]{width:250px}
+#proof-tree-view input[type=text]{width:300px}
 ol,ul,dl,li{margin:0}
 #proof-tree-view .ui-droppable{padding:5px}
 .dropHover{background-color:#d3d3d3}
@@ -14,7 +14,7 @@ ol,ul,dl,li{margin:0}
 .uured{color:#921525}
 #header{font-size:29px;vertical-align:middle}
 #header img{vertical-align:middle}
-#txtAddRule{width:275px}
+#txtAddRule{width:300px}
 #divListAdd{margin-bottom:20px}
 #uulogo,#faccompsci{vertical-align:middle}
 #hd{border-width:1px 1px 0 1px}
