@@ -11585,7 +11585,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       ssub = $('#txtSubstSub').val();
       sfor = $('#txtSubstFor').val();
       callback = function(data) {
-        return app.models.tree.setUnified(data);
+        app.models.tree.setUnified(data);
+        return $('#proof-tree-div').append(app.views.proofTree.render());
       };
       return $.ajax({
         url: '/subst/' + ssub + '/' + sfor,
@@ -11632,7 +11633,6 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return $("input[id='proof_" + this.model.get('treeLbl') + "']");
     };
     ProofTreeNodeView.prototype.initialize = function() {
-      this.childTerms().bind("refresh", this.render);
       return this.model.bind("proof", this.changeProofResult);
     };
     ProofTreeNodeView.prototype.setBgColor = function(fld, cls) {
@@ -11732,7 +11732,8 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
         if (!data.unified) {
           return alert("Failed to unify!");
         } else {
-          return app.models.tree.setUnified(data.nproof);
+          app.models.tree.setUnified(data.nproof);
+          return $('#proof-tree-div').append(app.views.proofTree.render());
         }
       };
       reqData = {

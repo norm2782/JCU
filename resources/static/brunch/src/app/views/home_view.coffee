@@ -33,8 +33,6 @@ class exports.HomeView extends Backbone.View
 
     view = @
     callback = (data) ->
-       # TODO: Error message
-      # console.log data
       # data[0] : Boolean indicating whether we have a successful parse or not
       # data[1] : List of error strings indicating what went wroning during parsing
       if data[0]
@@ -95,6 +93,7 @@ class exports.HomeView extends Backbone.View
 
     callback = (data) ->
       app.models.tree.setUnified data
+      $('#proof-tree-div').append app.views.proofTree.render()
 
     $.ajax
       url:  '/subst/' + ssub + '/' + sfor
