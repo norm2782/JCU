@@ -15,24 +15,24 @@ import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth (AuthUser)
 import            Text.ParserCombinators.UU.BasicInstances (Parser())
 
-data User     =  User  {  authUser     :: AuthUser
-                       ,  storedRules  :: [ByteString] }
-              deriving Show
+data User      =  User  {  authUser     :: AuthUser
+                        ,  storedRules  :: [ByteString] }
+               deriving Show
 
-data DropReq  =  DropReq Proof [Int] Rule
-              deriving Show
+data DropReq   =  DropReq Proof [Int] Rule
+               deriving Show
 
-data DropRes  =  DropRes Bool Proof
-              deriving Show
+data DropRes   =  DropRes Bool Proof
+               deriving Show
 
-data Status   =  Correct
-              |  Incomplete
-              |  Invalid
-              deriving Show
+data Status    =  Correct
+               |  Incomplete
+               |  Invalid
+               deriving Show
 
-type Proof    =  Tree Term
-type PCheck   =  Tree Status
-type Cid      =  String
+type Proof     =  Tree Term
+type PCheck    =  Tree Status
+type ErrorMsg  =  String
 
 instance FromJSON DropReq where
   parseJSON (Object o)  = mkJSONDropReq  <$>  o .: "proof"
@@ -83,16 +83,16 @@ mkJSONProofTree tm rts = Node (mkJSONTerm tm) mkProofTrees
 mkJSONTerm :: String -> Term
 mkJSONTerm = fst . startParse pTerm
 
-mkRule :: L.ByteString -> Either String Rule
+mkRule :: L.ByteString -> Either ErrorMsg Rule
 mkRule = processJSON fromJSON
 
-mkDropReq :: L.ByteString -> Either String DropReq
+mkDropReq :: L.ByteString -> Either ErrorMsg DropReq
 mkDropReq = processJSON fromJSON
 
-mkProof :: L.ByteString -> Either String Proof
+mkProof :: L.ByteString -> Either ErrorMsg Proof
 mkProof = processJSON fromJSON
 
-processJSON :: (Value -> AE.Result a) -> L.ByteString -> Either String a
+processJSON :: (Value -> AE.Result a) -> L.ByteString -> Either ErrorMsg a
 processJSON f raw =
   case AT.parse json raw of
     (AT.Done _ r)  ->
@@ -102,15 +102,15 @@ processJSON f raw =
     (AT.Fail _ _ err) -> Left $ "Error parsing raw JSON: " ++ err
 
 -- TODO: Try to get rid of the explicit annotations...
-parseCheck :: Maybe ByteString -> L.ByteString -> (Bool, [String])
-parseCheck Nothing   _     = checkErr ["Unknown error." :: String]
+parseCheck :: Maybe ByteString -> L.ByteString -> (Bool, [ErrorMsg])
+parseCheck Nothing   _     = checkErr ["Unknown error." :: ErrorMsg]
 parseCheck (Just x)  body
   | x == "rule"  = parseMsg pRule body
   | x == "term"  = parseMsg pTerm body
-  | otherwise    = checkErr ["Invalid type specified" :: String]
-  where  parseMsg :: Parser t -> L.ByteString -> (Bool, [String])
+  | otherwise    = checkErr ["Invalid type specified" :: ErrorMsg]
+  where  parseMsg :: Parser t -> L.ByteString -> (Bool, [ErrorMsg])
          parseMsg p txt = writeRes $ startParse p (L.unpack txt)
-         writeRes :: Show a => (t, [a]) -> (Bool, [String])
+         writeRes :: Show a => (t, [a]) -> (Bool, [ErrorMsg])
          writeRes (_, [])  = (True, [""])
          writeRes (_, rs)  = checkErr rs
 
