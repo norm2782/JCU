@@ -22,4 +22,5 @@ class exports.RulesListView extends Backbone.View
     app.views.rulesList.render()
     @$('.draggable').draggable({ revert: true
                                , revertDuration: 100
+                               , scrollSensitivity: 50
                                , start: -> $(':focus').blur()})

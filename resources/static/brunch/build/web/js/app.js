@@ -11867,6 +11867,7 @@ d.data(g[0],"droppable");e.greedyChild=c=="isover"?1:0}}if(e&&c=="isover"){e.iso
       return this.$('.draggable').draggable({
         revert: true,
         revertDuration: 100,
+        scrollSensitivity: 50,
         start: function() {
           return $(':focus').blur();
         }

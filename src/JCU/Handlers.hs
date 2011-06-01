@@ -53,6 +53,8 @@ siteIndex = ifTop $ restrict loginRedir $ render "index"
 
 loginH :: Application ()
 loginH = loginHandler "password" (Just "remember") failedLogin redirHome
+  where  failedLogin :: MonadHeist n m => AuthFailure -> m ()
+         failedLogin _ = render "login"
 
 logoutH :: Application ()
 logoutH = logoutHandler redirHome
@@ -65,9 +67,6 @@ newSessionH = redirIfLogin (render "login")
 redirIfLogin :: Application () -> Application ()
 redirIfLogin = flip restrict redirHome
 
-failedLogin :: MonadHeist n m => AuthFailure -> m ()
-failedLogin _ = render "login"
-
 newSignupH :: Application ()
 newSignupH = redirIfLogin (render "signup")
 
@@ -75,7 +74,7 @@ redirHome :: Application ()
 redirHome = redirect "/"
 
 additionalUserFields :: User -> Document
-additionalUserFields usr = [ "storedRules"  =: storedRules usr ]
+additionalUserFields usr = [ "storedRules" =: storedRules usr ]
 
 type FormValidator = [(ByteString, ByteString -> Bool)]
 
@@ -92,7 +91,7 @@ valForm params (fld, val)  | fld `member` params  = val $ head (params ! fld)
 -- TODO: Look at digestive-functors for form validation
 signupH :: Application ()
 signupH = do
-  parms  <- getParams
+  parms <- getParams
   let validated = and [ valForm parms p | p <- formValidator]
   if validated
     then  do  email  <- getParam "email"
@@ -178,7 +177,7 @@ checkProofH = restrict forbiddenH $ do
   body <- getRequestBody
   case mkProof body of
     Left   err    -> error500H err
-    Right  proof  -> do  rules  <- getRules
+    Right  proof  -> do  rules <- getRules
                          let prf = checkProof rules  proof
                          writeLBS $ encode prf
 
