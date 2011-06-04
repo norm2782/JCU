@@ -13,7 +13,7 @@
   <body id="doc">
     <div id="hd">
       <span id="header">
-        <img src="/img/jculogo-64.png" /> Module Functional Programming
+        <img src="/img/jculogo-64.png" alt="jculogo" /> Module Functional Programming
       </span>
       <span id="logout"><loginLogout /></span>
     </div>
@@ -23,7 +23,7 @@
     </div>
 
     <div id="ft">
-        <img src="/img/uulogo.png" id="uulogo" />
+        <img src="/img/uulogo.png" id="uulogo" alt="uulogo" />
         <span id="faccompsci">
           <span class="uured">[</span>Faculty of Science<br />
           <span class="uured">Information and Computing Sciences]</span>
