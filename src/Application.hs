@@ -67,7 +67,7 @@ instance HasHeistState Application ApplicationState where
 -- to worry about.
 applicationInitializer :: Initializer ApplicationState
 applicationInitializer = do
-    heist   <- heistInitializer "resources/templates"
+    heist   <- heistInitializer "resources/templates" id
     registerSplices heist [("loginLogout", loginLogoutSplice)]
     cs      <- cookieSessionStateInitializer $ defCookieSessionState {
                     csTimeout     = Just $ 60 * 60 * 8 -- Set cookie timeout to 8 hours

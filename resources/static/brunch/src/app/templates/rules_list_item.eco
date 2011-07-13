@@ -1,4 +1,4 @@
-<div id="rule_<%= @content.rule.replace /[^a-zA-Z0-9]+/g, "" %>" class="draggable rule-list-item">
+<div id="rule_<%= @content.rule.replace /[^a-zA-Z0-9]+/g, "" %>" class="draggable rule-list-item ui-widget-content">
   <span class="rule-text"><%= @content.rule %></span>
   <span class="buttons"><button class="btnDeleteList" type="button" value="X" /></span
 </div>

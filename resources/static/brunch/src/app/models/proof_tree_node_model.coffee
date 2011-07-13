@@ -45,7 +45,7 @@ class exports.ProofTreeNode extends Backbone.Model
     @childTerms().each f
 
   reset: =>
-     @childTerms().refresh new Array()
+     @childTerms().reset new Array()
 
   setUnified: (tr) =>
     @setTerm(tr.term)
@@ -64,4 +64,4 @@ class exports.ProofTreeNode extends Backbone.Model
 
         nd.setUnified tr.childTerms[i-1]
         newChildren.push(nd)
-    @childTerms().refresh(newChildren)
+    @childTerms().reset(newChildren)

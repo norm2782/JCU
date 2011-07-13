@@ -7,7 +7,7 @@ class exports.RulesListView extends Backbone.View
 
   initialize: =>
     app.collections.rulesList.bind 'add', @addOne
-    app.collections.rulesList.bind 'refresh', @addAll
+    app.collections.rulesList.bind 'reset', @addAll
     app.collections.rulesList.bind 'all', @renderList
     app.collections.rulesList.fetch()
 
@@ -23,4 +23,5 @@ class exports.RulesListView extends Backbone.View
     @$('.draggable').draggable({ revert: true
                                , revertDuration: 100
                                , scrollSensitivity: 50
+                               , scroll: true
                                , start: -> $(':focus').blur()})

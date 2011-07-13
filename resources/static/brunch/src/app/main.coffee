@@ -35,6 +35,7 @@ $(document).ready ->
     app.views.rulesList = new RulesListView()
     app.views.proofTree = new ProofTreeView({model: app.models.tree})
 
-    Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
+    # Backbone.history.saveLocation("home") if Backbone.history.getFragment() is ''
+    Backbone.history.navigate("home", true) if Backbone.history.getFragment() is ''
   app.initialize()
   Backbone.history.start()
