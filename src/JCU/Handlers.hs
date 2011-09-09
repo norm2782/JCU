@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module JCU.Handlers where
 
@@ -10,12 +10,12 @@ import            Data.List as DL (delete)
 import            Data.Map (Map, member, (!), fromList)
 import            Data.Maybe (fromJust, fromMaybe)
 import            JCU.Prolog
+import            JCU.Templates
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
 import            Snap.Auth
 import            Snap.Auth.Handlers
 import            Snap.Extension.DB.MongoDB as MDB (u, save, merge, (=:), lookup, Document, MonadMongoDB, withDB')
-import            Snap.Extension.Heist (render, MonadHeist)
 import            Snap.Extension.Session.CookieSession (setSessionUserId, touchSession)
 import            Snap.Types
 import            Text.Email.Validate as E (isValid)
@@ -49,12 +49,11 @@ forbiddenH = do
 -- Otherwise, the way the route table is currently set up, this action
 -- would be given every request.
 siteIndex :: Application ()
-siteIndex = ifTop $ restrict loginRedir $ render "index"
+siteIndex = ifTop $ restrict loginRedir $ (blaze $ template True index)
 
 loginH :: Application ()
 loginH = loginHandler "password" (Just "remember") failedLogin redirHome
-  where  failedLogin :: MonadHeist n m => AuthFailure -> m ()
-         failedLogin _ = render "login"
+  where failedLogin _ = blaze $ template False login
 
 logoutH :: Application ()
 logoutH = logoutHandler redirHome
@@ -62,13 +61,13 @@ logoutH = logoutHandler redirHome
 ------------------------------------------------------------------------------
 -- | Renders the login page
 newSessionH :: Application ()
-newSessionH = redirIfLogin (render "login")
+newSessionH = redirIfLogin (blaze $ template False login)
 
 redirIfLogin :: Application () -> Application ()
 redirIfLogin = flip restrict redirHome
 
 newSignupH :: Application ()
-newSignupH = redirIfLogin (render "signup")
+newSignupH = redirIfLogin (blaze $ template False signup)
 
 redirHome :: Application ()
 redirHome = redirect "/"
