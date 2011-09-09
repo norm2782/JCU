@@ -33,8 +33,9 @@ hasVars (Fun _ xs)  = any hasVars xs
 tryRule ::  Term -> [Term] -> Rule -> Bool
 tryRule tm cs (lhs :<-: rhs) =
   case matches (lhs, tm) emptyEnv of
-    Nothing  -> False
-    env      -> length cs == length rhs && isJust (foldr matches env (zip rhs cs))
+    Nothing  ->  False
+    env      ->  length cs == length rhs &&
+                 isJust (foldr matches env (zip rhs cs))
 
 instance Subst Proof where
   subst env (Node tm cs) = Node (subst env tm) (subst env cs)

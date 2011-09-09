@@ -66,5 +66,5 @@ main = do
     try $ quickHttpServe snap :: IO (Either SomeException ())
     cleanup
 #else
-main = quickHttpServe applicationInitializer site
+main = quickHttpServe applicationInitializer router
 #endif
