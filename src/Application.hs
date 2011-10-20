@@ -13,11 +13,7 @@ import            Control.Monad
 import            Control.Monad.Reader
 import            Control.Monad.State
 import            Data.Aeson as AE
-import            Data.Aeson.Parser as AE
-import qualified  Data.Attoparsec.Lazy as AP
-import qualified  Data.ByteString.Lazy.Char8 as LBS
 import qualified  Data.ByteString.Char8 as BS
-import            Data.Char
 import            Data.Lens.Template
 import qualified  Data.List as DL
 import            Data.Map (Map)
@@ -26,7 +22,6 @@ import            Data.Maybe
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
-import            Data.Tree (Tree(..))
 import            Database.HDBC.Sqlite3
 import            JCU.Prolog
 import            JCU.Templates
@@ -41,15 +36,11 @@ import            Snap.Snaplet.Session
 import            Snap.Snaplet.Session.Backends.CookieSession
 import            Snap.Util.FileServe
 import            Text.Blaze
-import qualified  Text.Blaze.Html5 as H
-import qualified  Text.Blaze.Html5.Attributes as A
-import            Text.Blaze.Internal (HtmlM(..))
 import            Text.Blaze.Renderer.Utf8 (renderHtml)
 import            Text.Digestive
 import            Text.Digestive.Blaze.Html5
 import            Text.Digestive.Forms.Snap
 import qualified  Text.Email.Validate as E
-import            Text.ParserCombinators.UU.BasicInstances (Parser())
 
 
 data App = App
@@ -196,7 +187,7 @@ deleteStoredRuleH = restrict forbiddenH $ do
 
 addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
-  rqrl  <- getRequestBody
+  rqrl  <- readRequestBody 4096
   rls   <- getRawRules
   case mkRule rqrl of
     Left   err   -> error500H err
@@ -233,9 +224,9 @@ getRuleList = restrict forbiddenH $ do
            Just x  ->  case userId x of
                          Nothing -> redirect "/"
                          Just y  -> return y
-  rawRules <- getStoredRules uid
+  rules <- getStoredRules uid
   -- TODO: Error handling
-  return $ map (fst . startParse pRule . BS.unpack) rawRules
+  return $ map (fst . startParse pRule . BS.unpack . ruleStr) rules
 
 getRawRules :: AppHandler [BS.ByteString]
 getRawRules = restrict forbiddenH $ do
@@ -245,7 +236,8 @@ getRawRules = restrict forbiddenH $ do
            Just x  ->  case userId x of
                          Nothing -> redirect "/"
                          Just y  -> return y
-  getStoredRules uid
+  rules <- getStoredRules uid
+  return $ map ruleStr rules
 
 
 -- | Check the proof from the client. Since the checking could potentially
@@ -253,7 +245,7 @@ getRawRules = restrict forbiddenH $ do
 checkProofH :: AppHandler ()
 checkProofH = restrict forbiddenH $ do
   setTimeout 15
-  body <- getRequestBody
+  body <- readRequestBody 4096
   case mkProof body of
     Left   err    -> error500H err
     Right  proof  -> do  rules <- getRuleList
@@ -263,7 +255,7 @@ checkProofH = restrict forbiddenH $ do
 unifyH :: AppHandler ()
 unifyH = restrict forbiddenH $ do
   setTimeout 10
-  body <- getRequestBody
+  body <- readRequestBody 4096
   case mkDropReq body of
     Left   err                   -> error500H err
     Right  (DropReq prf lvl rl)  -> writeLBS $ encode (dropUnify prf lvl rl)
@@ -278,13 +270,13 @@ error500H msg = do
 checkSyntaxH :: AppHandler ()
 checkSyntaxH = restrict forbiddenH $ do
   ptype  <- getParam "type"
-  body   <- getRequestBody
+  body   <- readRequestBody 4096
   let ret = parseCheck ptype body
   writeLBS $ encode ret
 
 substH :: AppHandler ()
 substH = restrict forbiddenH $ do
-  body  <- getRequestBody
+  body  <- readRequestBody 4096
   sub   <- getParam "sub"
   for   <- getParam "for"
   case mkProof body of
@@ -298,9 +290,13 @@ substH = restrict forbiddenH $ do
 blaze :: Reader AuthState Html -> AppHandler ()
 blaze htmlRdr = do
   modifyResponse $ addHeader "Content-Type" "text/html; charset=UTF-8"
-  li <- with authLens isLoggedIn
-  email <- with authLens $ undefined -- TODO: Get user email address
-  let html = runReader htmlRdr (AuthState li email)
+  li   <- with authLens isLoggedIn
+  eml  <- with authLens $ do
+    cu <- currentUser
+    return $ case cu of
+      Nothing -> ""
+      Just u  -> userLogin u
+  let html = runReader htmlRdr (AuthState li eml)
   writeLBS $ renderHtml html
 
 -------------------------------------------------------------------------------
@@ -372,9 +368,14 @@ deleteRule :: HasHdbc m c => Int -> m ()
 deleteRule rid = voidM $
   query' "DELETE FROM rules WHERE rid = ?" [toSql rid]
 
-getStoredRules :: HasHdbc m c => UserId -> m [BS.ByteString]
+getStoredRules :: HasHdbc m c => UserId -> m [DBRule]
 getStoredRules uid = do
-  rs <- query "SELECT * FROM rules WHERE uid = ?" [toSql uid]
-  return $ mkRules rs
-  where mkRules = undefined
-
+  rs <- query  "SELECT (rid, rule_order, rule)* FROM rules WHERE uid = ?"
+               [toSql uid]
+  return $ map convRow rs
+  where  convRow :: Map String SqlValue -> DBRule
+         convRow mp =
+           let  rdSql k = fromSql $ mp DM.! k
+           in   DBRule  (rdSql "rid")
+                        (rdSql "rule_order")
+                        (rdSql "rule")

@@ -15,8 +15,11 @@ import            Language.Prolog.NanoProlog.NanoProlog
 import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, LineColPos)
 
 
-
-type Rules = [BS.ByteString]
+data DBRule = DBRule {
+     ruleId     :: Int
+  ,  ruleOrder  :: Int
+  ,  ruleStr    :: BS.ByteString
+}
 
 data DropReq   =  DropReq Proof [Int] Rule
                deriving Show
