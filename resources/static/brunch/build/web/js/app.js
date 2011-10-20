@@ -11814,21 +11814,12 @@ b.dequeue()})})}})(jQuery);
   exports.RulesList = (function() {
     __extends(RulesList, Backbone.Collection);
     function RulesList() {
-      this.parse = __bind(this.parse, this);
       this.url = __bind(this.url, this);
       RulesList.__super__.constructor.apply(this, arguments);
     }
     RulesList.prototype.model = Rule;
     RulesList.prototype.url = function() {
       return '/rules/stored';
-    };
-    RulesList.prototype.parse = function(resp) {
-      return _.map(resp, function(x) {
-        return {
-          id: x,
-          rule: x
-        };
-      });
     };
     return RulesList;
   })();

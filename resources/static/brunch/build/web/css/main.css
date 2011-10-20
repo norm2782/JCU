@@ -1,4 +1,4 @@
-#doc{margin:auto;width:1024px}
+#doc{margin:auto;width:1024px;}
 #hd{height:64px}
 #ft{height:51px}
 #bd li{list-style-type:none}
@@ -35,11 +35,11 @@ ul.tree,ul.tree ul{list-style-type:none;margin:0;padding:0}
 #rules-list-view li{height:35px}
 .rule-list-item span,.rule-list-item input{vertical-align:middle}
 #rules-list-div{margin-bottom:10px}
-.buttons a,.buttons button{margin:0;background-color:#f5f5f5;border:1px solid #dedede;border-top:1px solid #eee;border-left:1px solid #eee;font-family:"Lucida Grande",Tahoma,Arial,Verdana,sans-serif;font-size:100%;line-height:130%;text-decoration:none;font-weight:bold;color:#565656;padding:5px}
+.buttons a,.buttons button{margin:0;background-color:#f5f5f5;border:1px solid #dedede;border-top:1px solid #eee;border-left:1px solid #eee;font-family:"Lucida Grande",Tahoma,Arial,Verdana,sans-serif;font-size:100%;line-height:130%;text-decoration:none;font-weight:bold;color:#565656;padding:5px;}
 .buttons button:active{border:1px solid #eee;border-top:1px solid #dedede;border-left:1px solid #dedede}
 .buttons button{width:auto;padding:5px;background-image:url("/img/cross.png");background-repeat:no-repeat;width:20px;height:20px;background-position:center center}
-.buttons button[type]{padding:5px;line-height:10px}
-*:first-child+html button[type]{padding:5px}
+.buttons button[type]{padding:5px;line-height:10px;}
+*:first-child+html button[type]{padding:5px;}
 .buttons button img,.buttons a img{margin:0 !important;padding:0;border:none;width:15px;height:15px}
 #proof-tree-div{margin-bottom:5px}
 .lhsText{width:375px;text-align:justify}
