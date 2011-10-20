@@ -58,7 +58,7 @@ instance HasHdbc AppHandler Connection where
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
-  addRoutes  [  ("/",           siteIndex)
+  addRoutes  [  ("/",           siteIndexH)
              ,  ("/forbidden",  forbiddenH)
              ,  ("/login",   loginH)
              ,  ("/logout",  logoutH)
@@ -82,10 +82,13 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
   return  $ App _authlens' _sesslens' _dblens'
 
 
+------------------------------------------------------------------------------
+-- | Handlers
+
 restrict :: AppHandler b -> AppHandler b -> AppHandler b
 restrict failH succH = do
   with sessLens touchSession
-  authed <- with authLens $ isLoggedIn
+  authed <- with authLens isLoggedIn
   if authed
     then succH
     else failH
@@ -100,25 +103,14 @@ forbiddenH = do
   r <- getResponse
   finishWith r
 
-------------------------------------------------------------------------------
--- | Renders the front page of the sample site.
---
--- The 'ifTop' is required to limit this to the top of a route.
--- Otherwise, the way the route table is currently set up, this action
--- would be given every request.
-siteIndex :: AppHandler ()
-siteIndex = ifTop $ restrict loginRedir $ (blaze $ template index)
-
--- TODO: Remove
-{- loginH :: AppHandler ()-}
-{- loginH = loginHandler "password" (Just "remember") failedLogin redirHome-}
-  {- where failedLogin _ = blaze $ template False login-}
+siteIndexH :: AppHandler ()
+siteIndexH = ifTop $ restrict loginRedir (blaze $ template index)
 
 loginH :: AppHandler ()
 loginH = withSession sessLens $ do
   loggedIn <- with authLens isLoggedIn
   when loggedIn $ redirect "/"
-  res <- eitherSnapForm registrationForm "registration-form"
+  res <- eitherSnapForm registrationForm "login-form"
   case res of
     Left form' -> do
       didFail <- with sessLens $ do
@@ -136,25 +128,6 @@ loginH = withSession sessLens $ do
                          redirect "/login"
         Right _  ->  redirect "/"
 
-logoutH :: AppHandler ()
-logoutH = do
-  with authLens logout
-  redirect "/"
-
-
-------------------------------------------------------------------------------
--- | Renders the login page
-
-redirIfLogin :: AppHandler () -> AppHandler ()
-redirIfLogin = flip restrict redirHome
-
-redirHome :: AppHandler ()
-redirHome = redirect "/"
-
-{- additionalUserFields :: User -> Document-}
-{- additionalUserFields usr = [ "storedRules" =: storedRules usr ]-}
-
-
 signupH :: AppHandler ()
 signupH = do
   loggedIn <- with authLens isLoggedIn
@@ -167,9 +140,16 @@ signupH = do
       _ <- with authLens $ createUser u (DT.encodeUtf8 p) -- TODO Could throw a DuplicateLogin!
       redirect "/"
 
+logoutH :: AppHandler ()
+logoutH = do
+  with authLens logout
+  redirect "/"
 
-------------------------------------------------------------------------------
--- | Functions for handling reading and saving per-person rules
+redirIfLogin :: AppHandler () -> AppHandler ()
+redirIfLogin = flip restrict redirHome
+
+redirHome :: AppHandler ()
+redirHome = redirect "/"
 
 readStoredRulesH :: AppHandler ()
 readStoredRulesH = restrict forbiddenH $ do
@@ -191,49 +171,36 @@ addStoredRuleH = restrict forbiddenH $ do
   case mkRule rqrl of
     Left   err   -> error500H err
     Right  rule  -> do
-      cau <- with authLens $ currentUser
-      case cau of
-        Nothing ->  redirect "/"
-        Just x  ->  case userId x of
-                      Nothing -> redirect "/"
-                      Just y  -> insertRule y rule
+      uid <- getUserId
+      insertRule uid rule
 
 loadExampleH :: AppHandler ()
 loadExampleH = restrict forbiddenH $ do
-  cau <- with authLens $ currentUser
-  case cau of
-    Nothing ->  redirect "/"
-    Just x  ->  case userId x of
-                  Nothing -> redirect "/"
-                  Just y  -> do
-                    deleteUserRules y
-                    mapM (insertRule y) exampleData
-                    redirHome
+  uid <- getUserId
+  deleteUserRules uid
+  mapM_ (insertRule uid) exampleData
+  redirHome
 
--- TODO: Abstract over the uid thing.. also refactor it; it's ugly
 getRuleList :: AppHandler [Rule]
 getRuleList = restrict forbiddenH $ do
-  cau <- with authLens $ currentUser
-  uid <- case cau of
-           Nothing -> redirect "/"
-           Just x  ->  case userId x of
-                         Nothing -> redirect "/"
-                         Just y  -> return y
-  rules <- getStoredRules uid
+  uid    <- getUserId
+  rules  <- getStoredRules uid
   -- TODO: Error handling
   return $ map (fst . startParse pRule . BS.unpack . ruleStr) rules
 
 getRawRules :: AppHandler [ByteString]
 getRawRules = restrict forbiddenH $ do
-  cau <- with authLens $ currentUser
-  uid <- case cau of
-           Nothing -> redirect "/"
-           Just x  ->  case userId x of
-                         Nothing -> redirect "/"
-                         Just y  -> return y
-  rules <- getStoredRules uid
+  uid    <- getUserId
+  rules  <- getStoredRules uid
   return $ map ruleStr rules
 
+getUserId :: AppHandler UserId
+getUserId = do
+  cau <- with authLens currentUser
+  let uid = cau >>= userId
+  case uid of
+    Nothing  -> redirect "/"
+    Just x   -> return x
 
 -- | Check the proof from the client. Since the checking could potentially
 -- shoot into an inifinite recursion, a timeout is in place.
@@ -242,10 +209,11 @@ checkProofH = restrict forbiddenH $ do
   setTimeout 15
   body <- readRequestBody 4096
   case mkProof body of
-    Left   err    -> error500H err
-    Right  proof  -> do  rules <- getRuleList
-                         let prf = checkProof rules  proof
-                         writeLBS $ encode prf
+    Left   err    ->  error500H err
+    Right  proof  ->  do
+      rules <- getRuleList
+      let prf = checkProof rules  proof
+      writeLBS $ encode prf
 
 unifyH :: AppHandler ()
 unifyH = restrict forbiddenH $ do
@@ -276,11 +244,14 @@ substH = restrict forbiddenH $ do
   for   <- getParam "for"
   case mkProof body of
     Left   err    ->  error500H err
-    Right  proof  ->  let  unjust  = BS.unpack . fromJust
-                           stree   = subst (Env $ DM.fromList [(unjust for, Var $ unjust sub)]) proof
-                      in   writeLBS $ encode stree
+    Right  proof  ->
+      let  unjust  = BS.unpack . fromJust
+           stree   = subst (Env $ DM.fromList [(unjust for, Var $ unjust sub)]) proof
+      in   writeLBS $ encode stree
 
 
+-------------------------------------------------------------------------------
+-- View rendering
 
 blaze :: Reader AuthState Html -> AppHandler ()
 blaze htmlRdr = do
@@ -340,10 +311,6 @@ registrationForm = (\e _ p _ -> FormUser e p False)
   <*>  label  "Password (confirmation): "
        ++>  inputPassword `validate` longPwd
        <++  errors
-
-
--------------------------------------------------------------------------------
--- Authentication and authorization
 
 
 -------------------------------------------------------------------------------

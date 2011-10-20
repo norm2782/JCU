@@ -30,12 +30,12 @@ template :: Reader AuthState Html -> Reader AuthState Html
 template content = do
   h <- header
   d <- doc content
-  return $ H.docTypeHtml $ (h >> d)
+  return $ H.docTypeHtml (h >> d)
 
 doc :: Reader AuthState Html -> Reader AuthState Html
-doc content = do
-  c <- content
-  loggedIn <- asks loggedInST
+doc c = do
+  content   <- c
+  loggedIn  <- asks loggedInST
   return $
     H.body $
       H.div ! A.id "doc" $ do
@@ -43,10 +43,10 @@ doc content = do
           H.span ! A.id "header" $ do
             H.img ! A.src jcuLogo64 ! A.alt "JCU logo"
             H.text "Module Functioneel en Logisch Programmeren"
-          when loggedIn $ do
+          when loggedIn $
             H.span ! A.id "logout" $ H.a ! A.href "/logout" $ H.text "Logout"
-        H.div ! A.id "bd" $ c
-        H.div ! A.id "ft" $ do
+        H.div ! A.id "bd" $ content
+        H.div ! A.id "ft" $
           H.img ! A.src "/img/uulogo.png" ! A.id "uulogo" ! A.alt "UU Logo"
   where
     jcuLogo64  = "img/jculogo-64.png"
