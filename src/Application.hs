@@ -160,7 +160,6 @@ deleteStoredRuleH = restrict forbiddenH $ do
     Nothing  -> return ()
     Just x   -> deleteRule x
 
--- TODO: Abstract over user thing
 addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
   rqrl <- readRequestBody 4096
@@ -229,7 +228,7 @@ substH = restrict forbiddenH $ do
   sub   <- getParam "sub"
   for   <- getParam "for"
   case mkProof body of
-    Left   err    ->  error500H err
+    Left   err    -> error500H err
     Right  proof  ->
       let  unjust  = BS.unpack . fromJust
            stree   = subst (Env $ DM.fromList [(unjust for, Var $ unjust sub)]) proof
@@ -270,6 +269,9 @@ longPwd  =  check "Password needs to be at least six characters long"
 isNonEmpty :: Monad m => Validator m Html Text
 isNonEmpty = check "Field must not be empty" $ not . DT.null
 
+identical :: Validator AppHandler Html (Text, Text)
+identical = check "Field values must be identical" (uncurry (==))
+
 loginForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
 loginForm = (\e p r _ -> FormUser e p r)
   <$>  label  "Email address: "
@@ -305,9 +307,6 @@ registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
               <++         errors)
        <++ errors
   <*>  submit "Register"
-
-identical :: Validator AppHandler Html (Text, Text)
-identical = check "Field values must be identical" (uncurry (==))
 
 -------------------------------------------------------------------------------
 -- Database interaction
