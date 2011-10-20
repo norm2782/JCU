@@ -130,6 +130,7 @@ loginH = withSession sessLens $ do
                          redirect "/login"
         Right _  ->  redirect "/"
 
+-- TODO: Also send an email after registration
 signupH :: AppHandler ()
 signupH = do
   loggedIn <- with authLens isLoggedIn
@@ -298,23 +299,32 @@ loginForm = (\e p r _ -> FormUser e p r)
        ++>  inputCheckBox True
   <*>  submit "Login"
 
--- TODO: Check if the email addresses are the same
--- TODO: Also send an email after registration
 registrationForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
-registrationForm = (\e _ p _ _ -> FormUser e p False)
-  <$>  label  "Email address: "
-       ++>  inputText Nothing `validate` isEmail
-       <++  errors
-  <*>  label  "Email address (confirmation): "
-       ++>  inputText Nothing `validate` isEmail
-       <++  errors
-  <*>  label  "Password: "
-       ++>  inputPassword `validate` longPwd
-       <++  errors
-  <*>  label  "Password (confirmation): "
-       ++>  inputPassword `validate` longPwd
-       <++  errors
+registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
+  <$>  (flip validate identical $ (,)
+         <$>  label "Email address: "
+              ++>         inputText Nothing
+              `validate`  isEmail
+              <++         errors
+         <*>  label "Email address (confirmation): "
+              ++>         inputText Nothing
+              `validate`  isEmail
+              <++         errors)
+       <++ errors
+  <*>  (flip validate identical $ (,)
+         <$>  label "Password: "
+              ++>         inputPassword
+              `validate`  longPwd
+              <++         errors
+         <*>  label "Password (confirmation): "
+              ++>         inputPassword
+              `validate`  longPwd
+              <++         errors)
+       <++ errors
   <*>  submit "Register"
+
+identical :: Validator AppHandler Html (Text, Text)
+identical = check "Field values must be identical" (uncurry (==))
 
 -------------------------------------------------------------------------------
 -- Database interaction
