@@ -110,7 +110,7 @@ loginH :: AppHandler ()
 loginH = withSession sessLens $ do
   loggedIn <- with authLens isLoggedIn
   when loggedIn $ redirect "/"
-  res <- eitherSnapForm registrationForm "login-form"
+  res <- eitherSnapForm loginForm "login-form"
   case res of
     Left form' -> do
       didFail <- with sessLens $ do
@@ -120,7 +120,9 @@ loginH = withSession sessLens $ do
         return failed
       blaze $ template $ loginHTML (isJust didFail) form'
     Right (FormUser e p r) -> do
-      loginRes <- with authLens $ loginByUsername (DT.encodeUtf8 e) (ClearText $ DT.encodeUtf8 p) r
+      loginRes <- with authLens $
+                    loginByUsername  (DT.encodeUtf8 e)
+                                     (ClearText $ DT.encodeUtf8 p) r
       case loginRes of
         Left _   ->  do  with sessLens $ do
                            setInSession "login-failed" "1"
@@ -159,7 +161,7 @@ readStoredRulesH = restrict forbiddenH $ do
 
 deleteStoredRuleH :: AppHandler ()
 deleteStoredRuleH = restrict forbiddenH $ do
-  mrid  <- getParam "id"
+  mrid <- getParam "id"
   case mrid of
     Nothing  -> return ()
     Just x   -> deleteRule x
@@ -209,10 +211,10 @@ checkProofH = restrict forbiddenH $ do
   setTimeout 15
   body <- readRequestBody 4096
   case mkProof body of
-    Left   err    ->  error500H err
-    Right  proof  ->  do
+    Left   err    -> error500H err
+    Right  proof  -> do
       rules <- getRuleList
-      let prf = checkProof rules  proof
+      let prf = checkProof rules proof
       writeLBS $ encode prf
 
 unifyH :: AppHandler ()
