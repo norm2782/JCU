@@ -13,9 +13,9 @@ import            Control.Monad
 import            Control.Monad.Reader
 import            Control.Monad.State
 import            Data.Aeson as AE
+import            Data.ByteString.Char8 (ByteString)
 import qualified  Data.ByteString.Char8 as BS
 import            Data.Lens.Template
-import qualified  Data.List as DL
 import            Data.Map (Map)
 import qualified  Data.Map as DM
 import            Data.Maybe
@@ -179,41 +179,36 @@ readStoredRulesH = restrict forbiddenH $ do
 
 deleteStoredRuleH :: AppHandler ()
 deleteStoredRuleH = restrict forbiddenH $ do
-  rule  <- getParam "id"
-  rls   <- getRawRules
-  case rule of
+  mrid  <- getParam "id"
+  case mrid of
     Nothing  -> return ()
-    Just x   -> putRawRules (DL.delete x rls)
+    Just x   -> deleteRule x
 
+-- TODO: Abstract over user thing
 addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
-  rqrl  <- readRequestBody 4096
-  rls   <- getRawRules
+  rqrl <- readRequestBody 4096
   case mkRule rqrl of
     Left   err   -> error500H err
-    Right  rule  -> putRawRules (rls ++ [BS.pack . show $ rule])
+    Right  rule  -> do
+      cau <- with authLens $ currentUser
+      case cau of
+        Nothing ->  redirect "/"
+        Just x  ->  case userId x of
+                      Nothing -> redirect "/"
+                      Just y  -> insertRule y rule
 
 loadExampleH :: AppHandler ()
 loadExampleH = restrict forbiddenH $ do
-  putRules exampleData
-  redirHome
-
-putRules :: [Rule] -> AppHandler ()
-putRules = putRawRules . map (BS.pack . show)
-
-putRawRules :: [BS.ByteString] -> AppHandler ()
-putRawRules rls = restrict forbiddenH $ do
-  cau  <- with authLens $ currentUser
-  return undefined
-  {- doc  <- rulesToDoc rls (snd . fromJust $ cau)-}
-  {- tbl  <- fmap u authUserTable-}
-  {- withDB' $ save tbl doc-}
-
-
-{- rulesToDoc :: (MonadMongoDB m) => [ByteString] -> Document -> m Document-}
-{- rulesToDoc rls d = do-}
-{-   let tsc = ["storedRules" =: rls]-}
-{-   return $ tsc `MDB.merge` d-}
+  cau <- with authLens $ currentUser
+  case cau of
+    Nothing ->  redirect "/"
+    Just x  ->  case userId x of
+                  Nothing -> redirect "/"
+                  Just y  -> do
+                    deleteUserRules y
+                    mapM (insertRule y) exampleData
+                    redirHome
 
 -- TODO: Abstract over the uid thing.. also refactor it; it's ugly
 getRuleList :: AppHandler [Rule]
@@ -228,7 +223,7 @@ getRuleList = restrict forbiddenH $ do
   -- TODO: Error handling
   return $ map (fst . startParse pRule . BS.unpack . ruleStr) rules
 
-getRawRules :: AppHandler [BS.ByteString]
+getRawRules :: AppHandler [ByteString]
 getRawRules = restrict forbiddenH $ do
   cau <- with authLens $ currentUser
   uid <- case cau of
@@ -260,7 +255,7 @@ unifyH = restrict forbiddenH $ do
     Left   err                   -> error500H err
     Right  (DropReq prf lvl rl)  -> writeLBS $ encode (dropUnify prf lvl rl)
 
-error500H :: BS.ByteString -> AppHandler a
+error500H :: ByteString -> AppHandler a
 error500H msg = do
   modifyResponse $ setResponseStatus 500 "Internal server error"
   writeBS $ BS.append (BS.pack "500 internal server error: ") msg
@@ -364,7 +359,7 @@ insertRule uid rl = voidM $
   query'  "INSERT INTRO rules (uid, rule) VALUES (?, ?)"
           [toSql $ unUid uid, toSql $ show rl]
 
-deleteRule :: HasHdbc m c => Int -> m ()
+deleteRule :: HasHdbc m c => ByteString -> m ()
 deleteRule rid = voidM $
   query' "DELETE FROM rules WHERE rid = ?" [toSql rid]
 
@@ -379,3 +374,8 @@ getStoredRules uid = do
            in   DBRule  (rdSql "rid")
                         (rdSql "rule_order")
                         (rdSql "rule")
+
+deleteUserRules :: HasHdbc m c => UserId -> m ()
+deleteUserRules uid = voidM $
+  query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
+
