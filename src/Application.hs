@@ -147,15 +147,9 @@ logoutH = do
   with authLens logout
   redirect "/"
 
-redirIfLogin :: AppHandler () -> AppHandler ()
-redirIfLogin = flip restrict redirHome
-
-redirHome :: AppHandler ()
-redirHome = redirect "/"
-
 readStoredRulesH :: AppHandler ()
 readStoredRulesH = restrict forbiddenH $ do
-  rules <- getRawRules
+  rules <- getStoredRules =<< getUserId
   modifyResponse $ setContentType "application/json"
   writeLBS $ encode rules
 
@@ -171,30 +165,18 @@ addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
   rqrl <- readRequestBody 4096
   case mkRule rqrl of
-    Left   err   -> error500H err
-    Right  rule  -> do
+    Left   err  -> error500H err
+    Right  rl   -> do
       uid <- getUserId
-      insertRule uid rule
+      insertRule uid rl
 
 loadExampleH :: AppHandler ()
 loadExampleH = restrict forbiddenH $ do
   uid <- getUserId
   deleteUserRules uid
   mapM_ (insertRule uid) exampleData
-  redirHome
+  redirect "/"
 
-getRuleList :: AppHandler [Rule]
-getRuleList = restrict forbiddenH $ do
-  uid    <- getUserId
-  rules  <- getStoredRules uid
-  -- TODO: Error handling
-  return $ map (fst . startParse pRule . BS.unpack . ruleStr) rules
-
-getRawRules :: AppHandler [ByteString]
-getRawRules = restrict forbiddenH $ do
-  uid    <- getUserId
-  rules  <- getStoredRules uid
-  return $ map ruleStr rules
 
 getUserId :: AppHandler UserId
 getUserId = do
@@ -213,8 +195,8 @@ checkProofH = restrict forbiddenH $ do
   case mkProof body of
     Left   err    -> error500H err
     Right  proof  -> do
-      rules <- getRuleList
-      let prf = checkProof rules proof
+      rules <- getStoredRules =<< getUserId
+      let prf = checkProof (map rule rules) proof
       writeLBS $ encode prf
 
 unifyH :: AppHandler ()
@@ -239,6 +221,7 @@ checkSyntaxH = restrict forbiddenH $ do
   let ret = parseCheck ptype body
   writeLBS $ encode ret
 
+-- TODO: Get rid of fromJust
 substH :: AppHandler ()
 substH = restrict forbiddenH $ do
   body  <- readRequestBody 4096
@@ -335,8 +318,8 @@ voidM m = do
 
 insertRule :: HasHdbc m c => UserId -> Rule -> m ()
 insertRule uid rl = voidM $
-  query'  "INSERT INTO rules (uid, rule) VALUES (?, ?)"
-          [toSql $ unUid uid, toSql $ show rl]
+   query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)"
+           [toSql $ unUid uid, toSql $ show rl]
 
 deleteRule :: HasHdbc m c => ByteString -> m ()
 deleteRule rid = voidM $
@@ -352,7 +335,7 @@ getStoredRules uid = do
            let  rdSql k = fromSql $ mp DM.! k
            in   DBRule  (rdSql "rid")
                         (rdSql "rule_order")
-                        (rdSql "rule")
+                        (fst . startParse pRule $ (rdSql "rule" :: String))
 
 deleteUserRules :: HasHdbc m c => UserId -> m ()
 deleteUserRules uid = voidM $

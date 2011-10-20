@@ -18,7 +18,7 @@ import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, Lin
 data DBRule = DBRule {
      ruleId     :: Int
   ,  ruleOrder  :: Int
-  ,  ruleStr    :: BS.ByteString
+  ,  rule       :: Rule
 }
 
 data DropReq   =  DropReq Proof [Int] Rule
@@ -36,6 +36,11 @@ type Proof     =  Tree Term
 type PCheck    =  Tree Status
 type ErrorMsg  =  BS.ByteString
 
+
+instance ToJSON DBRule where
+  toJSON (DBRule rid ro rl) = object  [ "id"    .= rid
+                                      , "ro"    .= ro
+                                      , "rule"  .= show rl]
 
 instance FromJSON DropReq where
   parseJSON (Object o)  = mkJSONDropReq  <$>  o .: "proof"
