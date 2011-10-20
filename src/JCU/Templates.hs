@@ -74,7 +74,7 @@ signupHTML :: FormHtml (HtmlM a) -> Reader AuthState Html
 signupHTML frm = return $
   H.div ! A.id "home-view" $ do
     H.h1 $ H.toHtml ("Please sign up" :: Text)
-    showForm "/signup" frm (H.input ! A.type_ "submit" ! A.value "Signup")
+    showForm "/signup" frm
 
 -- Replaces the login.tpl file
 loginHTML :: Bool -> FormHtml (HtmlM a) -> Reader AuthState Html
@@ -82,15 +82,15 @@ loginHTML loginFailed frm = return $
   H.div ! A.id "home-view" $ do
     H.h1 $ H.toHtml ("Please log in" :: Text)
     when loginFailed $ H.h2 "Incorrect login credentials"
-    showForm "/login" frm (H.input ! A.type_ "submit" ! A.value "Login")
+    showForm "/login" frm
 
-showForm :: AttributeValue -> FormHtml (HtmlM a) -> Html -> Html
-showForm act frm btn =
+showForm :: AttributeValue -> FormHtml (HtmlM a) -> Html
+showForm act frm =
   let  (formHtml', enctype) = renderFormHtml frm
   in   H.form  ! A.enctype (toValue $ show enctype) ! A.method "post"
                ! A.action act $ do
          _ <- formHtml'
-         btn
+         return ()
 
 index :: Reader AuthState Html
 index = return $

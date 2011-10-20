@@ -287,7 +287,7 @@ isNonEmpty :: Monad m => Validator m Html Text
 isNonEmpty = check "Field must not be empty" $ not . DT.null
 
 loginForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
-loginForm = FormUser
+loginForm = (\e p r _ -> FormUser e p r)
   <$>  label  "Email address: "
        ++>  inputText Nothing `validate` isEmail
        <++  errors
@@ -296,11 +296,12 @@ loginForm = FormUser
        <++  errors
   <*>  label  "Remember me?"
        ++>  inputCheckBox True
+  <*>  submit "Login"
 
 -- TODO: Check if the email addresses are the same
 -- TODO: Also send an email after registration
 registrationForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
-registrationForm = (\e _ p _ -> FormUser e p False)
+registrationForm = (\e _ p _ _ -> FormUser e p False)
   <$>  label  "Email address: "
        ++>  inputText Nothing `validate` isEmail
        <++  errors
@@ -313,7 +314,7 @@ registrationForm = (\e _ p _ -> FormUser e p False)
   <*>  label  "Password (confirmation): "
        ++>  inputPassword `validate` longPwd
        <++  errors
-
+  <*>  submit "Register"
 
 -------------------------------------------------------------------------------
 -- Database interaction
