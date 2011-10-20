@@ -88,16 +88,3 @@ Executable jcu
     else
       ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                    -fno-warn-orphans
-
-Library
-  Extensions:
-        TypeSynonymInstances
-      , OverloadedStrings
-      , MultiParamTypeClasses
-      , FunctionalDependencies
-      , DeriveDataTypeable
-      , FlexibleInstances
-
-  Build-Depends:	  base >= 4.0 && < 5.0
-  Hs-Source-Dirs:   src
-  Exposed-modules:  JCU.Prolog

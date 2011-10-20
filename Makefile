@@ -10,7 +10,7 @@ dist:
 	cabal configure
 	cabal sdist
 
-install:
+dev:
 	cabal install -fdevelopment --disable-documentation
 	
 clean:
