@@ -4,3 +4,5 @@ log/*
 deps
 dist
 dump
+resources/jcu.db
+site_key.txt
