@@ -42,7 +42,6 @@ import            Text.Digestive.Blaze.Html5
 import            Text.Digestive.Forms.Snap
 import qualified  Text.Email.Validate as E
 
-
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
@@ -139,8 +138,8 @@ signupH = do
   case res of
     Left form' ->
       blaze $ template (signupHTML form')
-    Right (FormUser u p _) -> do
-      _ <- with authLens $ createUser u (DT.encodeUtf8 p) -- TODO Could throw a DuplicateLogin!
+    Right (FormUser e p _) -> do
+      _ <- with authLens $ createUser e (DT.encodeUtf8 p) -- TODO Could throw a DuplicateLogin!
       redirect "/"
 
 logoutH :: AppHandler ()
@@ -336,7 +335,7 @@ voidM m = do
 
 insertRule :: HasHdbc m c => UserId -> Rule -> m ()
 insertRule uid rl = voidM $
-  query'  "INSERT INTRO rules (uid, rule) VALUES (?, ?)"
+  query'  "INSERT INTO rules (uid, rule) VALUES (?, ?)"
           [toSql $ unUid uid, toSql $ show rl]
 
 deleteRule :: HasHdbc m c => ByteString -> m ()
@@ -345,7 +344,7 @@ deleteRule rid = voidM $
 
 getStoredRules :: HasHdbc m c => UserId -> m [DBRule]
 getStoredRules uid = do
-  rs <- query  "SELECT (rid, rule_order, rule)* FROM rules WHERE uid = ?"
+  rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
                [toSql uid]
   return $ map convRow rs
   where  convRow :: Map String SqlValue -> DBRule
