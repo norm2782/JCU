@@ -15,8 +15,8 @@ machines.
 Installation instructions
 =========================
 
-This software has been tested with Haskell Platform 2011.2.0.1, 64-bit on Mac
-OS X 10.7.2 and GHC 7.2.1.
+This software has been tested with Haskell Platform 2011.2.0.1 on Mac
+OS X 10.7.2 and GHC 7.2.1 (64-bit).
 
 To install the JCU package in development mode, issue a *make* command in the
 project root. To install it in production mode, just issue cabal install in the
