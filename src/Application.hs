@@ -39,6 +39,9 @@ import            Snap.Snaplet.Session
 import            Snap.Snaplet.Session.Backends.CookieSession
 import            Snap.Util.FileServe
 import            Text.Blaze
+import            Text.Blaze.Html5 (Html, AttributeValue, (!))
+import qualified  Text.Blaze.Html5 as H
+import qualified  Text.Blaze.Html5.Attributes as A
 import            Text.Blaze.Renderer.Utf8 (renderHtml)
 import            Text.Digestive
 import            Text.Digestive.Blaze.Html5
@@ -102,8 +105,7 @@ forbiddenH :: AppHandler a
 forbiddenH = do
   modifyResponse $ setResponseStatus 403 "Forbidden"
   writeBS "403 forbidden"
-  r <- getResponse
-  finishWith r
+  finishWith =<< getResponse
 
 siteIndexH :: AppHandler ()
 siteIndexH = ifTop $ restrict loginRedir (blaze $ template index)
@@ -147,7 +149,7 @@ signupH = do
         return failed
       blaze $ template (signupHTML (isJust exists) form')
     Right (FormUser e p _) -> do
-      _ <- (with authLens $ createUser e (DT.encodeUtf8 p)) `catch` hndlExcptn
+      _ <- with authLens (createUser e (DT.encodeUtf8 p)) `catch` hndlExcptn
       redirect "/"
   where  hndlExcptn :: SomeException -> AppHandler AuthUser
          hndlExcptn _ = do
@@ -194,8 +196,7 @@ loadExampleH = restrict forbiddenH $ do
 getUserId :: AppHandler UserId
 getUserId = do
   cau <- with authLens currentUser
-  let uid = cau >>= userId
-  case uid of
+  case cau >>= userId of
     Nothing  -> redirect "/"
     Just x   -> return x
 
@@ -209,8 +210,7 @@ checkProofH = restrict forbiddenH $ do
     Left   err    -> error500H err
     Right  proof  -> do
       rules <- getStoredRules =<< getUserId
-      let prf = checkProof (map rule rules) proof
-      writeLBS $ encode prf
+      writeLBS $ encode (checkProof (map rule rules) proof)
 
 unifyH :: AppHandler ()
 unifyH = restrict forbiddenH $ do
@@ -224,17 +224,14 @@ error500H :: ByteString -> AppHandler a
 error500H msg = do
   modifyResponse $ setResponseStatus 500 "Internal server error"
   writeBS $ BS.append (BS.pack "500 internal server error: ") msg
-  r <- getResponse
-  finishWith r
+  finishWith =<< getResponse
 
 checkSyntaxH :: AppHandler ()
 checkSyntaxH = restrict forbiddenH $ do
   ptype  <- getParam "type"
   body   <- readRequestBody 4096
-  let ret = parseCheck ptype body
-  writeLBS $ encode ret
+  writeLBS $ encode (parseCheck ptype body)
 
--- TODO: Get rid of fromJust
 substH :: AppHandler ()
 substH = restrict forbiddenH $ do
   body  <- readRequestBody 4096
@@ -243,9 +240,12 @@ substH = restrict forbiddenH $ do
   case mkProof body of
     Left   err    -> error500H err
     Right  proof  ->
-      let  unjust  = BS.unpack . fromJust
-           stree   = subst (Env $ DM.fromList [(unjust for, Var $ unjust sub)]) proof
-      in   writeLBS $ encode stree
+      case (sub, for) of
+        (Just sub', Just for')  ->
+          let  env    = Env $ DM.fromList [(BS.unpack for', Var $ BS.unpack sub')]
+               stree  = subst env proof
+          in   writeLBS $ encode stree
+        _                       -> writeLBS $ encode proof
 
 
 -------------------------------------------------------------------------------
@@ -288,38 +288,37 @@ identical = check "Field values must be identical" (uncurry (==))
 loginForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
 loginForm = (\e p r _ -> FormUser e p r)
   <$>  label  "Email address: "
-       ++>  inputText Nothing `validate` isEmail
-       <++  errors
+       ++>    inputText Nothing `validate` isEmail
+       <++    errors
   <*>  label  "Password: "
-       ++>  inputPassword `validate` longPwd
-       <++  errors
+       ++>    inputPassword `validate` longPwd
+       <++    errors
   <*>  label  "Remember me?"
-       ++>  inputCheckBox True
+       ++>    inputCheckBox True
   <*>  submit "Login"
 
 registrationForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
 registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
-  <$>  (flip validate identical $ (,)
-         <$>  label "Email address: "
-              ++>         inputText Nothing
-              `validate`  isEmail
-              <++         errors
-         <*>  label "Email address (confirmation): "
-              ++>         inputText Nothing
-              `validate`  isEmail
-              <++         errors)
-       <++ errors
-  <*>  (flip validate identical $ (,)
-         <$>  label "Password: "
-              ++>         inputPassword
-              `validate`  longPwd
-              <++         errors
-         <*>  label "Password (confirmation): "
-              ++>         inputPassword
-              `validate`  longPwd
-              <++         errors)
-       <++ errors
+  <$>  ((,)
+         <$>  label  "Email address: "
+              ++>    inputText Nothing `validate` isEmail
+              <++    errors
+         <*>  label  "Email address (confirmation): "
+              ++>    inputText Nothing `validate` isEmail
+              <++    errors)
+       `validate`  identical
+       <++         errors
+  <*>  ((,)
+         <$>  label  "Password: "
+              ++>    inputPassword `validate` longPwd
+              <++    errors
+         <*>  label  "Password (confirmation): "
+              ++>    inputPassword `validate` longPwd
+              <++    errors)
+       `validate`  identical
+       <++         errors
   <*>  submit "Register"
+
 
 -------------------------------------------------------------------------------
 -- Database interaction
@@ -336,7 +335,7 @@ insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
    rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
                  sqlVals
    return $ case rws of
-              []     -> (-1)
+              []     -> -1
               (x:_)  -> fromSql $ x DM.! "rid"
 
 deleteRule :: HasHdbc m c => ByteString -> m ()

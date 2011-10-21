@@ -5,7 +5,7 @@ module JCU.Templates where
 import            Control.Monad
 import            Control.Monad.Reader
 import            Data.Text (Text)
-import            Text.Blaze.Html5 hiding (header,footer)
+import            Text.Blaze.Html5 (Html, AttributeValue, (!))
 import qualified  Text.Blaze.Html5 as H
 import qualified  Text.Blaze.Html5.Attributes as A
 import            Text.Blaze.Internal (HtmlM(..))
@@ -88,7 +88,7 @@ loginHTML loginFailed frm = return $
 showForm :: AttributeValue -> FormHtml (HtmlM a) -> Html
 showForm act frm =
   let  (formHtml', enctype) = renderFormHtml frm
-  in   H.form  ! A.enctype (toValue $ show enctype) ! A.method "post"
+  in   H.form  ! A.enctype (H.toValue $ show enctype) ! A.method "post"
                ! A.action act $ do
          _ <- formHtml'
          return ()
