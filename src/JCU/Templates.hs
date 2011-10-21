@@ -70,10 +70,11 @@ header = do
 
 
 -- Replaces the signup.tpl file
-signupHTML :: FormHtml (HtmlM a) -> Reader AuthState Html
-signupHTML frm = return $
+signupHTML :: Bool -> FormHtml (HtmlM a) -> Reader AuthState Html
+signupHTML exists frm = return $
   H.div ! A.id "home-view" $ do
     H.h1 $ H.toHtml ("Please sign up" :: Text)
+    when exists $ H.h2 "Username is already taken"
     showForm "/signup" frm
 
 -- Replaces the login.tpl file

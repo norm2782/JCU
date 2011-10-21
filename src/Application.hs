@@ -9,7 +9,9 @@
 module Application where
 
 import            Control.Applicative
+import            Control.Exception (SomeException)
 import            Control.Monad
+import            Control.Monad.CatchIO hiding (Handler)
 import            Control.Monad.Reader
 import            Control.Monad.State
 import            Data.Aeson as AE
@@ -27,6 +29,7 @@ import            JCU.Prolog
 import            JCU.Templates
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
+import            Prelude hiding (catch)
 import            Snap.Core
 import            Snap.Snaplet
 import            Snap.Snaplet.Auth
@@ -136,11 +139,22 @@ signupH = do
   when loggedIn $ redirect "/"
   res <- eitherSnapForm registrationForm "registration-form"
   case res of
-    Left form' ->
-      blaze $ template (signupHTML form')
+    Left form' -> do
+      exists <- with sessLens $ do
+        failed <- getFromSession "username-exists"
+        deleteFromSession "username-exists"
+        commitSession
+        return failed
+      blaze $ template (signupHTML (isJust exists) form')
     Right (FormUser e p _) -> do
-      _ <- with authLens $ createUser e (DT.encodeUtf8 p) -- TODO Could throw a DuplicateLogin!
+      _ <- (with authLens $ createUser e (DT.encodeUtf8 p)) `catch` hndlExcptn
       redirect "/"
+  where  hndlExcptn :: SomeException -> AppHandler AuthUser
+         hndlExcptn _ = do
+           with sessLens $ do
+             setInSession "username-exists" "1"
+             commitSession
+           redirect "/signup"
 
 logoutH :: AppHandler ()
 logoutH = do
