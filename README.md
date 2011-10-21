@@ -15,28 +15,9 @@ machines.
 Installation instructions
 =========================
 
-This software has been tested with Haskell Platform 2011.2.0.1, 32-bit on Mac
-OS X 10.6.7, using MongoDB 1.8.1. MongoDB was installed using Homebrew.
+This software has been tested with Haskell Platform 2011.2.0.1, 64-bit on Mac
+OS X 10.7.2 and GHC 7.2.1.
 
-Install MongoDB
----------------
-To install MongoDB using Homebrew, issue the following command:
-
-> brew install mongodb
-
-When the installation is finished, follow the instructions on the screen.
-The application assumes that MongoDB listens on localhost:27017.
-
-Install dependencies
---------------------
-The JCU packages relies on the snap-auth and snap-extension-mongodb packages,
-both of which are not yet available on hackage. If you have not installed them
-yet, issue a *make deps* command. The latest version of these packages will be
-fetched from git and be installed. A git client must be installed for this to
-work.
-
-Install the JCU package
------------------------
 To install the JCU package in development mode, issue a *make* command in the
 project root. To install it in production mode, just issue cabal install in the
 project root.
