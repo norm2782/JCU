@@ -39,9 +39,7 @@ import            Snap.Snaplet.Session
 import            Snap.Snaplet.Session.Backends.CookieSession
 import            Snap.Util.FileServe
 import            Text.Blaze
-import            Text.Blaze.Html5 (Html, AttributeValue, (!))
 import qualified  Text.Blaze.Html5 as H
-import qualified  Text.Blaze.Html5.Attributes as A
 import            Text.Blaze.Renderer.Utf8 (renderHtml)
 import            Text.Digestive
 import            Text.Digestive.Blaze.Html5
@@ -242,9 +240,8 @@ substH = restrict forbiddenH $ do
     Right  proof  ->
       case (sub, for) of
         (Just sub', Just for')  ->
-          let  env    = Env $ DM.fromList [(BS.unpack for', Var $ BS.unpack sub')]
-               stree  = subst env proof
-          in   writeLBS $ encode stree
+          let  env = Env $ DM.fromList [(BS.unpack for', Var $ BS.unpack sub')]
+          in   writeLBS $ encode (subst env proof)
         _                       -> writeLBS $ encode proof
 
 
@@ -287,37 +284,47 @@ identical = check "Field values must be identical" (uncurry (==))
 
 loginForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
 loginForm = (\e p r _ -> FormUser e p r)
-  <$>  label  "Email address: "
+  <$>  mapViewHtml H.div (
+       label  "Email address: "
        ++>    inputText Nothing `validate` isEmail
-       <++    errors
-  <*>  label  "Password: "
+       <++    errors)
+  <*>  mapViewHtml H.div (
+       label  "Password: "
        ++>    inputPassword `validate` longPwd
-       <++    errors
-  <*>  label  "Remember me?"
-       ++>    inputCheckBox True
-  <*>  submit "Login"
+       <++    errors)
+  <*>  mapViewHtml H.div (
+       label  "Remember me?"
+       ++>    inputCheckBox True)
+  <*>  mapViewHtml H.div (
+       submit "Login")
 
 registrationForm :: Form AppHandler SnapInput Html BlazeFormHtml FormUser
 registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
   <$>  ((,)
-         <$>  label  "Email address: "
-              ++>    inputText Nothing `validate` isEmail
-              <++    errors
-         <*>  label  "Email address (confirmation): "
+         <$>  mapViewHtml H.div (
+              label  "Email address: "
               ++>    inputText Nothing `validate` isEmail
               <++    errors)
+         <*>  mapViewHtml H.div (
+              label  "Email address (confirmation): "
+              ++>    inputText Nothing `validate` isEmail
+              <++    errors))
        `validate`  identical
        <++         errors
   <*>  ((,)
-         <$>  label  "Password: "
-              ++>    inputPassword `validate` longPwd
-              <++    errors
-         <*>  label  "Password (confirmation): "
+         <$>  mapViewHtml H.div (
+              label  "Password: "
               ++>    inputPassword `validate` longPwd
               <++    errors)
+         <*>  mapViewHtml H.div (
+              label  "Password (confirmation): "
+              ++>    inputPassword `validate` longPwd
+              <++    errors))
        `validate`  identical
        <++         errors
-  <*>  submit "Register"
+  <*>  mapViewHtml H.div (
+       submit "Register")
+
 
 
 -------------------------------------------------------------------------------
