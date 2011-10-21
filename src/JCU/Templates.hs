@@ -39,9 +39,11 @@ doc c = do
           H.span ! A.id "header" $ do
             H.img ! A.src jcuLogo64 ! A.alt "JCU logo"
             H.toHtml ("Module Functioneel en Logisch Programmeren" :: Text)
-          when loggedIn $
-            H.span ! A.id "logout" $ H.a ! A.href "/logout" $
-              H.toHtml ("Logout" :: Text)
+          if loggedIn
+            then  H.span ! A.id "logout" $ H.a ! A.href "/logout" $
+                   H.toHtml ("Logout" :: Text)
+            else  H.span ! A.id "logout" $ H.a ! A.href "/signup" $
+                   H.toHtml ("Create an account" :: Text)
         H.div ! A.id "bd" $ content
         H.div ! A.id "ft" $
           H.img ! A.src "/img/uulogo.png" ! A.id "uulogo" ! A.alt "UU Logo"
