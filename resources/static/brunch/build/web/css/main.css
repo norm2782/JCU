@@ -50,3 +50,5 @@ form div{clear:both;padding-top:5px}
 form div label{float:left;width:175px;text-align:right}
 form div .digestive-input{float:right;width:200px;text-align:left}
 form div .digestive-submit{width:auto}
+.digestive-error-list{float:left}
+.digestive-error{color:#c00}
