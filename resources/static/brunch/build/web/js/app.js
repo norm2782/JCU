@@ -9781,7 +9781,7 @@ var i={};i[g]=(f=="show"?b=="pos"?"+=":"-=":b=="pos"?"-=":"+=")+e;a.animate(i,{q
 (function(e){e.effects.transfer=function(a){return this.queue(function(){var b=e(this),c=e(a.options.to),d=c.offset();c={top:d.top,left:d.left,height:c.innerHeight(),width:c.innerWidth()};d=b.offset();var f=e('<div class="ui-effects-transfer"></div>').appendTo(document.body).addClass(a.options.className).css({top:d.top,left:d.left,height:b.innerHeight(),width:b.innerWidth(),position:"absolute"}).animate(c,a.duration,a.options.easing,function(){f.remove();a.callback&&a.callback.apply(b[0],arguments);
 b.dequeue()})})}})(jQuery);
 ;
-//     Underscore.js 1.1.6
+//     Underscore.js 1.1.7
 //     (c) 2011 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore is freely distributable under the MIT license.
 //     Portions of Underscore are inspired or borrowed from Prototype,
@@ -9843,19 +9843,19 @@ b.dequeue()})})}})(jQuery);
   }
 
   // Current version.
-  _.VERSION = '1.1.6';
+  _.VERSION = '1.1.7';
 
   // Collection Functions
   // --------------------
 
   // The cornerstone, an `each` implementation, aka `forEach`.
-  // Handles objects implementing `forEach`, arrays, and raw objects.
+  // Handles objects with the built-in `forEach`, arrays, and raw objects.
   // Delegates to **ECMAScript 5**'s native `forEach` if available.
   var each = _.each = _.forEach = function(obj, iterator, context) {
     if (obj == null) return;
     if (nativeForEach && obj.forEach === nativeForEach) {
       obj.forEach(iterator, context);
-    } else if (_.isNumber(obj.length)) {
+    } else if (obj.length === +obj.length) {
       for (var i = 0, l = obj.length; i < l; i++) {
         if (i in obj && iterator.call(context, obj[i], i, obj) === breaker) return;
       }
@@ -9890,7 +9890,7 @@ b.dequeue()})})}})(jQuery);
       return initial ? obj.reduce(iterator, memo) : obj.reduce(iterator);
     }
     each(obj, function(value, index, list) {
-      if (!initial && index === 0) {
+      if (!initial) {
         memo = value;
         initial = true;
       } else {
@@ -9965,14 +9965,14 @@ b.dequeue()})})}})(jQuery);
   // Delegates to **ECMAScript 5**'s native `some` if available.
   // Aliased as `any`.
   var any = _.some = _.any = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
+    iterator = iterator || _.identity;
     var result = false;
     if (obj == null) return result;
     if (nativeSome && obj.some === nativeSome) return obj.some(iterator, context);
     each(obj, function(value, index, list) {
-      if (result = iterator.call(context, value, index, list)) return breaker;
+      if (result |= iterator.call(context, value, index, list)) return breaker;
     });
-    return result;
+    return !!result;
   };
 
   // Determine if a given value is included in the array or object using `===`.
@@ -10061,7 +10061,7 @@ b.dequeue()})})}})(jQuery);
   _.toArray = function(iterable) {
     if (!iterable)                return [];
     if (iterable.toArray)         return iterable.toArray();
-    if (_.isArray(iterable))      return iterable;
+    if (_.isArray(iterable))      return slice.call(iterable);
     if (_.isArguments(iterable))  return slice.call(iterable);
     return _.values(iterable);
   };
@@ -10110,8 +10110,7 @@ b.dequeue()})})}})(jQuery);
 
   // Return a version of the array that does not contain the specified value(s).
   _.without = function(array) {
-    var values = slice.call(arguments, 1);
-    return _.filter(array, function(value){ return !_.include(values, value); });
+    return _.difference(array, slice.call(arguments, 1));
   };
 
   // Produce a duplicate-free version of the array. If the array has already
@@ -10124,15 +10123,27 @@ b.dequeue()})})}})(jQuery);
     }, []);
   };
 
+  // Produce an array that contains the union: each distinct element from all of
+  // the passed-in arrays.
+  _.union = function() {
+    return _.uniq(_.flatten(arguments));
+  };
+
   // Produce an array that contains every item shared between all the
-  // passed-in arrays.
-  _.intersect = function(array) {
+  // passed-in arrays. (Aliased as "intersect" for back-compat.)
+  _.intersection = _.intersect = function(array) {
     var rest = slice.call(arguments, 1);
     return _.filter(_.uniq(array), function(item) {
       return _.every(rest, function(other) {
         return _.indexOf(other, item) >= 0;
       });
     });
+  };
+
+  // Take the difference between one array and another.
+  // Only the elements present in just the first array will remain.
+  _.difference = function(array, other) {
+    return _.filter(array, function(value){ return !_.include(other, value); });
   };
 
   // Zip together multiple lists into a single array -- elements that share
@@ -10331,7 +10342,11 @@ b.dequeue()})})}})(jQuery);
   // Return a sorted list of the function names available on the object.
   // Aliased as `methods`
   _.functions = _.methods = function(obj) {
-    return _.filter(_.keys(obj), function(key){ return _.isFunction(obj[key]); }).sort();
+    var names = [];
+    for (var key in obj) {
+      if (_.isFunction(obj[key])) names.push(key);
+    }
+    return names.sort();
   };
 
   // Extend a given object with all the properties in passed-in object(s).
@@ -10383,6 +10398,7 @@ b.dequeue()})})}})(jQuery);
     if (b._chain) b = b._wrapped;
     // One of them implements an isEqual()?
     if (a.isEqual) return a.isEqual(b);
+    if (b.isEqual) return b.isEqual(a);
     // Check dates' integer values.
     if (_.isDate(a) && _.isDate(b)) return a.getTime() === b.getTime();
     // Both are NaN?
@@ -10422,6 +10438,11 @@ b.dequeue()})})}})(jQuery);
   // Delegates to ECMA5's native Array.isArray
   _.isArray = nativeIsArray || function(obj) {
     return toString.call(obj) === '[object Array]';
+  };
+
+  // Is a given variable an object?
+  _.isObject = function(obj) {
+    return obj === Object(obj);
   };
 
   // Is a given variable an arguments object?
@@ -10600,8 +10621,7 @@ b.dequeue()})})}})(jQuery);
 
 })();
 
-
-//     Backbone.js 0.5.1
+//     Backbone.js 0.5.3
 //     (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.
 //     Backbone may be freely distributed under the MIT license.
 //     For all details and documentation:
@@ -10628,7 +10648,7 @@ b.dequeue()})})}})(jQuery);
   }
 
   // Current version of the library. Keep in sync with `package.json`.
-  Backbone.VERSION = '0.5.1';
+  Backbone.VERSION = '0.5.3';
 
   // Require Underscore, if we're on the server, and it's not already present.
   var _ = root._;
@@ -10644,7 +10664,7 @@ b.dequeue()})})}})(jQuery);
     return this;
   };
 
-  // Turn on `emulateHTTP` to use support legacy HTTP servers. Setting this option will
+  // Turn on `emulateHTTP` to support legacy HTTP servers. Setting this option will
   // fake `"PUT"` and `"DELETE"` requests via the `_method` parameter and set a
   // `X-Http-Method-Override` header.
   Backbone.emulateHTTP = false;
@@ -10671,10 +10691,10 @@ b.dequeue()})})}})(jQuery);
 
     // Bind an event, specified by a string name, `ev`, to a `callback` function.
     // Passing `"all"` will bind the callback to all events fired.
-    bind : function(ev, callback) {
+    bind : function(ev, callback, context) {
       var calls = this._callbacks || (this._callbacks = {});
       var list  = calls[ev] || (calls[ev] = []);
-      list.push(callback);
+      list.push([callback, context]);
       return this;
     },
 
@@ -10692,7 +10712,7 @@ b.dequeue()})})}})(jQuery);
           var list = calls[ev];
           if (!list) return this;
           for (var i = 0, l = list.length; i < l; i++) {
-            if (callback === list[i]) {
+            if (list[i] && callback === list[i][0]) {
               list[i] = null;
               break;
             }
@@ -10717,7 +10737,7 @@ b.dequeue()})})}})(jQuery);
               list.splice(i, 1); i--; l--;
             } else {
               args = both ? Array.prototype.slice.call(arguments, 1) : arguments;
-              callback.apply(this, args);
+              callback[0].apply(callback[1] || this, args);
             }
           }
         }
@@ -10736,7 +10756,7 @@ b.dequeue()})})}})(jQuery);
     var defaults;
     attributes || (attributes = {});
     if (defaults = this.defaults) {
-      if (_.isFunction(defaults)) defaults = defaults();
+      if (_.isFunction(defaults)) defaults = defaults.call(this);
       attributes = _.extend({}, defaults, attributes);
     }
     this.attributes = {};
@@ -11244,7 +11264,7 @@ b.dequeue()})})}})(jQuery);
   var methods = ['forEach', 'each', 'map', 'reduce', 'reduceRight', 'find', 'detect',
     'filter', 'select', 'reject', 'every', 'all', 'some', 'any', 'include',
     'contains', 'invoke', 'max', 'min', 'sortBy', 'sortedIndex', 'toArray', 'size',
-    'first', 'rest', 'last', 'without', 'indexOf', 'lastIndexOf', 'isEmpty'];
+    'first', 'rest', 'last', 'without', 'indexOf', 'lastIndexOf', 'isEmpty', 'groupBy'];
 
   // Mix in each Underscore method as a proxy to `Collection#models`.
   _.each(methods, function(method) {
@@ -11369,7 +11389,7 @@ b.dequeue()})})}})(jQuery);
           fragment = window.location.hash;
         }
       }
-      return fragment.replace(hashStrip, '');
+      return decodeURIComponent(fragment.replace(hashStrip, ''));
     },
 
     // Start the hash change handling, returning `true` if the current URL matches
@@ -11409,11 +11429,16 @@ b.dequeue()})})}})(jQuery);
       if (this._wantsPushState && !this._hasPushState && !atRoot) {
         this.fragment = this.getFragment(null, true);
         window.location.replace(this.options.root + '#' + this.fragment);
+        // Return immediately as browser will do redirect to new url
+        return true;
       } else if (this._wantsPushState && this._hasPushState && atRoot && loc.hash) {
         this.fragment = loc.hash.replace(hashStrip, '');
         window.history.replaceState({}, document.title, loc.protocol + '//' + loc.host + this.options.root + this.fragment);
       }
-      return this.loadUrl();
+
+      if (!this.options.silent) {
+        return this.loadUrl();
+      }
     },
 
     // Add a route to be tested when the fragment changes. Routes added later may
@@ -11550,6 +11575,7 @@ b.dequeue()})})}})(jQuery);
     // not `change`, `submit`, and `reset` in Internet Explorer.
     delegateEvents : function(events) {
       if (!(events || (events = this.events))) return;
+      if (_.isFunction(events)) events = events.call(this);
       $(this.el).unbind('.delegateEvents' + this.cid);
       for (var key in events) {
         var method = this[events[key]];
@@ -11638,8 +11664,7 @@ b.dequeue()})})}})(jQuery);
     // Default JSON-request options.
     var params = _.extend({
       type:         type,
-      dataType:     'json',
-      processData:  false
+      dataType:     'json'
     }, options);
 
     // Ensure that we have a URL.
@@ -11656,7 +11681,6 @@ b.dequeue()})})}})(jQuery);
     // For older servers, emulate JSON by encoding the request into an HTML-form.
     if (Backbone.emulateJSON) {
       params.contentType = 'application/x-www-form-urlencoded';
-      params.processData = true;
       params.data        = params.data ? {model : params.data} : {};
     }
 
@@ -11670,6 +11694,11 @@ b.dequeue()})})}})(jQuery);
           xhr.setRequestHeader('X-HTTP-Method-Override', type);
         };
       }
+    }
+
+    // Don't process data on a non-GET request.
+    if (params.type !== 'GET' && !Backbone.emulateJSON) {
+      params.processData = false;
     }
 
     // Make the request.
