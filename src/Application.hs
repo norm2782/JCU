@@ -167,8 +167,7 @@ addStoredRuleH = restrict forbiddenH $ do
     Left   err  -> error500H err
     Right  rl   -> do
       uid  <- getUserId
-      rid  <- insertRule uid rl
-      writeLBS $ encode rid
+      voidM $ insertRule uid rl
 
 loadExampleH :: AppHandler ()
 loadExampleH = restrict forbiddenH $ do
@@ -320,7 +319,7 @@ insertRule :: HasHdbc m c => UserId -> Rule -> m Int
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
    voidM $ query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)"
                    sqlVals
-   rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ?"
+   rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
                  sqlVals
    return $ case rws of
               []     -> (-1)
