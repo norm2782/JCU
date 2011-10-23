@@ -11,6 +11,7 @@ import qualified  Data.Attoparsec.Lazy as AP
 import qualified  Data.ByteString.Lazy.Char8 as LBS
 import qualified  Data.ByteString.Char8 as BS
 import            Data.ListLike (CharStringLazy(..))
+import            Data.String
 import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
 import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, LineColPos)
@@ -109,21 +110,21 @@ processJSON f raw =
     (AP.Done _ r)  ->
       case f r of
         (AE.Success a)  -> Right a
-        (AE.Error err)  -> Left . BS.pack $ "Error converting ByteString to data type: " ++ err
-    (AP.Fail _ _ err) -> Left . BS.pack $ "Error parsing raw JSON: " ++ err
+        (AE.Error err)  -> Left . fromString $ "Error converting ByteString to data type: " ++ err
+    (AP.Fail _ _ err) -> Left . fromString $ "Error parsing raw JSON: " ++ err
 
 -- TODO: Try to get rid of the explicit annotations...
 parseCheck :: Maybe BS.ByteString -> LBS.ByteString -> (Bool, [ErrorMsg])
-parseCheck Nothing   _     = checkErr [BS.pack "Unknown error."]
+parseCheck Nothing   _     = checkErr [fromString "Unknown error."]
 parseCheck (Just x)  body
   | x == "rule"  = parseMsg pRule body
   | x == "term"  = parseMsg pTerm body
-  | otherwise    = checkErr [BS.pack "Invalid type specified"]
+  | otherwise    = checkErr [fromString "Invalid type specified"]
   where  parseMsg :: Parser t -> LBS.ByteString -> (Bool, [ErrorMsg])
          parseMsg p txt = writeRes $ startParse p (CSL txt)
          writeRes :: (t, [Error LineColPos]) -> (Bool, [ErrorMsg])
-         writeRes (_, [])  = (True, [BS.pack ""])
-         writeRes (_, rs)  = checkErr (map (BS.pack . show) rs)
+         writeRes (_, [])  = (True, [])
+         writeRes (_, rs)  = checkErr (map (fromString . show) rs)
 
 checkErr :: [ErrorMsg] -> (Bool, [ErrorMsg])
 checkErr msg = (False, msg)

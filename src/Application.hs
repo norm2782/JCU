@@ -22,6 +22,7 @@ import            Data.ListLike (CharString(..))
 import            Data.Map (Map)
 import qualified  Data.Map as DM
 import            Data.Maybe
+import            Data.String
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
@@ -222,7 +223,7 @@ unifyH = restrict forbiddenH $ do
 error500H :: ByteString -> AppHandler a
 error500H msg = do
   modifyResponse $ setResponseStatus 500 "Internal server error"
-  writeBS $ BS.append (BS.pack "500 internal server error: ") msg
+  writeBS $ BS.append (fromString "500 internal server error: ") msg
   finishWith =<< getResponse
 
 checkSyntaxH :: AppHandler ()
