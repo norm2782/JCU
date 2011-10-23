@@ -18,6 +18,7 @@ import            Data.Aeson as AE
 import            Data.ByteString.Char8 (ByteString)
 import qualified  Data.ByteString.Char8 as BS
 import            Data.Lens.Template
+import            Data.ListLike (CharString(..))
 import            Data.Map (Map)
 import qualified  Data.Map as DM
 import            Data.Maybe
@@ -359,7 +360,7 @@ getStoredRules uid = do
            let  rdSql k = fromSql $ mp DM.! k
            in   DBRule  (rdSql "rid")
                         (rdSql "rule_order")
-                        (fst . startParse pRule $ (rdSql "rule" :: String))
+                        (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: HasHdbc m c => UserId -> m ()
 deleteUserRules uid = voidM $

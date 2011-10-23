@@ -10,6 +10,7 @@ import            Data.Aeson as AE
 import qualified  Data.Attoparsec.Lazy as AP
 import qualified  Data.ByteString.Lazy.Char8 as LBS
 import qualified  Data.ByteString.Char8 as BS
+import            Data.ListLike (CharStringLazy(..))
 import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
 import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, LineColPos)
@@ -71,7 +72,7 @@ instance FromJSON Rule where
 
 -- TODO: Errors
 mkJSONRule :: LBS.ByteString -> Rule
-mkJSONRule = fst . startParse pRule . LBS.unpack
+mkJSONRule = fst . startParse pRule . CSL
 
 instance FromJSON Proof where
   parseJSON (Object o)  = mkJSONProofTree <$> o .: "term" <*> o .: "childTerms"
@@ -90,7 +91,7 @@ mkJSONProofTree tm rts = Node (mkJSONTerm tm) mkProofTrees
 
 -- TODO: Something with errors
 mkJSONTerm :: LBS.ByteString -> Term
-mkJSONTerm = fst . startParse pTerm . LBS.unpack
+mkJSONTerm = fst . startParse pTerm . CSL
 
 mkRule :: LBS.ByteString -> Either ErrorMsg Rule
 mkRule = processJSON fromJSON
@@ -119,7 +120,7 @@ parseCheck (Just x)  body
   | x == "term"  = parseMsg pTerm body
   | otherwise    = checkErr [BS.pack "Invalid type specified"]
   where  parseMsg :: Parser t -> LBS.ByteString -> (Bool, [ErrorMsg])
-         parseMsg p txt = writeRes $ startParse p (LBS.unpack txt)
+         parseMsg p txt = writeRes $ startParse p (CSL txt)
          writeRes :: (t, [Error LineColPos]) -> (Bool, [ErrorMsg])
          writeRes (_, [])  = (True, [BS.pack ""])
          writeRes (_, rs)  = checkErr (map (BS.pack . show) rs)
