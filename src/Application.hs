@@ -292,7 +292,7 @@ loginForm = (\e p r _ -> FormUser e p r)
        <++    errors)
   <*>  mapViewHtml H.div (
        label  "Password: "
-       ++>    inputPassword `validate` longPwd
+       ++>    inputPassword False `validate` longPwd
        <++    errors)
   <*>  mapViewHtml H.div (
        label  "Remember me?"
@@ -316,11 +316,11 @@ registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
   <*>  ((,)
          <$>  mapViewHtml H.div (
               label  "Password: "
-              ++>    inputPassword `validate` longPwd
+              ++>    inputPassword False `validate` longPwd
               <++    errors)
          <*>  mapViewHtml H.div (
               label  "Password (confirmation): "
-              ++>    inputPassword `validate` longPwd
+              ++>    inputPassword False `validate` longPwd
               <++    errors))
        `validate`  identical
        <++         errors
