@@ -58,7 +58,7 @@ makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc AppHandler Connection where
+instance HasHdbc (Handler b App) Connection where
   getPool = with dbLens $ gets hdbcPool
 
 jcu :: SnapletInit App App
