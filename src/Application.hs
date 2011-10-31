@@ -63,7 +63,7 @@ instance HasHdbc (Handler b App) Connection where
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
-  addRoutes  [  ("/",           siteIndexH)
+  addRoutes  [  ("/", ifTop siteIndexH)
              ,  ("/forbidden",  forbiddenH)
              ,  ("/login",   loginH)
              ,  ("/logout",  logoutH)
