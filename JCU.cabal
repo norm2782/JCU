@@ -58,7 +58,7 @@ Executable jcu
     snap >= 0.6,
     snap-core >= 0.6,
     snap-server >= 0.6,
-    snaplet-hdbc >= 0.6.2.1,
+    snaplet-hdbc >= 0.6.2.2,
     text >= 0.11,
     time >= 1.1 && < 1.3,
     transformers >= 0.2,
