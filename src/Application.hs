@@ -51,15 +51,15 @@ import qualified  Text.Email.Validate as E
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
-  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection)
+  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection IO)
   }
 
 makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc (Handler b App) Connection where
-  getPool = with dbLens $ gets hdbcPool
+instance HasHdbc (Handler b App) Connection IO where
+  getConnSrc = with dbLens $ gets connSrc
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
@@ -337,7 +337,7 @@ voidM m = do
   _ <- m
   return ()
 
-insertRule :: HasHdbc m c => UserId -> Rule -> m Int
+insertRule :: HasHdbc m c s => UserId -> Rule -> m Int
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
    voidM $ query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)"
                    sqlVals
@@ -347,11 +347,11 @@ insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
               []     -> -1
               (x:_)  -> fromSql $ x DM.! "rid"
 
-deleteRule :: HasHdbc m c => ByteString -> m ()
+deleteRule :: HasHdbc m c s => ByteString -> m ()
 deleteRule rid = voidM $
   query' "DELETE FROM rules WHERE rid = ?" [toSql rid]
 
-getStoredRules :: HasHdbc m c => UserId -> m [DBRule]
+getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
 getStoredRules uid = do
   rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
                [toSql uid]
@@ -363,7 +363,7 @@ getStoredRules uid = do
                         (rdSql "rule_order")
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
-deleteUserRules :: HasHdbc m c => UserId -> m ()
+deleteUserRules :: HasHdbc m c s => UserId -> m ()
 deleteUserRules uid = voidM $
   query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
 
