@@ -1,6 +1,6 @@
 default:
 	make clean
-	make install
+	cabal install
 
 jcu:
 	make && jcu
