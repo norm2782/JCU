@@ -6,7 +6,7 @@ It uses a very small interpreter (*Language.Prolog.Nanoprolog*) which can be
 run on its own.
 
 This package contains an environment constructed for the Junior College at
-Utrecht University. It provides a simpel environment in which rules can be
+Utrecht University. It provides a simple environment in which rules can be
 defined, and proofs can be constructed interactively. The software can be
 installed on a server, so students do not have to install anything on their own
 machines.
