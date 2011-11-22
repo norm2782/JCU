@@ -192,7 +192,8 @@ loadExampleH = restrict forbiddenH $ do
   uid <- getUserId
   deleteUserRules uid
   mapM_ (insertRule uid) exampleData
-  redirect "/"
+  -- commitSession
+  -- redirect "/"
 
 
 getUserId :: AppHandler UserId
