@@ -26,7 +26,7 @@ import            Data.String
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
-import            Database.HDBC.Sqlite3
+import            Database.HDBC.PostgreSQL
 import            JCU.Prolog
 import            JCU.Templates
 import            JCU.Types
@@ -80,7 +80,9 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
              ]
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
-  let sqli = connectSqlite3 "resources/jcu.db"
+  let sqli = do connString <- readFile "config/connection_string.conf"
+                c <- connectPostgreSQL connString
+                return c
   _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit sqli
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
                    defAuthSettings sessLens sqli defAuthTable defQueries
@@ -364,6 +366,6 @@ getStoredRules uid = do
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: HasHdbc m c s => UserId -> m ()
-deleteUserRules uid = voidM $
-  query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
+deleteUserRules uid = voidM $ do
+    query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
 
