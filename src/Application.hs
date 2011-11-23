@@ -47,6 +47,7 @@ import            Text.Digestive
 import            Text.Digestive.Blaze.Html5
 import            Text.Digestive.Forms.Snap
 import qualified  Text.Email.Validate as E
+import qualified  Database.HDBC as HDBC
 
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
@@ -176,7 +177,7 @@ deleteStoredRuleH = restrict forbiddenH $ do
   mrid <- getParam "id"
   case mrid of
     Nothing  -> return ()
-    Just x   -> deleteRule x
+    Just x   -> deleteRule x -- TODO: Take user ID into account. we don't want people deleting other users's rules
 
 addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
@@ -340,19 +341,24 @@ voidM m = do
   _ <- m
   return ()
 
+-- TODO: This is just a workaround....
+q :: HasHdbc m c s => String -> [SqlValue] -> m ()
+q qry vals = withTransaction $ \conn' -> do
+               stmt  <- HDBC.prepare conn' qry
+               _     <- HDBC.execute stmt vals
+               return ()
+
 insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
-   voidM $ query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)"
-                   sqlVals
-   rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
-                 sqlVals
-   return $ case rws of
-              []     -> Nothing
-              (x:_)  -> Just $ fromSql $ x DM.! "rid"
+  q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
+  rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
+                sqlVals
+  return $ case rws of
+             []     -> Nothing
+             (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
 deleteRule :: HasHdbc m c s => ByteString -> m ()
-deleteRule rid = voidM $
-  query' "DELETE FROM rules WHERE rid = ?" [toSql rid]
+deleteRule rid = q "DELETE FROM rules WHERE rid = ?" [toSql rid]
 
 getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
 getStoredRules uid = do
@@ -367,6 +373,5 @@ getStoredRules uid = do
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: HasHdbc m c s => UserId -> m ()
-deleteUserRules uid = voidM $ do
-    query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
+deleteUserRules uid = q "DELETE FROM rules WHERE uid = ?" [toSql uid]
 
