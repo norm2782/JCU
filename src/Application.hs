@@ -340,15 +340,15 @@ voidM m = do
   _ <- m
   return ()
 
-insertRule :: HasHdbc m c s => UserId -> Rule -> m Int
+insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
    voidM $ query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)"
                    sqlVals
    rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
                  sqlVals
    return $ case rws of
-              []     -> -1
-              (x:_)  -> fromSql $ x DM.! "rid"
+              []     -> Nothing
+              (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
 deleteRule :: HasHdbc m c s => ByteString -> m ()
 deleteRule rid = voidM $
