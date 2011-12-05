@@ -6,3 +6,5 @@ dist
 dump
 resources/jcu.db
 site_key.txt
+*.hi
+*.mjs
