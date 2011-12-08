@@ -4,7 +4,7 @@ module JCU where
 import Language.UHC.JScript.Types (toJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
-
+import Language.UHC.JScript.W3C.HTML5 as HTML5
 
 import Language.UHC.JScript.Assorted (alert)
 ----
@@ -41,3 +41,12 @@ foreign import jscript "wrapper"
   
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
+  
+-- dynLoad = do document <- HTML5.document
+--              elem <- documentCreateElement document "script"
+--              scriptTag' <- setAttr "src"  scriptTag
+  
+  -- var fileref=document.createElement('script')
+  --   fileref.setAttribute("type","text/javascript")
+  --   fileref.setAttribute("src", filename)
+  
