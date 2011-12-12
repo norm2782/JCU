@@ -42,9 +42,12 @@ foreign import jscript "wrapper"
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
   
--- dynLoad = do document <- HTML5.document
---              elem <- documentCreateElement document "script"
---              scriptTag' <- setAttr "src"  scriptTag
+dynLoad :: String -> IO ()  
+dynLoad src = do document <- HTML5.document
+                 node     <- HTML5.documentCreateElement document "script"
+                 elementSetAttribute node "src"   src
+                 elementSetAttribute node "type"  "text/javascript"
+                 
   
   -- var fileref=document.createElement('script')
   --   fileref.setAttribute("type","text/javascript")

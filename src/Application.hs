@@ -60,7 +60,7 @@ makeLens ''App
 type AppHandler = Handler App App
 
 instance HasHdbc (Handler b App) Connection IO where
-  getConnSrc = with dbLens $ gets connSrc
+  getHdbcState = with dbLens get
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
