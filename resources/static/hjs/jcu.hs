@@ -17,15 +17,17 @@ import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 import Templates
 import Models
 
--- ajaxQ :: String -> JSFunPtr (a -> IO()) -> JSFunPtr (a -> IO()) -> IO ()
--- ajaxQ url onSuccess onFail = 
---   AQ.ajaxQ "jcu_app" $  AjaxOptions { ao_url         = url,
---                                       ao_requestType = "POST",
---                                       ao_contentType = "application/json",
---                                       ao_dataType    = "json",
---                                       ao_success     = onSuccess,
---                                       ao_failure     = onFail
---                                     }
+ajaxQ :: String -> JSFunPtr (JSPtr a -> IO()) -> JSFunPtr (JSPtr a -> IO()) -> IO ()
+ajaxQ url onSuccess onFail = do
+  AQ.ajaxQ "jcu_app" $  AjaxOptions { ao_url         = url,
+                                      ao_requestType = "POST",
+                                      ao_contentType = "application/json",
+                                      ao_dataType    = "json",
+                                      ao_success     = onSuccess,
+                                      ao_failure     = onFail
+                                    }
+  alert "meh"
+  
     
 register_events :: [(String, JEventType, JEventHandler)] -> IO ()    
 register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
@@ -62,14 +64,14 @@ initialize = do -- Dynamiccaly include the necessary files
                 button <- jQuery "#button"
                 click button hiAlert
                 
-                -- ajaxQ "/rules/stored" noop noop
+                ajaxQ "/rules/stored" noop noop
 
 -- addRules :: JSPtr [Rule] -> IO ()
 -- addRules = undefined                
 
 
 foreign import jscript "jQuery.noop()"
-  noop :: JSFunPtr (a -> IO ())
+  noop :: JSFunPtr (JSPtr a -> IO ())
   
 foreign import jscript "wrapper"
   eventWrap :: (JQuery -> IO Bool)-> IO (JSFunPtr (JQuery -> IO Bool))
