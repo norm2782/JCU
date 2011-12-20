@@ -6,6 +6,7 @@ import Control.Monad (liftM)
 import Language.UHC.JScript.Types (toJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
+import Language.UHC.JScript.ECMA.Array
 import Language.UHC.JScript.W3C.HTML5 as HTML5
 
 import Language.UHC.JScript.Assorted (alert)
@@ -59,23 +60,18 @@ main = do init <- ioWrap initialize
           onDocumentReady init
           
 initialize :: IO () 
-initialize = do -- Dynamiccaly include the necessary files
-                -- Events loading
-                hiAlert <- eventWrap (\x -> do alert "Hi!"
-                                               return True)
-                register_events [("#button", "click", hiAlert)]
-                button <- jQuery "#button"
-                click button hiAlert
+initialize = do -- Rendering
+                bd <- jQuery "#bd"
+                setHTML bd Templates.home          
+                wrapInner bd "<div id=\"home-view\"/>"
+                -- Proof tree
                 
-                let foobaarz = (\x y z-> do alert "foO!"
-                                            return ())
-                                                
-                nop <- noop
-                
-                ajaxQ "http://localhost:8000/rules/stored" foobaarz (\x y z -> return ())
+                -- Rules list
+                ajaxQ "http://localhost:8000/rules/stored" addRules (\x y z -> return ())
 
--- addRules :: JSPtr [Rule] -> IO ()
--- addRules = undefined                
+addRules :: AjaxCallback (JSArray (JSPtr a)) b
+addRules obj str obj2 = do alert "rules!"
+                           return ()                
 
 
 foreign import jscript "jQuery.noop()"
@@ -86,13 +82,3 @@ foreign import jscript "wrapper"
 
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
-  
-dynLoad :: String -> IO ()  
-dynLoad src = do doc <- HTML5.document
-                 node     <- documentCreateElement "script"
-                 elementSetAttribute node "src"   src
-                 elementSetAttribute node "type"  "text/javascript"
-                 -- Append the tag
-                 headTags <- documentGetElementsByTagName doc "head"
-                 headTag  <- nodeListItem headTags 0
-                 elementAppendChild headTag node
