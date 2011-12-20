@@ -10,7 +10,7 @@ import Language.UHC.JScript.W3C.HTML5 as HTML5
 
 import Language.UHC.JScript.Assorted (alert)
 
-import Language.UHC.JScript.JQuery.Ajax
+import Language.UHC.JScript.JQuery.Ajax as Ajax
 import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 ----
 --  App
@@ -19,11 +19,11 @@ import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 import Templates
 import Models
 
-ajaxQ :: String -> AjaxCallback a -> AjaxCallback a -> IO ()
+ajaxQ :: String -> AjaxCallback a b -> AjaxCallback a b -> IO ()
 ajaxQ url onSuccess onFail = do
   AQ.ajaxQ "jcu_app" 
            (AjaxOptions { ao_url         = url,
-                          ao_requestType = "GET",
+                          ao_requestType = Ajax.GET,
                           ao_contentType = "application/json",
                           ao_dataType    = "json"
                         })
@@ -67,26 +67,23 @@ initialize = do -- Dynamiccaly include the necessary files
                 button <- jQuery "#button"
                 click button hiAlert
                 
-                foobaarz <- constWrap (\x -> do alert "foO!"
-                                                return ())
+                let foobaarz = (\x y z-> do alert "foO!"
+                                            return ())
                                                 
                 nop <- noop
                 
-                ajaxQ "http://localhost:8000/rules/stored" foobaarz nop
+                ajaxQ "http://localhost:8000/rules/stored" foobaarz (\x y z -> return ())
 
 -- addRules :: JSPtr [Rule] -> IO ()
 -- addRules = undefined                
 
 
 foreign import jscript "jQuery.noop()"
-  noop :: IO (JSFunPtr (JSPtr a -> IO ()))
+  noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
   
 foreign import jscript "wrapper"
   eventWrap :: (JQuery -> IO Bool)-> IO (JSFunPtr (JQuery -> IO Bool))
 
-foreign import jscript "wrapper" 
-  constWrap :: (JSPtr a -> IO ()) -> IO (AjaxCallback a)
-  
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
   
