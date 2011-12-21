@@ -20,7 +20,7 @@ import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 import Templates
 import Models
 
-ajaxQ :: String -> AjaxCallback a b -> AjaxCallback a b -> IO ()
+ajaxQ :: String -> AjaxCallback -> AjaxCallback -> IO ()
 ajaxQ url onSuccess onFail = do
   AQ.ajaxQ "jcu_app" 
            (AjaxOptions { ao_url         = url,
@@ -69,7 +69,7 @@ initialize = do -- Rendering
                 -- Rules list
                 ajaxQ "http://localhost:8000/rules/stored" addRules (\x y z -> return ())
 
-addRules :: AjaxCallback (JSArray (JSPtr a)) b
+addRules :: AjaxCallback
 addRules obj str obj2 = do alert "rules!"
                            return ()                
 
