@@ -3,7 +3,7 @@ module JCU where
 
 import Control.Monad (liftM)
 
-import Language.UHC.JScript.Types (toJS)
+import Language.UHC.JScript.Types (JS, toJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
 import Language.UHC.JScript.ECMA.Array
@@ -20,7 +20,7 @@ import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 import Templates
 import Models
 
-ajaxQ :: String -> AjaxCallback -> AjaxCallback -> IO ()
+ajaxQ :: JS r => String -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ url onSuccess onFail = do
   AQ.ajaxQ "jcu_app" 
            (AjaxOptions { ao_url         = url,
@@ -69,7 +69,7 @@ initialize = do -- Rendering
                 -- Rules list
                 ajaxQ "http://localhost:8000/rules/stored" addRules (\x y z -> return ())
 
-addRules :: AjaxCallback
+addRules :: AjaxCallback (JSPtr a)
 addRules obj str obj2 = do alert "rules!"
                            return ()                
 
