@@ -3,19 +3,27 @@ module JCU where
 
 import Control.Monad (liftM)
 
-import Language.UHC.JScript.Types (JS, toJS)
+import Data.List
+
+
+
+import Language.UHC.JScript.Types (JS, toJS, fromJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
-import Language.UHC.JScript.ECMA.Array
 import Language.UHC.JScript.W3C.HTML5 as HTML5
 
-import Language.UHC.JScript.Assorted (alert)
+import Language.UHC.JScript.ECMA.String
+
+import Language.UHC.JScript.Assorted (alert , _alert)
 
 import Language.UHC.JScript.JQuery.Ajax as Ajax
 import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 ----
 --  App
 ----
+-- import Language.UHC.JScript.ECMA.Array
+
+import Array
 
 import Templates
 import Models
@@ -30,8 +38,6 @@ ajaxQ url onSuccess onFail = do
                         })
            onSuccess
            onFail
-  alert "meh"
-  
     
 register_events :: [(String, JEventType, JEventHandler)] -> IO ()    
 register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
@@ -67,12 +73,25 @@ initialize = do -- Rendering
                 -- Proof tree
                 
                 -- Rules list
-                ajaxQ "http://localhost:8000/rules/stored" addRules (\x y z -> return ())
+                ajaxQ "/rules/stored" addRules noop
+  where noop :: AjaxCallback (JSPtr a)
+        noop = (\x y z -> return ())
 
-addRules :: AjaxCallback (JSPtr a)
-addRules obj str obj2 = do alert "rules!"
+
+addRules :: AjaxCallback (JSArray JSRule)
+addRules obj str obj2 = do -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
+                           f <- mkEachIterator (\ idx e -> do let ruleElem = jsRule2Rule e
+                                                              _alert (rule ruleElem)
+                                                              alert (jsStringToString $ rule ruleElem)
+
+                                                              return ())
+
+                           alert "rules!"
+                           each' obj f
                            return ()                
-
+  where ruleF :: Int -> JSRule -> IO ()
+        ruleF idx e = do let ruleElem = fromJS e 
+                         (alert . fromJS . rule) ruleElem
 
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))

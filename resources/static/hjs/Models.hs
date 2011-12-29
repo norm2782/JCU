@@ -1,5 +1,10 @@
 module Models where
 
+import Language.UHC.JScript.ECMA.String
+import Language.UHC.JScript.Primitives
+import Language.UHC.JScript.Types
+
+
 type ProofResult = String -- I want to make an enum of this
 
 data ProofTreeNode = Node {
@@ -10,8 +15,23 @@ data ProofTreeNode = Node {
 }
 
 data Rule = Rule {
-  rule :: String
+  id   :: Int,
+  ro   :: Int,
+  rule :: JSString
 }
+
+data JSRulePtr
+type JSRule = JSPtr JSRulePtr
+
+instance FromJS JSRule Rule where
+  fromJS = jsRule2Rule
+
+jsRule2Rule :: JSRule -> Rule
+jsRule2Rule ptr = Rule {
+                    id   = getAttr "id"   ptr, 
+                    ro   = getAttr "ro"   ptr,
+                    rule = getAttr "rule" ptr
+                  }
 
 proofTreeNode = Node "" "" [] ""
 
