@@ -81,7 +81,7 @@ initialize = do -- Rendering
 addRules :: AjaxCallback (JSArray JSRule)
 addRules obj str obj2 = do -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
                            f <- mkEachIterator (\ idx e -> do let ruleElem = jsRule2Rule e
-                                                              _alert (rule ruleElem)
+                                                              alertType (rule ruleElem)
                                                               alert (jsStringToString $ rule ruleElem)
 
                                                               return ())
@@ -101,3 +101,9 @@ foreign import jscript "wrapper"
 
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
+  
+foreign import jscript "typeof(%1)"
+  typeof :: a -> JSString
+
+alertType :: a -> IO ()
+alertType = _alert . typeof

@@ -49,6 +49,7 @@ import            Text.Digestive.Forms.Snap
 import qualified  Text.Email.Validate as E
 import qualified  Database.HDBC as HDBC
 
+
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
@@ -61,6 +62,9 @@ type AppHandler = Handler App App
 
 instance HasHdbc (Handler b App) Connection IO where
   getHdbcState = with dbLens get
+  
+-- instance Control.Monad.Trans.Control.MonadBaseControl IO (Handler b App) where
+  
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
