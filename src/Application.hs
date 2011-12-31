@@ -31,6 +31,7 @@ import            JCU.Prolog
 import            JCU.Templates
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
+import            Language.Prolog.NanoProlog.Parser
 import            Prelude hiding (catch)
 import            Snap.Core
 import            Snap.Snaplet

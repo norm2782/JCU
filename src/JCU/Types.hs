@@ -14,14 +14,16 @@ import            Data.ListLike (CharStringLazy(..))
 import            Data.String
 import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
+import            Language.Prolog.NanoProlog.Parser
 import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, LineColPos)
 
 
-data DBRule = DBRule {
-     ruleId     :: Int
+data DBRule
+  =  DBRule
+  {  ruleId     :: Int
   ,  ruleOrder  :: Int
   ,  rule       :: Rule
-}
+  }
 
 data DropReq   =  DropReq Proof [Int] Rule
                deriving Show
