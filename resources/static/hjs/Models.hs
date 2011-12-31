@@ -35,6 +35,9 @@ jsRule2Rule ptr = Rule {
 
 proofTreeNode = Node "" "" [] ""
 
+foreign import jscript "%1.rule"
+  getRule :: JSRule -> JSString
+
 -- class exports.ProofTreeNode extends Backbone.Model
 --   # Available attributes:
 --   # term :: String

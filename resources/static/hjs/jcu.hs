@@ -7,7 +7,7 @@ import Data.List
 
 
 
-import Language.UHC.JScript.Types (JS, toJS, fromJS)
+import Language.UHC.JScript.Types -- (JS, toJS, fromJS, FromJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
 import Language.UHC.JScript.W3C.HTML5 as HTML5
@@ -27,6 +27,22 @@ import Array
 
 import Templates
 import Models
+
+
+foreign import jscript "typeof(%1)"
+  typeof :: a -> JSString
+
+class FromJS a b => FromJSPlus a b where
+  check :: a -> b -> String -> Bool
+-- 
+-- 
+-- 
+-- fromJSP :: (FromJSPlus a b) => a -> Maybe b
+-- fromJSP i  | chck       = Just ji
+--            | otherwise  = Nothing
+--   where  ji    = (fromJS :: a -> b) i
+--          chck  = True -- check i ji ((fromJS :: JSString -> String) $ typeof i)
+--                 -- debug trace  
 
 ajaxQ :: JS r => String -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ url onSuccess onFail = do
@@ -81,9 +97,10 @@ initialize = do -- Rendering
 addRules :: AjaxCallback (JSArray JSRule)
 addRules obj str obj2 = do -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
                            f <- mkEachIterator (\ idx e -> do let ruleElem = jsRule2Rule e
-                                                              _alert (rule ruleElem)
+                                                              alertType (rule ruleElem)
+                                                              alertType (getRule e)
+                                                              alert (jsStringToString $ getRule e)
                                                               alert (jsStringToString $ rule ruleElem)
-
                                                               return ())
 
                            alert "rules!"
@@ -101,3 +118,6 @@ foreign import jscript "wrapper"
 
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
+
+alertType :: a -> IO ()
+alertType = _alert . typeof

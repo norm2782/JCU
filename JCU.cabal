@@ -53,7 +53,7 @@ Executable jcu
     ListLike >= 3.1 && < 3.2,
     MonadCatchIO-transformers >= 0.2.1 && < 0.3,
     mtl >= 2.0,
-    NanoProlog >= 0.2.3.2,
+    NanoProlog == 0.2.3.3,
     snap >= 0.6,
     snap-core >= 0.6,
     snap-server >= 0.6,
