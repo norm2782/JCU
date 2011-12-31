@@ -61,24 +61,13 @@ register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
                                                      event 
                                                      eh)
     
--- main :: IO ()
--- main = do init    <- ioWrap initialize
---           loadJS' <- ioWrap $ loadJS init
--- 
---           onWindowLoad $ loadJS'
---           init   <- ioWrap initialize
---           
--- foreign import jscript "window.onload" 
---   onWindowLoad :: JSFunPtr (IO ()) -> IO ()
--- 
--- loadJS :: JSFunPtr (IO ()) -> IO ()          
--- loadJS f = do alert "hi"
---               dynLoad "../brunch/src/vendor/jquery-1.6.2.js"
---               alert "bye"
---               onDocumentReady f
+foreign import jscript "window.location.host"
+  windowLocationHost :: JSString
 
 main :: IO ()
-main = do init <- ioWrap initialize
+main = do _alert windowLocationHost
+          alert (fromJS windowLocationHost)
+          init <- ioWrap initialize
           onDocumentReady init
           
 initialize :: IO () 
