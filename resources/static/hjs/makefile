@@ -1,4 +1,4 @@
-LANGUAGE_DIR = /Users/alessandro/Documents/Uni/xp/uhc-jscript/uhc-jscript/src
+LANGUAGE_DIR = /Users/norm2782/src/uhc-jscript/uhc-jscript/src
 
 all: build
 
