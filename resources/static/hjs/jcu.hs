@@ -34,19 +34,19 @@ foreign import jscript "typeof(%1)"
 
 class FromJS a b => FromJSPlus a b where
   check :: a -> b -> String -> Bool
--- 
--- 
--- 
+--
+--
+--
 -- fromJSP :: (FromJSPlus a b) => a -> Maybe b
 -- fromJSP i  | chck       = Just ji
 --            | otherwise  = Nothing
 --   where  ji    = (fromJS :: a -> b) i
 --          chck  = True -- check i ji ((fromJS :: JSString -> String) $ typeof i)
---                 -- debug trace  
+--                 -- debug trace
 
 ajaxQ :: JS r => String -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ url onSuccess onFail = do
-  AQ.ajaxQ "jcu_app" 
+  AQ.ajaxQ "jcu_app"
            (AjaxOptions { ao_url         = url,
                           ao_requestType = Ajax.GET,
                           ao_contentType = "application/json",
@@ -54,13 +54,13 @@ ajaxQ url onSuccess onFail = do
                         })
            onSuccess
            onFail
-    
-register_events :: [(String, JEventType, JEventHandler)] -> IO ()    
+
+register_events :: [(String, JEventType, JEventHandler)] -> IO ()
 register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
                                                 bind elem
                                                      event 
                                                      eh)
-    
+
 foreign import jscript "window.location.host"
   windowLocationHost :: JSString
 
@@ -69,14 +69,13 @@ main = do _alert windowLocationHost
           alert (fromJS windowLocationHost)
           init <- ioWrap initialize
           onDocumentReady init
-          
-initialize :: IO () 
+
+initialize :: IO ()
 initialize = do -- Rendering
                 bd <- jQuery "#bd"
-                setHTML bd Templates.home          
+                setHTML bd Templates.home
                 wrapInner bd "<div id=\"home-view\"/>"
                 -- Proof tree
-                
                 -- Rules list
                 ajaxQ "/rules/stored" addRules noop
   where noop :: AjaxCallback (JSPtr a)
@@ -84,20 +83,22 @@ initialize = do -- Rendering
 
 
 addRules :: AjaxCallback (JSArray JSRule)
-addRules obj str obj2 = do -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
-                           f <- mkEachIterator (\ idx e -> do let ruleElem = jsRule2Rule e
-                                                              alertType (rule ruleElem)
-                                                              alertType (getRule e)
-                                                              alert (jsStringToString $ getRule e)
-                                                              alert (jsStringToString $ rule ruleElem)
-                                                              return ())
-
-                           alert "rules!"
-                           each' obj f
-                           return ()                
+addRules obj str obj2 = do
+  -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
+  f <- mkEachIterator (\idx e -> do
+    let ruleElem = jsRule2Rule e
+    alertType (rule ruleElem)
+    alertType (getRule e)
+    alert (jsStringToString $ getRule e)
+    alert (jsStringToString $ rule ruleElem)
+    return ())
+  alert "rules!"
+  each' obj f
+  return ()
   where ruleF :: Int -> JSRule -> IO ()
-        ruleF idx e = do let ruleElem = fromJS e 
-                         (alert . fromJS . rule) ruleElem
+        ruleF idx e = do
+          let ruleElem = fromJS e
+          (alert . fromJS . rule) ruleElem
 
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
