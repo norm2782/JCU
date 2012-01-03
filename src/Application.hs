@@ -39,7 +39,7 @@ import            Snap.Core
 import            Snap.Snaplet
 import            Snap.Snaplet.Auth
 import            Snap.Snaplet.Auth.Backends.Hdbc
-import            Snap.Snaplet.Hdbc
+{-import            Snap.Snaplet.Hdbc-}
 import            Snap.Snaplet.Session
 import            Snap.Snaplet.Session.Backends.CookieSession
 import            Snap.Util.FileServe
@@ -345,46 +345,49 @@ voidM m = do
   return ()
 
 -- TODO: This is just a workaround....
-q :: String -> [SqlValue] -> AppHandler ()
+q :: String -> [HDBC.SqlValue] -> AppHandler ()
 q qry vals = do
   c <- gets pgconn
-  liftIO $ HDBC.withTransaction c $ \conn' -> do
+  c' <- liftIO $ HDBC.clone c
+  liftIO $ HDBC.withTransaction c' $ \conn' -> do
     stmt  <- HDBC.prepare conn' qry
     voidM $ HDBC.execute stmt vals
   return ()
 
 insertRule :: UserId -> Rule -> AppHandler (Maybe Int)
-insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
+insertRule uid rl = let sqlVals = [HDBC.toSql $ unUid uid, HDBC.toSql $ show rl] in do
   q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
   c <- gets pgconn
+  c' <- liftIO $ HDBC.clone c
   rws <- liftIO $ do
-    stmt <- HDBC.prepare c "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
+    stmt <- HDBC.prepare c' "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
     voidM $ HDBC.execute stmt sqlVals
-    fetchAllRowsMap' stmt
+    HDBC.fetchAllRowsMap' stmt
   return $ case rws of
              []     -> Nothing
-             (x:_)  -> Just $ fromSql $ x DM.! "rid"
+             (x:_)  -> Just $ HDBC.fromSql $ x DM.! "rid"
 
 deleteRule :: ByteString -> AppHandler ()
-deleteRule rid = q "DELETE FROM rules WHERE rid = ?" [toSql rid]
+deleteRule rid = q "DELETE FROM rules WHERE rid = ?" [HDBC.toSql rid]
 
 getStoredRules :: UserId -> AppHandler [DBRule]
 getStoredRules uid = do
-  rws <- do
-      c <- gets pgconn
-      stmt <- liftIO $ HDBC.prepare c "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
-      voidM $ liftIO $ HDBC.execute stmt [toSql uid]
-      liftIO $ fetchAllRowsMap' stmt
+  c <- gets pgconn
+  c' <- liftIO $ HDBC.clone c
+  rws <- liftIO $ do
+    stmt <- HDBC.prepare c' "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
+    voidM $ HDBC.execute stmt [HDBC.toSql uid]
+    HDBC.fetchAllRowsMap' stmt
   {-rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"-}
                {-[toSql uid]-}
   return $ map convRow rws
-  where  convRow :: Map String SqlValue -> DBRule
+  where  convRow :: Map String HDBC.SqlValue -> DBRule
          convRow mp =
-           let  rdSql k = fromSql $ mp DM.! k
+           let  rdSql k = HDBC.fromSql $ mp DM.! k
            in   DBRule  (rdSql "rid")
                         (rdSql "rule_order")
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: UserId -> AppHandler ()
-deleteUserRules uid = q "DELETE FROM rules WHERE uid = ?" [toSql uid]
+deleteUserRules uid = q "DELETE FROM rules WHERE uid = ?" [HDBC.toSql uid]
 
