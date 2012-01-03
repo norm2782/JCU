@@ -1,5 +1,4 @@
-LANGUAGE_DIR = /Users/alessandro/Documents/Uni/xp/uhc-jscript/uhc-jscript/src
-COMPILER = ${UHC} --import-path=${LANGUAGE_DIR} -tjscript --no-recomp --no-hi-check -O,2 # --dump-core-stages=1
+COMPILER = ${UHC} --import-path=${UHC_JSCRIPT} -tjscript --no-recomp --no-hi-check -O,2 # --dump-core-stages=1
 
 all: build
 
