@@ -344,27 +344,19 @@ voidM m = do
   _ <- m
   return ()
 
--- TODO: This is just a workaround....
-q :: HasHdbc m c s => String -> [SqlValue] -> m ()
-q qry vals = do
-  withTransaction $ \conn' -> do
-    stmt <- HDBC.prepare conn' qry
-    voidM $ HDBC.execute stmt vals
-  return ()
-
 insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
 insertRule uid rl =
   let sqlVals = [toSql $ unUid uid, toSql $ show rl]
   in do
-    q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
+    voidM $ query' "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
     rws <- query "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC" sqlVals
     return $ case rws of
                []     -> Nothing
                (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
 deleteRule :: HasHdbc m c s => UserId -> ByteString -> m ()
-deleteRule uid rid = q "DELETE FROM rules WHERE rid = ? AND uid = ?"
-  [toSql rid, toSql uid]
+deleteRule uid rid = voidM $ query'
+  "DELETE FROM rules WHERE rid = ? AND uid = ?" [toSql rid, toSql uid]
 
 getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
 getStoredRules uid = do
@@ -378,5 +370,6 @@ getStoredRules uid = do
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: HasHdbc m c s => UserId -> m ()
-deleteUserRules uid = q "DELETE FROM rules WHERE uid = ?" [toSql uid]
+deleteUserRules uid = voidM $ query'
+  "DELETE FROM rules WHERE uid = ?" [toSql uid]
 
