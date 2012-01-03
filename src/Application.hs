@@ -28,7 +28,7 @@ import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
 import qualified  Database.HDBC as HDBC
-import            Database.HDBC.PostgreSQL
+import            Database.HDBC.MySQL
 import            JCU.Prolog
 import            JCU.Templates
 import            JCU.Types
@@ -84,7 +84,11 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
              ]
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
-  let pgsql  = connectPostgreSQL' =<< readFile "config/connection_string.conf"
+  pass <- readFile "config/connection_string.conf"
+  let pgsql  = connectMySql defaultMySQLConnectInfo {
+                mysqlPassword = pass,
+                mysqlDatabase = "jcu"
+              } -- connectPostgreSQL' =<< readFile "config/connection_string.conf"
   pg <- liftIO $ pgsql
   -- pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
   {-_dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pgsql-}
