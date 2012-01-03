@@ -31,6 +31,7 @@ import            JCU.Prolog
 import            JCU.Templates
 import            JCU.Types
 import            Language.Prolog.NanoProlog.NanoProlog
+import            Language.Prolog.NanoProlog.Parser
 import            Prelude hiding (catch)
 import            Snap.Core
 import            Snap.Snaplet
@@ -60,7 +61,7 @@ makeLens ''App
 type AppHandler = Handler App App
 
 instance HasHdbc (Handler b App) Connection IO where
-  getConnSrc = with dbLens $ gets connSrc
+   getHdbcState = with dbLens get
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do

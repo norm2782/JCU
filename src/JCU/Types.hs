@@ -14,6 +14,7 @@ import            Data.ListLike (CharStringLazy(..))
 import            Data.String
 import            Data.Tree (Tree(..))
 import            Language.Prolog.NanoProlog.NanoProlog
+import            Language.Prolog.NanoProlog.Parser
 import            Text.ParserCombinators.UU.BasicInstances (Parser(), Error, LineColPos)
 
 
