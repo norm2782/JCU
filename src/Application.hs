@@ -200,8 +200,7 @@ loadExampleH = restrict forbiddenH $ do
   uid <- getUserId
   deleteUserRules uid
   mapM_ (insertRule uid) exampleData
-  -- commitSession
-  -- redirect "/"
+  redirect "/"
 
 
 getUserId :: AppHandler UserId
@@ -356,20 +355,23 @@ q qry vals = do
   liftIO $ HDBC.withTransaction c' $ \conn' -> do
     stmt  <- HDBC.prepare conn' qry
     voidM $ HDBC.execute stmt vals
+  HDBC.commit c'
   return ()
 
 insertRule :: UserId -> Rule -> AppHandler (Maybe Int)
-insertRule uid rl = let sqlVals = [HDBC.toSql $ unUid uid, HDBC.toSql $ show rl] in do
-  q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
-  c <- gets pgconn
-  c' <- liftIO $ HDBC.clone c
-  rws <- liftIO $ do
-    stmt <- HDBC.prepare c' "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
-    voidM $ HDBC.execute stmt sqlVals
-    HDBC.fetchAllRowsMap' stmt
-  return $ case rws of
-             []     -> Nothing
-             (x:_)  -> Just $ HDBC.fromSql $ x DM.! "rid"
+insertRule uid rl =
+  let sqlVals = [HDBC.toSql $ unUid uid, HDBC.toSql $ show rl]
+  in do
+    q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
+    c <- gets pgconn
+    c' <- liftIO $ HDBC.clone c
+    rws <- liftIO $ do
+      stmt <- HDBC.prepare c' "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
+      voidM $ HDBC.execute stmt sqlVals
+      HDBC.fetchAllRowsMap' stmt
+    return $ case rws of
+               []     -> Nothing
+               (x:_)  -> Just $ HDBC.fromSql $ x DM.! "rid"
 
 deleteRule :: ByteString -> AppHandler ()
 deleteRule rid = q "DELETE FROM rules WHERE rid = ?" [HDBC.toSql rid]
