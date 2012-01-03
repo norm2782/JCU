@@ -22,10 +22,12 @@ import            Data.ListLike (CharString(..))
 import            Data.Map (Map)
 import qualified  Data.Map as DM
 import            Data.Maybe
+import            Data.Pool
 import            Data.String
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
+import qualified  Database.HDBC as HDBC ()
 import            Database.HDBC.PostgreSQL
 import            JCU.Prolog
 import            JCU.Templates
@@ -53,14 +55,14 @@ import qualified  Database.HDBC as HDBC
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
-  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection IO)
+  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection Pool)
   }
 
 makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc (Handler b App) Connection IO where
+instance HasHdbc (Handler b App) Connection Pool where
    getHdbcState = with dbLens get
 
 jcu :: SnapletInit App App
@@ -82,12 +84,11 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
              ]
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
-  let sqli = do connString <- readFile "config/connection_string.conf"
-                c <- connectPostgreSQL connString
-                return c
-  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit sqli
+  let pgsql  = connectPostgreSQL =<< readFile "config/connection_string.conf"
+  pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
+  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pool
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
-                   defAuthSettings sessLens sqli defAuthTable defQueries
+                   defAuthSettings sessLens pgsql defAuthTable defQueries
   return  $ App _authlens' _sesslens' _dblens'
 
 
