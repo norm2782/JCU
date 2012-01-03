@@ -1,5 +1,5 @@
 Name:                JCU
-Version:             0.3
+Version:             0.4
 Synopsis:            Online application for visualizing Prolog proof trees.
 Description:         This package was developed to demonstrate the ideas behind
                      the Prolog language. It uses a very small interpreter
@@ -7,14 +7,14 @@ Description:         This package was developed to demonstrate the ideas behind
                      own.
                      .
                      This package contains an environment constructed for the
-                     Junior College at Utrecht University. It provides a simpel
+                     Junior College at Utrecht University. It provides a simple
                      environment in which rules can be defined, and proofs can
                      be constructed interactively. The software can be
                      installed on a server, so students do not have to install
                      anything on their own machines.
 License:             BSD3
 license-file:        LICENSE
-Author:              Jurriën Stutterheim, Doaitse Swierstra
+Author:              Jurriën Stutterheim, Alessandro Vermeulen, Doaitse Swierstra
 Maintainer:          Jurriën Stutterheim <j.stutterheim@uu.nl>
 Homepage:            http://www.cs.uu.nl/wiki/PrologJCU
 Stability:           Experimental
@@ -50,7 +50,7 @@ Executable jcu
     digestive-functors-snap >= 0.1.1 && < 0.3,
     email-validate >= 0.2.6,
     HDBC >= 2.2,
-    HDBC-sqlite3 >= 2.3,
+    HDBC-postgresql >= 2.1,
     ListLike >= 3.1 && < 3.2,
     MonadCatchIO-transformers >= 0.2.1 && < 0.3,
     mtl >= 2.0,
@@ -60,7 +60,7 @@ Executable jcu
     snap-server >= 0.6,
     snaplet-hdbc >= 0.6.3,
     text >= 0.11,
-    time >= 1.1 && < 1.3,
+    time >= 1.1 && < 1.5,
     transformers >= 0.2,
     uu-parsinglib >= 2.7.1,
     xmlhtml >= 0.1

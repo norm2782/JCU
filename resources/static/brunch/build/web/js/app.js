@@ -11833,67 +11833,84 @@ b.dequeue()})})}})(jQuery);
   return this.require.define;
 }).call(this)({"collections/rules_list_collection": function(exports, require, module) {(function() {
   var Rule;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   Rule = require('models/rule_model').Rule;
+
   exports.RulesList = (function() {
+
     __extends(RulesList, Backbone.Collection);
+
     function RulesList() {
       this.url = __bind(this.url, this);
       RulesList.__super__.constructor.apply(this, arguments);
     }
+
     RulesList.prototype.model = Rule;
+
     RulesList.prototype.url = function() {
       return '/rules/stored';
     };
+
     return RulesList;
+
   })();
+
 }).call(this);
 }, "controllers/main_controller": function(exports, require, module) {(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   exports.MainController = (function() {
+
     __extends(MainController, Backbone.Router);
+
     function MainController() {
       this.home = __bind(this.home, this);
       MainController.__super__.constructor.apply(this, arguments);
     }
+
     MainController.prototype.routes = {
       'home': 'home'
     };
+
     MainController.prototype.home = function() {
       return $('#bd').html(app.views.home.render().el);
     };
+
     return MainController;
+
   })();
+
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
   var HomeView, MainController, ProofTree, ProofTreeView, RulesList, RulesListView;
+
   window.app = {};
+
   app.controllers = {};
+
   app.models = {};
+
   app.collections = {};
+
   app.views = {};
+
   app.styles = {};
+
   app.templates = {};
+
   RulesList = require('collections/rules_list_collection').RulesList;
+
   ProofTree = require('models/proof_tree_model').ProofTree;
+
   MainController = require('controllers/main_controller').MainController;
+
   HomeView = require('views/home_view').HomeView;
+
   RulesListView = require('views/rules_list_view').RulesListView;
+
   ProofTreeView = require('views/proof_tree_view').ProofTreeView;
+
   $(document).ready(function() {
     app.initialize = function() {
       app.collections.rulesList = new RulesList();
@@ -11926,20 +11943,18 @@ b.dequeue()})})}})(jQuery);
     app.initialize();
     return Backbone.history.start();
   });
+
 }).call(this);
 }, "models/proof_tree_model": function(exports, require, module) {(function() {
   var ProofTreeNode;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   ProofTreeNode = require('models/proof_tree_node_model').ProofTreeNode;
+
   exports.ProofTree = (function() {
+
     __extends(ProofTree, Backbone.Model);
+
     function ProofTree() {
       this.setUnified = __bind(this.setUnified, this);
       this.setProofResult = __bind(this.setProofResult, this);
@@ -11950,6 +11965,7 @@ b.dequeue()})})}})(jQuery);
       this.initialize = __bind(this.initialize, this);
       ProofTree.__super__.constructor.apply(this, arguments);
     }
+
     ProofTree.prototype.initialize = function() {
       return this.set({
         treeRoot: new ProofTreeNode({
@@ -11959,39 +11975,44 @@ b.dequeue()})})}})(jQuery);
         })
       });
     };
+
     ProofTree.prototype.reset = function() {
       this.treeRoot().setTerm("");
       return this.treeRoot().reset();
     };
+
     ProofTree.prototype.treeRoot = function() {
       return this.get('treeRoot');
     };
+
     ProofTree.prototype.isValid = function() {
       return this.treeRoot().isValid();
     };
+
     ProofTree.prototype.isProved = function() {
       return this.treeRoot().isProved();
     };
+
     ProofTree.prototype.setProofResult = function(data) {
       return this.treeRoot().setProofResult(data);
     };
+
     ProofTree.prototype.setUnified = function(tr) {
       return this.treeRoot().setUnified(tr);
     };
+
     return ProofTree;
+
   })();
+
 }).call(this);
 }, "models/proof_tree_node_model": function(exports, require, module) {(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   exports.ProofTreeNode = (function() {
+
     __extends(ProofTreeNode, Backbone.Model);
+
     function ProofTreeNode() {
       this.setUnified = __bind(this.setUnified, this);
       this.reset = __bind(this.reset, this);
@@ -12007,18 +12028,22 @@ b.dequeue()})})}})(jQuery);
       this.initialize = __bind(this.initialize, this);
       ProofTreeNode.__super__.constructor.apply(this, arguments);
     }
+
     ProofTreeNode.prototype.initialize = function() {
       return this.set({
         childTerms: new Backbone.Collection(),
         mcid: this.cid
       });
     };
+
     ProofTreeNode.prototype.term = function() {
       return this.get('term');
     };
+
     ProofTreeNode.prototype.proofResult = function() {
       return this.get('proofResult');
     };
+
     ProofTreeNode.prototype.isProved = function() {
       var f;
       f = function(acc, nd) {
@@ -12026,22 +12051,27 @@ b.dequeue()})})}})(jQuery);
       };
       return (this.proofResult() === "Correct") && this.childTerms().reduce(f, true);
     };
+
     ProofTreeNode.prototype.setTerm = function(tm) {
       return this.set({
         term: tm
       });
     };
+
     ProofTreeNode.prototype.childTerms = function() {
       return this.get('childTerms');
     };
+
     ProofTreeNode.prototype.setValidSyntax = function(flag) {
       return this.set({
         validSyntax: flag
       });
     };
+
     ProofTreeNode.prototype.hasValidSyntax = function() {
       return this.get('validSyntax');
     };
+
     ProofTreeNode.prototype.isValid = function() {
       var f;
       f = function(acc, nd) {
@@ -12049,6 +12079,7 @@ b.dequeue()})})}})(jQuery);
       };
       return this.hasValidSyntax() && this.childTerms().reduce(f, true);
     };
+
     ProofTreeNode.prototype.setProofResult = function(data) {
       var f, i;
       this.set({
@@ -12062,9 +12093,11 @@ b.dequeue()})})}})(jQuery);
       };
       return this.childTerms().each(f);
     };
+
     ProofTreeNode.prototype.reset = function() {
       return this.childTerms().reset(new Array());
     };
+
     ProofTreeNode.prototype.setUnified = function(tr) {
       var childNo, i, nd, newChildren, trLvl;
       this.setTerm(tr.term);
@@ -12087,25 +12120,27 @@ b.dequeue()})})}})(jQuery);
       }
       return this.childTerms().reset(newChildren);
     };
+
     return ProofTreeNode;
+
   })();
+
 }).call(this);
 }, "models/rule_model": function(exports, require, module) {(function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   exports.Rule = (function() {
+
     __extends(Rule, Backbone.Model);
+
     function Rule() {
       Rule.__super__.constructor.apply(this, arguments);
     }
+
     return Rule;
+
   })();
+
 }).call(this);
 }, "templates/home": function(exports, require, module) {module.exports = function(__obj) {
   if (!__obj) __obj = {};
@@ -12145,9 +12180,8 @@ b.dequeue()})})}})(jQuery);
     };
   }
   (function() {
-    (function() {
+    
       __out.push('<div class="yui3-g">\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Proof Tree</h2>\n      <div id="proof-tree-div"><!-- TREE GOES HERE --></div>\n      <div id="subst">Substitute\n        <input type="text" id="txtSubstSub" style="width: 50px" /> for\n        <input type="text" id="txtSubstFor" style="width: 50px" />\n        <input type="button" id="btnSubst" value="Substitute" />\n        (e.g. substitute bea for X0)\n      </div>\n      <input type="button" id="btnCheck" value="Check Proof" />\n      <input type="button" id="btnReset" value="Reset Tree" />\n      <!--\n      <h3>Note</h3>\n      <p class="lhsText">Due to limitations in the current version of the\n      software, you might see variables with the same name in different text\n      fields in the  tree. However, these are not necessarily the same\n      variable! Double-check to see which rules you can apply and which\n      variables those rules have.</p>\n      -->\n      <h3>Color coding help</h3>\n      <ul id="color-coding-list">\n        <li><div class="box redField"></div> Incorrect rule application</li>\n        <li><div class="box yellowField"></div> Incomplete proof</li>\n        <li><div class="box greenField"></div> Correct rule</li>\n        <li><div class="box blueField"></div> Syntax error</li>\n      </ul>\n      <h3>Example data</h3>\n      <p class="lhsText">\n      Example data containing the Dutch royal family, the list structure and\n      lookup, and the natural numbers (as discussed in the JCU lecture notes)\n      can be loaded by <a href="/load-example">clicking this link</a>. Beware\n      that this will replace all your existing rules!\n      </p>\n    </div>\n  </div>\n\n  <div class="yui3-u-1-2">\n    <div class="content">\n      <h2>Stored Rules</h2>\n      <p>Drag a rule form the list below to a field containing a term in the\n      tree on the left.</p>\n      <div id="rules-list-div"><!-- LIST GOES HERE --></div>\n      <div id="divListAdd">\n        <input type="text" id="txtAddRule" />\n        <input type="button" value="Add" id="btnAddRule" />\n      </div>\n    </div>\n  </div>\n</div>\n');
-    }).call(this);
     
   }).call(__obj);
   __obj.safe = __objSafe, __obj.escape = __escape;
@@ -12190,19 +12224,24 @@ b.dequeue()})})}})(jQuery);
     };
   }
   (function() {
-    (function() {
+    
       __out.push('<div class="tree_item dropzone">\n  ');
+    
       __out.push(__sanitize(this.content.treeLbl));
+    
       __out.push('. <input type="text" id="proof_');
+    
       __out.push(__sanitize(this.content.treeLbl));
+    
       __out.push('"\n  ');
-      if (this.content.disabled) {
-        __out.push('disabled="disabled"');
-      }
+    
+      if (this.content.disabled) __out.push('disabled="disabled"');
+    
       __out.push(' class="droppable"\n  value="');
+    
       __out.push(__sanitize(this.content.term));
+    
       __out.push('" />\n</div>\n');
-    }).call(this);
     
   }).call(__obj);
   __obj.safe = __objSafe, __obj.escape = __escape;
@@ -12245,31 +12284,32 @@ b.dequeue()})})}})(jQuery);
     };
   }
   (function() {
-    (function() {
+    
       __out.push('<div id="rule_');
+    
       __out.push(__sanitize(this.content.rule.replace(/[^a-zA-Z0-9]+/g, "")));
+    
       __out.push('" class="draggable rule-list-item ui-widget-content">\n  <span class="rule-text">');
+    
       __out.push(__sanitize(this.content.rule));
+    
       __out.push('</span>\n  <span class="buttons"><button class="btnDeleteList" type="button" value="X" /></span\n</div>\n');
-    }).call(this);
     
   }).call(__obj);
   __obj.safe = __objSafe, __obj.escape = __escape;
   return __out.join('');
 }}, "views/home_view": function(exports, require, module) {(function() {
   var Rule, homeTemplate;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   homeTemplate = require('templates/home');
+
   Rule = require('models/rule_model').Rule;
+
   exports.HomeView = (function() {
+
     __extends(HomeView, Backbone.View);
+
     function HomeView() {
       this.subst = __bind(this.subst, this);
       this.checkProof = __bind(this.checkProof, this);
@@ -12282,7 +12322,9 @@ b.dequeue()})})}})(jQuery);
       this.initialize = __bind(this.initialize, this);
       HomeView.__super__.constructor.apply(this, arguments);
     }
+
     HomeView.prototype.id = 'home-view';
+
     HomeView.prototype.events = {
       'click #btnCheck': 'checkProof',
       'click #btnAddRule': 'addStoreRule',
@@ -12291,24 +12333,27 @@ b.dequeue()})})}})(jQuery);
       "blur #txtAddRule": "checkRuleSyntax",
       "click #btnSubst": 'subst'
     };
+
     HomeView.prototype.initialize = function() {
       return this.validSyntax = false;
     };
+
     HomeView.prototype.render = function() {
       this.$(this.el).html(homeTemplate);
       this.$('#proof-tree-div').append(app.views.proofTree.render());
       this.$('#rules-list-div').append(app.views.rulesList.render().el);
       return this;
     };
+
     HomeView.prototype.addEnterRule = function(evt) {
-      if (evt.which === 13) {
-        return this.addStoreRule();
-      }
+      if (evt.which === 13) return this.addStoreRule();
     };
+
     HomeView.prototype.setBgColor = function(fld, cls) {
       fld.removeClass('redField yellowField greenField whiteField blueField');
       return fld.addClass(cls);
     };
+
     HomeView.prototype.checkRuleSyntax = function() {
       var callback, txtAddRule, view;
       txtAddRule = this.$('#txtAddRule');
@@ -12333,9 +12378,11 @@ b.dequeue()})})}})(jQuery);
         success: callback
       });
     };
+
     HomeView.prototype.resetTree = function() {
       return app.models.tree.reset();
     };
+
     HomeView.prototype.addStoreRule = function() {
       var res, val;
       this.checkRuleSyntax();
@@ -12355,6 +12402,7 @@ b.dequeue()})})}})(jQuery);
         return this.$('#txtAddRule').val("");
       }
     };
+
     HomeView.prototype.checkProof = function() {
       var callback;
       callback = function(data) {
@@ -12376,6 +12424,7 @@ b.dequeue()})})}})(jQuery);
         return alert("Cannot check proof. You have one or more invalid rules in your tree.");
       }
     };
+
     HomeView.prototype.subst = function() {
       var callback, sfor, ssub;
       ssub = $('#txtSubstSub').val();
@@ -12393,23 +12442,24 @@ b.dequeue()})})}})(jQuery);
         success: callback
       });
     };
+
     return HomeView;
+
   })();
+
 }).call(this);
 }, "views/proof_tree_node_view": function(exports, require, module) {(function() {
   var ProofTreeNodeView, proofTreeItemTemplate;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   proofTreeItemTemplate = require('templates/proof_tree_item');
+
   ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+
   exports.ProofTreeNodeView = (function() {
+
     __extends(ProofTreeNodeView, Backbone.View);
+
     function ProofTreeNodeView() {
       this.unify = __bind(this.unify, this);
       this.render = __bind(this.render, this);
@@ -12421,20 +12471,26 @@ b.dequeue()})})}})(jQuery);
       this.txtFld = __bind(this.txtFld, this);
       ProofTreeNodeView.__super__.constructor.apply(this, arguments);
     }
+
     ProofTreeNodeView.prototype.tagName = "li";
+
     ProofTreeNodeView.prototype.events = {
       "blur .droppable": "onBlurCheckTermSyntax"
     };
+
     ProofTreeNodeView.prototype.txtFld = function() {
       return $("input[id='proof_" + this.model.get('treeLbl') + "']");
     };
+
     ProofTreeNodeView.prototype.initialize = function() {
       return this.model.bind("proof", this.changeProofResult);
     };
+
     ProofTreeNodeView.prototype.setBgColor = function(fld, cls) {
       fld.removeClass('redField yellowField greenField whiteField blueField');
       return fld.addClass(cls);
     };
+
     ProofTreeNodeView.prototype.changeProofResult = function() {
       var bgc;
       switch (this.model.proofResult()) {
@@ -12452,9 +12508,11 @@ b.dequeue()})})}})(jQuery);
       }
       return this.setBgColor(this.txtFld(), bgc);
     };
+
     ProofTreeNodeView.prototype.childTerms = function() {
       return this.model.childTerms();
     };
+
     ProofTreeNodeView.prototype.onBlurCheckTermSyntax = function() {
       var callback, view;
       this.model.setTerm(this.txtFld().val());
@@ -12481,6 +12539,7 @@ b.dequeue()})})}})(jQuery);
         success: callback
       });
     };
+
     ProofTreeNodeView.prototype.render = function() {
       var renderNode, ul, view;
       view = this;
@@ -12521,6 +12580,7 @@ b.dequeue()})})}})(jQuery);
       }
       return this;
     };
+
     ProofTreeNodeView.prototype.unify = function(treeLvl, term, rule) {
       var callback, reqData, view;
       view = this;
@@ -12547,33 +12607,38 @@ b.dequeue()})})}})(jQuery);
         success: callback
       });
     };
+
     return ProofTreeNodeView;
+
   })();
+
 }).call(this);
 }, "views/proof_tree_view": function(exports, require, module) {(function() {
   var ProofTreeNodeView;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   ProofTreeNodeView = require('views/proof_tree_node_view').ProofTreeNodeView;
+
   exports.ProofTreeView = (function() {
+
     __extends(ProofTreeView, Backbone.View);
+
     function ProofTreeView() {
       this.render = __bind(this.render, this);
       this.getRoot = __bind(this.getRoot, this);
       ProofTreeView.__super__.constructor.apply(this, arguments);
     }
+
     ProofTreeView.prototype.id = 'proof-tree-view';
+
     ProofTreeView.prototype.tagName = 'ul';
+
     ProofTreeView.prototype.className = 'tree';
+
     ProofTreeView.prototype.getRoot = function() {
       return this.model.get('treeRoot');
     };
+
     ProofTreeView.prototype.render = function() {
       var view;
       view = new ProofTreeNodeView({
@@ -12582,57 +12647,61 @@ b.dequeue()})})}})(jQuery);
       });
       return this.$(this.el).html(view.render().el);
     };
+
     return ProofTreeView;
+
   })();
+
 }).call(this);
 }, "views/rules_list_item_view": function(exports, require, module) {(function() {
   var rulesListItemTemplate;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   rulesListItemTemplate = require('templates/rules_list_item');
+
   exports.RulesListItemView = (function() {
+
     __extends(RulesListItemView, Backbone.View);
+
     function RulesListItemView() {
       this.render = __bind(this.render, this);
       this.deleteItem = __bind(this.deleteItem, this);
       RulesListItemView.__super__.constructor.apply(this, arguments);
     }
+
     RulesListItemView.prototype.tagName = 'li';
+
     RulesListItemView.prototype.events = {
       "click .btnDeleteList": "deleteItem"
     };
+
     RulesListItemView.prototype.deleteItem = function() {
       this.model.destroy();
       return this.$(this.el).remove();
     };
+
     RulesListItemView.prototype.render = function() {
       this.$(this.el).html(rulesListItemTemplate({
         content: this.model.toJSON()
       }));
       return this;
     };
+
     return RulesListItemView;
+
   })();
+
 }).call(this);
 }, "views/rules_list_view": function(exports, require, module) {(function() {
   var RulesListItemView;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   RulesListItemView = require('views/rules_list_item_view').RulesListItemView;
+
   exports.RulesListView = (function() {
+
     __extends(RulesListView, Backbone.View);
+
     function RulesListView() {
       this.renderList = __bind(this.renderList, this);
       this.addAll = __bind(this.addAll, this);
@@ -12640,14 +12709,18 @@ b.dequeue()})})}})(jQuery);
       this.initialize = __bind(this.initialize, this);
       RulesListView.__super__.constructor.apply(this, arguments);
     }
+
     RulesListView.prototype.id = 'rules-list-view';
+
     RulesListView.prototype.tagName = 'ul';
+
     RulesListView.prototype.initialize = function() {
       app.collections.rulesList.bind('add', this.addOne);
       app.collections.rulesList.bind('reset', this.addAll);
       app.collections.rulesList.bind('all', this.renderList);
       return app.collections.rulesList.fetch();
     };
+
     RulesListView.prototype.addOne = function(rule) {
       var view;
       view = new RulesListItemView({
@@ -12655,9 +12728,11 @@ b.dequeue()})})}})(jQuery);
       });
       return this.$(this.el).append(view.render().el);
     };
+
     RulesListView.prototype.addAll = function() {
       return app.collections.rulesList.each(this.addOne);
     };
+
     RulesListView.prototype.renderList = function() {
       app.views.rulesList.render();
       return this.$('.draggable').draggable({
@@ -12671,7 +12746,10 @@ b.dequeue()})})}})(jQuery);
         }
       });
     };
+
     return RulesListView;
+
   })();
+
 }).call(this);
 }});
