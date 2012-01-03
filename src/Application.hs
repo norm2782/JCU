@@ -55,15 +55,15 @@ import qualified  Database.HDBC as HDBC
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
-  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection IO)
+  ,  pgconn    :: Connection
   }
 
 makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc (Handler b App) Connection IO where
-   getHdbcState = with dbLens get
+{-instance HasHdbc (Handler b App) Connection IO where-}
+   {-getHdbcState = with dbLens get-}
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
@@ -85,11 +85,12 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
   let pgsql  = connectPostgreSQL' =<< readFile "config/connection_string.conf"
+  pg <- liftIO $ pgsql
   -- pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
-  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pgsql
+  {-_dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pgsql-}
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
                    defAuthSettings sessLens pgsql defAuthTable defQueries
-  return  $ App _authlens' _sesslens' _dblens'
+  return  $ App _authlens' _sesslens' pg
 
 
 ------------------------------------------------------------------------------
@@ -344,35 +345,39 @@ voidM m = do
   return ()
 
 -- TODO: This is just a workaround....
-q' :: HasHdbc m c s => String -> [SqlValue] -> m ()
-q' qry vals = withTransaction $ \conn' -> do
-               stmt  <- HDBC.prepare conn' qry
-               _     <- HDBC.execute stmt vals
-               return ()
-
+q :: String -> [SqlValue] -> AppHandler ()
 q qry vals = do
-	conn <- clone
-	stmt <- liftIO $ HDBC.prepare conn qry
-	_    <- liftIO $ HDBC.execute stmt vals
-	return ()
+  c <- gets pgconn
+  liftIO $ HDBC.withTransaction c $ \conn' -> do
+    stmt  <- HDBC.prepare conn' qry
+    voidM $ HDBC.execute stmt vals
+  return ()
 
-insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
+insertRule :: UserId -> Rule -> AppHandler (Maybe Int)
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
   q  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
-  rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
-                sqlVals
+  c <- gets pgconn
+  rws <- liftIO $ do
+    stmt <- HDBC.prepare c "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
+    voidM $ HDBC.execute stmt sqlVals
+    fetchAllRowsMap' stmt
   return $ case rws of
              []     -> Nothing
              (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
-deleteRule :: HasHdbc m c s => ByteString -> m ()
+deleteRule :: ByteString -> AppHandler ()
 deleteRule rid = q "DELETE FROM rules WHERE rid = ?" [toSql rid]
 
-getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
+getStoredRules :: UserId -> AppHandler [DBRule]
 getStoredRules uid = do
-  rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
-               [toSql uid]
-  return $ map convRow rs
+  rws <- do
+      c <- gets pgconn
+      stmt <- liftIO $ HDBC.prepare c "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
+      voidM $ liftIO $ HDBC.execute stmt [toSql uid]
+      liftIO $ fetchAllRowsMap' stmt
+  {-rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"-}
+               {-[toSql uid]-}
+  return $ map convRow rws
   where  convRow :: Map String SqlValue -> DBRule
          convRow mp =
            let  rdSql k = fromSql $ mp DM.! k
@@ -380,6 +385,6 @@ getStoredRules uid = do
                         (rdSql "rule_order")
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
-deleteUserRules :: HasHdbc m c s => UserId -> m ()
+deleteUserRules :: UserId -> AppHandler ()
 deleteUserRules uid = q "DELETE FROM rules WHERE uid = ?" [toSql uid]
 
