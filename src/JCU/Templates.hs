@@ -62,6 +62,9 @@ header = do
     H.link ! A.rel "icon" ! A.type_ "image/png" ! A.href jcuLogo16
     when loggedIn $ do
       H.script ! A.src "brunch/build/web/js/app.js" $ H.toHtml ("" :: Text)
+      {-H.script ! A.src "brunch/src/vendor/jquery-1.6.2.js" $ H.toHtml ("" :: Text)-}
+      {-H.script ! A.src "hjs/ajaxq.js" $ H.toHtml ("" :: Text)-}
+      {-H.script ! A.src "hjs/jcu.js" $ H.toHtml ("" :: Text)-}
       H.script $ H.toHtml ("require('main');" :: Text)
   where
     cssBase    = "http://yui.yahooapis.com/3.3.0/build/cssbase/base-min.css"

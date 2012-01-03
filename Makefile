@@ -21,6 +21,9 @@ run:
 
 debug:
 	DEBUG=1 jcu
+	
+install:
+  rm ~/Library/Haskell/bin/jcu && cabal install
 
 uninstall:
 	ghc-pkg unregister jcu
