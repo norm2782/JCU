@@ -1,5 +1,5 @@
-LANGUAGE_DIR = /Users/norm2782/src/uhc-jscript/uhc-jscript/src
-COMPILER = ${UHC} --import-path=${LANGUAGE_DIR} -tjscript --no-recomp --no-hi-check -O,2 --dump-core-stages=1
+LANGUAGE_DIR = /Users/alessandro/Documents/Uni/xp/uhc-jscript/uhc-jscript/src
+COMPILER = ${UHC} --import-path=${LANGUAGE_DIR} -tjscript --no-recomp --no-hi-check -O,2 # --dump-core-stages=1
 
 all: build
 
@@ -11,3 +11,7 @@ testcase: testcases/*.hs
 	
 test:
 	echo $(GHC_OPTS)
+
+clean-core:
+	rm `find . -d -name "*.core*"`
+	rm `find ${LANGUAGE_DIR} -d -name "*.core*"`

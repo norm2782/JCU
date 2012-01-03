@@ -63,6 +63,7 @@ header = do
     when loggedIn $ do
       -- H.script ! A.src "brunch/build/web/js/app.js" $ H.toHtml ("" :: Text)
       H.script ! A.src "brunch/src/vendor/jquery-1.6.2.js" $ H.toHtml ("" :: Text)
+      H.script ! A.src "brunch/src/vendor/jquery-ui-1.8.16.custom.min.js" $ H.toHtml ("" :: Text)      
       H.script ! A.src "hjs/ajaxq.js" $ H.toHtml ("" :: Text)
       H.script ! A.src "hjs/jcu.js" $ H.toHtml ("" :: Text)
       -- H.script $ H.toHtml ("require('main');" :: Text)

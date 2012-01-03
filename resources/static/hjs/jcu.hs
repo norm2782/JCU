@@ -12,12 +12,16 @@ import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
 import Language.UHC.JScript.W3C.HTML5 as HTML5
 
+import Language.UHC.JScript.ECMA.Bool
 import Language.UHC.JScript.ECMA.String
+
 
 import Language.UHC.JScript.Assorted (alert , _alert)
 
 import Language.UHC.JScript.JQuery.Ajax as Ajax
 import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
+import Language.UHC.JScript.JQuery.Draggable
+
 ----
 --  App
 ----
@@ -32,17 +36,6 @@ import Models
 foreign import jscript "typeof(%1)"
   typeof :: a -> JSString
 
-class FromJS a b => FromJSPlus a b where
-  check :: a -> b -> String -> Bool
---
---
---
--- fromJSP :: (FromJSPlus a b) => a -> Maybe b
--- fromJSP i  | chck       = Just ji
---            | otherwise  = Nothing
---   where  ji    = (fromJS :: a -> b) i
---          chck  = True -- check i ji ((fromJS :: JSString -> String) $ typeof i)
---                 -- debug trace
 
 ajaxQ :: JS r => String -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ url onSuccess onFail = do
@@ -61,13 +54,8 @@ register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
                                                      event 
                                                      eh)
 
-foreign import jscript "window.location.host"
-  windowLocationHost :: JSString
-
 main :: IO ()
-main = do _alert windowLocationHost
-          alert (fromJS windowLocationHost)
-          init <- ioWrap initialize
+main = do init <- ioWrap initialize
           onDocumentReady init
 
 initialize :: IO ()
@@ -76,6 +64,7 @@ initialize = do -- Rendering
                 setHTML bd Templates.home
                 wrapInner bd "<div id=\"home-view\"/>"
                 -- Proof tree
+                
                 -- Rules list
                 ajaxQ "/rules/stored" addRules noop
   where noop :: AjaxCallback (JSPtr a)
@@ -86,19 +75,22 @@ addRules :: AjaxCallback (JSArray JSRule)
 addRules obj str obj2 = do
   -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
   f <- mkEachIterator (\idx e -> do
-    let ruleElem = jsRule2Rule e
-    alertType (rule ruleElem)
-    alertType (getRule e)
-    alert (jsStringToString $ getRule e)
-    alert (jsStringToString $ rule ruleElem)
+    let rt = (rules_list_item .fromJS . rule . jsRule2Rule) e
+    rules_list_div <- jQuery "#rules-list-div"
+    rules_list_ul  <- jQuery "<ul id=\"rules-list-view\"/>"
+    append rules_list_div rules_list_ul
+    appendString rules_list_ul ("<li>" ++ rt ++ "</li>")    
     return ())
-  alert "rules!"
   each' obj f
+  
+  onStart <- mkJUIEventHandler (\x y -> do focus <- jQuery ":focus"
+                                           doBlur focus
+                                           return False)
+  
+  draggables <- jQuery ".draggable"
+  draggable draggables $ Draggable (toJS True) (toJS "document") (toJS True) 100 50 onStart
+  
   return ()
-  where ruleF :: Int -> JSRule -> IO ()
-        ruleF idx e = do
-          let ruleElem = fromJS e
-          (alert . fromJS . rule) ruleElem
 
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
@@ -111,3 +103,5 @@ foreign import jscript "wrapper"
 
 alertType :: a -> IO ()
 alertType = _alert . typeof
+
+defaultDragOptions = Draggable 
