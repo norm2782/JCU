@@ -84,7 +84,7 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
              ]
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
-  let pgsql  = connectPostgreSQL =<< readFile "config/connection_string.conf"
+  let pgsql  = connectPostgreSQL' =<< readFile "config/connection_string.conf"
   pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
   _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pool
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
