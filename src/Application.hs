@@ -27,7 +27,7 @@ import            Data.String
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
-import qualified  Database.HDBC as HDBC ()
+import qualified  Database.HDBC as HDBC
 import            Database.HDBC.PostgreSQL
 import            JCU.Prolog
 import            JCU.Templates
@@ -55,14 +55,14 @@ import qualified  Database.HDBC as HDBC
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
-  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection Pool)
+  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection IO)
   }
 
 makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc (Handler b App) Connection Pool where
+instance HasHdbc (Handler b App) Connection IO where
    getHdbcState = with dbLens get
 
 jcu :: SnapletInit App App
@@ -85,8 +85,8 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
   let pgsql  = connectPostgreSQL' =<< readFile "config/connection_string.conf"
-  pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
-  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pool
+  -- pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
+  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pgsql
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
                    defAuthSettings sessLens pgsql defAuthTable defQueries
   return  $ App _authlens' _sesslens' _dblens'
@@ -344,11 +344,17 @@ voidM m = do
   return ()
 
 -- TODO: This is just a workaround....
-q :: HasHdbc m c s => String -> [SqlValue] -> m ()
-q qry vals = withTransaction $ \conn' -> do
+q' :: HasHdbc m c s => String -> [SqlValue] -> m ()
+q' qry vals = withTransaction $ \conn' -> do
                stmt  <- HDBC.prepare conn' qry
                _     <- HDBC.execute stmt vals
                return ()
+
+q qry vals = do
+	conn <- clone
+	stmt <- liftIO $ HDBC.prepare conn qry
+	_    <- liftIO $ HDBC.execute stmt vals
+	return ()
 
 insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
