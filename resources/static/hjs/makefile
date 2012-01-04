@@ -11,6 +11,7 @@ testcase: testcases/*.hs
 test:
 	echo $(GHC_OPTS)
 
-clean-core:
-	rm `find . -d -name "*.core*"`
-	rm `find ${LANGUAGE_DIR} -d -name "*.core*"`
+clean:
+	find . -iname "*.core*" -o -iname "*.full.core" -o -iname "*.hi" -o -iname "*.mjs" | xargs rm
+
+.PHONY: clean
