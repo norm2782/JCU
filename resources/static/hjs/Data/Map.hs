@@ -12,3 +12,6 @@ insert k a = (:) (k, a)
 
 assocs :: Map k a -> [(k, a)]
 assocs = id
+
+empty :: Map k a
+empty = []
