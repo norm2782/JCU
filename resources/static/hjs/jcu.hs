@@ -1,7 +1,7 @@
 {-# LANGUAGE EmptyDataDecls #-}
 module JCU where
 
-import Control.Monad (liftM)
+import Control.Monad (liftM, foldM)
 
 import Data.List
 
@@ -21,6 +21,10 @@ import Language.UHC.JScript.Assorted (alert , _alert)
 import Language.UHC.JScript.JQuery.Ajax as Ajax
 import qualified Language.UHC.JScript.JQuery.AjaxQueue as AQ
 import Language.UHC.JScript.JQuery.Draggable
+import Language.UHC.JScript.JQuery.Droppable
+
+import Language.Prolog.NanoProlog.NanoProlog
+import Language.Prolog.NanoProlog.ParserUUTC
 
 ----
 --  App
@@ -48,11 +52,12 @@ ajaxQ url onSuccess onFail = do
            onSuccess
            onFail
 
-register_events :: [(String, JEventType, JEventHandler)] -> IO ()
-register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
-                                                bind elem
-                                                     event 
-                                                     eh)
+registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
+registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
+                                               jeh  <- mkJEventHandler eh
+                                               bind elem
+                                                    event 
+                                                    jeh)
 
 main :: IO ()
 main = do init <- ioWrap initialize
@@ -67,8 +72,82 @@ initialize = do -- Rendering
                 
                 -- Rules list
                 ajaxQ "/rules/stored" addRules noop
+                
+                addRuleTree
+                
+                
+                registerEvents $ [("#btnCheck"  , "click"   , noevent)
+                                 ,("#btnAddRule", "click"   , noevent)
+                                 ,("#btnReset"  , "click"   , noevent)
+                                 ,("#txtAddRule", "keypress", noevent)
+                                 ,("#txtAddRule", "blur"    , noevent)
+                                 ,("#btnSubst"  , "click"   , noevent)
+                                 ]
   where noop :: AjaxCallback (JSPtr a)
         noop = (\x y z -> return ())
+        noevent :: EventHandler
+        noevent x = return False
+
+addRuleTree :: IO ()
+addRuleTree = do
+  ruleTreeDiv <- jQuery "#proof-tree-div"
+  ruleTreeUL  <- buildRuleUl $ Node "" "" [] ""
+  append ruleTreeDiv ruleTreeUL
+  
+buildRuleUl :: ProofTreeNode -> IO JQuery
+buildRuleUl node =
+  do topUL <- jQuery "<ul id=\"proof-tree-view\" class=\"tree\"/>"
+     restUL <- build' node False
+     append topUL restUL
+     return topUL
+  where
+    f :: JQuery -> ProofTreeNode -> IO JQuery
+    f jq node = do li' <- build' node True
+                   append jq li'
+                   return jq
+    dropje :: ProofTreeNode -> UIThisEventHandler
+    dropje node this _ _  = do
+      elem    <- findSelector this "input[type='text']:first"
+      elemVal <- valString elem
+
+      if length elemVal == 0 then
+          alert "There needs to be a term in the text field!" 
+        else
+          if hasValidSyntax (fromJS elemVal) then
+              alert "Jeej! TODO: Actual unification and storing of result. :)"
+            else
+              alert "You cannot possibly think I could unify this invalid term!"
+    
+      return True
+                          -- elemVal = $(this).find("input[type='text']:first").val()
+                          -- if !elemVal
+                          --   alert "There needs to be a term in the text field!"
+                          --   @
+                          -- else
+                          --   view.model.setTerm elemVal
+                          -- 
+                          --   if !view.model.hasValidSyntax()
+                          --     alert "Cannot unify with an invalid term!"
+                          --     @
+                          --   else
+                          --     view.unify view.model.get("treeLvl"), elemVal, ui.draggable.find(".rule-text").html()
+    
+    build' :: ProofTreeNode -> Bool -> IO JQuery
+    build' n@(Node term mcid childTerms proofResult) disabled =
+      do li <- jQuery "<li/>"
+         appendString li  $ proof_tree_item term "" disabled
+
+         dropzones <- findSelector li ".dropzone"
+         
+         drop'   <- mkJUIThisEventHandler (dropje n) 
+         drop''  <- wrappedJQueryUIEvent drop'
+         droppable dropzones $ Droppable (toJS "dropHover") drop''
+         
+         
+         startUl <- jQuery "<ul/>"
+         res <- foldM f startUl childTerms
+         append li res
+         return li
 
 
 addRules :: AjaxCallback (JSArray JSRule)
@@ -101,7 +180,7 @@ foreign import jscript "wrapper"
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
 
+
+
 alertType :: a -> IO ()
 alertType = _alert . typeof
-
-defaultDragOptions = Draggable 

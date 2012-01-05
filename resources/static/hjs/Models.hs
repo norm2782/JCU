@@ -4,6 +4,12 @@ import Language.UHC.JScript.ECMA.String
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.Types
 
+import Data.List (find)
+
+import ParseLib.Abstract
+import Language.Prolog.NanoProlog.NanoProlog
+import Language.Prolog.NanoProlog.ParserUUTC
+
 
 type ProofResult = String -- I want to make an enum of this
 
@@ -37,6 +43,14 @@ proofTreeNode = Node "" "" [] ""
 
 foreign import jscript "%1.rule"
   getRule :: JSRule -> JSString
+  
+hasValidSyntax :: String -> Bool
+hasValidSyntax term = 
+  maybe False (const True) (run pTerm term)
+  
+    
+run :: Parser a b -> [a] -> Maybe b    
+run p as = fmap fst . find (null . snd) $ startParse p as    
 
 -- class exports.ProofTreeNode extends Backbone.Model
 --   # Available attributes:
