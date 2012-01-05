@@ -48,11 +48,12 @@ ajaxQ url onSuccess onFail = do
            onSuccess
            onFail
 
-register_events :: [(String, JEventType, JEventHandler)] -> IO ()
-register_events = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
-                                                bind elem
-                                                     event 
-                                                     eh)
+registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
+registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
+                                               jeh  <- mkJEventHandler eh
+                                               bind elem
+                                                    event 
+                                                    jeh)
 
 main :: IO ()
 main = do init <- ioWrap initialize
@@ -67,8 +68,19 @@ initialize = do -- Rendering
                 
                 -- Rules list
                 ajaxQ "/rules/stored" addRules noop
+                
+                
+                registerEvents $ [("#btnCheck"  , "click"   , noevent)
+                                 ,("#btnAddRule", "click"   , noevent)
+                                 ,("#btnReset"  , "click"   , noevent)
+                                 ,("#txtAddRule", "keypress", noevent)
+                                 ,("#txtAddRule", "blur"    , noevent)
+                                 ,("#btnSubst"  , "click"   , noevent)
+                                 ]
   where noop :: AjaxCallback (JSPtr a)
         noop = (\x y z -> return ())
+        noevent :: EventHandler
+        noevent x = return False
 
 
 addRules :: AjaxCallback (JSArray JSRule)
@@ -103,5 +115,3 @@ foreign import jscript "wrapper"
 
 alertType :: a -> IO ()
 alertType = _alert . typeof
-
-defaultDragOptions = Draggable 
