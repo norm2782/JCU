@@ -1,4 +1,4 @@
-COMPILER = ${UHC} --import-path=${UHC_JSCRIPT} -tjscript --no-recomp --no-hi-check -O,2 # --dump-core-stages=1
+COMPILER = ${UHC} --import-path=${UHC_JSCRIPT} --import-path=${UHC_NANOPROLOG} --import-path=${UHC_UU_TC} -tjscript --no-recomp --no-hi-check -O,2 # --dump-core-stages=1
 
 all: build
 
@@ -11,6 +11,6 @@ testcase: testcases/*.hs
 test:
 	echo $(GHC_OPTS)
 
-clean-core:
+.PHONY clean-core:
 	rm `find . -d -name "*.core*"`
 	rm `find ${LANGUAGE_DIR} -d -name "*.core*"`
