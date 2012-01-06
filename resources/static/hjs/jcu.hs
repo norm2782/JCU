@@ -41,14 +41,15 @@ foreign import jscript "typeof(%1)"
   typeof :: a -> JSString
 
 
-ajaxQ :: JS r => String -> AjaxCallback r -> AjaxCallback r -> IO ()
-ajaxQ url onSuccess onFail = do
+ajaxQ :: JS r => AjaxRequestType -> String -> JSPtr b -> AjaxCallback r -> AjaxCallback r -> IO ()
+ajaxQ rt url vals onSuccess onFail = do
   AQ.ajaxQ "jcu_app"
            (AjaxOptions { ao_url         = url,
-                          ao_requestType = Ajax.GET,
+                          ao_requestType = rt,
                           ao_contentType = "application/json",
                           ao_dataType    = "json"
                         })
+           vals
            onSuccess
            onFail
 
@@ -71,13 +72,14 @@ initialize = do -- Rendering
                 -- Proof tree
                 
                 -- Rules list
-                ajaxQ "/rules/stored" addRules noop
+                obj <- mkAnonObj
+                ajaxQ GET "/rules/stored" obj addRules noop
                 
                 addRuleTree
                 
                 
                 registerEvents $ [("#btnCheck"  , "click"   , noevent)
-                                 ,("#btnAddRule", "click"   , noevent)
+                                 ,("#btnAddRule", "click"   , addRuleEvent)
                                  ,("#btnReset"  , "click"   , noevent)
                                  ,("#txtAddRule", "keypress", noevent)
                                  ,("#txtAddRule", "blur"    , noevent)
@@ -107,8 +109,7 @@ buildRuleUl node =
                    return jq
     dropje :: ProofTreeNode -> UIThisEventHandler
     dropje node this _ _  = do
-      elem    <- findSelector this "input[type='text']:first"
-      elemVal <- valString elem
+      elemVal <- findSelector this "input[type='text']:first" >>= valString
 
       if length elemVal == 0 then
           alert "There needs to be a term in the text field!" 
@@ -117,20 +118,8 @@ buildRuleUl node =
               alert "Jeej! TODO: Actual unification and storing of result. :)"
             else
               alert "You cannot possibly think I could unify this invalid term!"
-    
       return True
-                          -- elemVal = $(this).find("input[type='text']:first").val()
-                          -- if !elemVal
-                          --   alert "There needs to be a term in the text field!"
-                          --   @
-                          -- else
-                          --   view.model.setTerm elemVal
-                          -- 
-                          --   if !view.model.hasValidSyntax()
-                          --     alert "Cannot unify with an invalid term!"
-                          --     @
-                          --   else
-                          --     view.unify view.model.get("treeLvl"), elemVal, ui.draggable.find(".rule-text").html()
+
     
     build' :: ProofTreeNode -> Bool -> IO JQuery
     build' n@(Node term mcid childTerms proofResult) disabled =
@@ -170,6 +159,13 @@ addRules obj str obj2 = do
   draggable draggables $ Draggable (toJS True) (toJS "document") (toJS True) 100 50 onStart
   
   return ()
+  
+addRuleEvent :: EventHandler
+addRuleEvent event = do
+  rule  <- jQuery "#txtAddRule" >>= valString
+  alert (fromJS rule)
+  -- ajaxQ POST "/rules/stored" 
+  return True
 
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
