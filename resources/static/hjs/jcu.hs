@@ -36,12 +36,26 @@ import Array
 import Templates
 import Models
 
-
 foreign import jscript "typeof(%1)"
   typeof :: a -> JSString
 
+-- | Would like fun dep here
+class FromJS a b => FromJSPlus a b where
+  jsType :: a -> b -> String
+  check :: a -> b -> Bool
+  check a b = jsType a b == fromJS (typeof a)
+  -- fromJSP :: a -> Maybe b
+  -- fromJSP a = if check a undefined then
+  --                 Just (fromJS a)
+  --               else
+  --                 Nothing
 
-ajaxQ :: JS r => AjaxRequestType -> String -> JSPtr b -> AjaxCallback r -> AjaxCallback r -> IO ()
+-- 
+-- foreign import jscript "typeof(%1)"
+--   typeof :: a -> JSString
+
+
+ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url vals onSuccess onFail = do
   AQ.ajaxQ "jcu_app"
            (AjaxOptions { ao_url         = url,
@@ -76,7 +90,6 @@ initialize = do -- Rendering
                 ajaxQ GET "/rules/stored" obj addRules noop
                 
                 addRuleTree
-                
                 
                 registerEvents $ [("#btnCheck"  , "click"   , noevent)
                                  ,("#btnAddRule", "click"   , addRuleEvent)
@@ -160,13 +173,21 @@ addRules obj str obj2 = do
   
   return ()
   
+instance Language.UHC.JScript.Types.JS UHC.Base.PackedString where
+  
+instance JS () where
+  
 addRuleEvent :: EventHandler
 addRuleEvent event = do
   rule  <- jQuery "#txtAddRule" >>= valString
   alert (fromJS rule)
-  -- ajaxQ POST "/rules/stored" 
+  ajaxQ POST "/rules/stored" rule (onSuccess (fromJS rule)) onFail
   return True
-
+  where onSuccess :: String -> AjaxCallback JSString
+        onSuccess r _ _ _ = do ul <- jQuery "ul#rules-list-view"
+                               appendString ul $ "<li>" ++ rules_list_item r ++ "</li>"
+        onFail _ _ _ = alert "faal"
+        
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
   
