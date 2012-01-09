@@ -156,7 +156,8 @@ addRules :: AjaxCallback (JSArray JSRule)
 addRules obj str obj2 = do
   -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
   f <- mkEachIterator (\idx e -> do
-    let rt = (rules_list_item .fromJS . rule . jsRule2Rule) e
+    rule' <- jsRule2Rule e
+    let rt = rules_list_item ((fromJS . rule) rule')
     rules_list_div <- jQuery "#rules-list-div"
     rules_list_ul  <- jQuery "<ul id=\"rules-list-view\"/>"
     append rules_list_div rules_list_ul

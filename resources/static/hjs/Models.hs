@@ -29,15 +29,14 @@ data Rule = Rule {
 data JSRulePtr
 type JSRule = JSPtr JSRulePtr
 
-instance FromJS JSRule Rule where
+instance FromJS JSRule (IO Rule) where
   fromJS = jsRule2Rule
 
-jsRule2Rule :: JSRule -> Rule
-jsRule2Rule ptr = Rule {
-                    id   = getAttr "id"   ptr, 
-                    ro   = getAttr "ro"   ptr,
-                    rule = getAttr "rule" ptr
-                  }
+jsRule2Rule :: JSRule -> IO Rule
+jsRule2Rule ptr = do id   <- getAttr "id"   ptr 
+                     ro   <- getAttr "ro"   ptr
+                     rule <- getAttr "rule" ptr 
+                     return $ Rule id ro rule
 
 proofTreeNode = Node "" "" [] ""
 
