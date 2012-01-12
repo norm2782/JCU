@@ -13,7 +13,7 @@ import Language.UHC.JScript.JQuery.JQuery
 import Language.UHC.JScript.W3C.HTML5 as HTML5
 
 import Language.UHC.JScript.ECMA.Bool
-import Language.UHC.JScript.ECMA.String
+import Language.UHC.JScript.ECMA.String as JSString
 
 
 import Language.UHC.JScript.Assorted (alert , _alert)
@@ -29,6 +29,9 @@ import Language.Prolog.NanoProlog.ParserUUTC
 ----
 --  App
 ----
+
+import Prolog
+
 -- import Language.UHC.JScript.ECMA.Array
 
 import Array
@@ -55,7 +58,7 @@ class FromJS a b => FromJSPlus a b where
 --   typeof :: a -> JSString
 
 
-ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
+ajaxQ :: (JS r) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url vals onSuccess onFail = do
   AQ.ajaxQ "jcu_app"
            (AjaxOptions { ao_url         = url,
@@ -174,15 +177,16 @@ addRules obj str obj2 = do
   
   return ()
   
-instance Language.UHC.JScript.Types.JS UHC.Base.PackedString where
-  
-instance JS () where
+-- instance Language.UHC.JScript.Types.JS UHC.Base.PackedString where
+--   
+-- instance JS () where
   
 addRuleEvent :: EventHandler
 addRuleEvent event = do
   rule  <- jQuery "#txtAddRule" >>= valString
   alert (fromJS rule)
-  ajaxQ POST "/rules/stored" rule (onSuccess (fromJS rule)) onFail
+  let str = JSString.concat (toJS "{\"rule\":\"") $ JSString.concat rule (toJS "\"}")
+  ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
   return True
   where onSuccess :: String -> AjaxCallback JSString
         onSuccess r _ _ _ = do ul <- jQuery "ul#rules-list-view"
