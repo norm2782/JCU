@@ -30,7 +30,7 @@ import Language.Prolog.NanoProlog.ParserUUTC
 --  App
 ----
 
-import Prolog
+-- import Prolog
 
 -- import Language.UHC.JScript.ECMA.Array
 
