@@ -9,7 +9,7 @@ import            Language.Prolog.NanoProlog.ParserUUTC
 
 type Proof     =  Tree Term
 
-instance Subst Proof where
+instance Subst (Tree Term) where
   subst env (Node tm cs) = Node (subst env tm) (subst env cs)
   
   

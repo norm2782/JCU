@@ -4,6 +4,7 @@ module JCU where
 import Control.Monad (liftM, foldM)
 
 import Data.List
+import Data.Tree as T
 
 
 
@@ -30,7 +31,7 @@ import Language.Prolog.NanoProlog.ParserUUTC
 --  App
 ----
 
--- import Prolog
+import Prolog
 
 -- import Language.UHC.JScript.ECMA.Array
 
@@ -106,48 +107,56 @@ initialize = do -- Rendering
 addRuleTree :: IO ()
 addRuleTree = do
   ruleTreeDiv <- jQuery "#proof-tree-div"
-  ruleTreeUL  <- buildRuleUl $ Node "" "" [] ""
+  ruleTreeUL  <- buildRuleUl $ T.Node (Var "") []
   append ruleTreeDiv ruleTreeUL
   
-buildRuleUl :: ProofTreeNode -> IO JQuery
+buildRuleUl :: Proof -> IO JQuery
 buildRuleUl node =
   do topUL <- jQuery "<ul id=\"proof-tree-view\" class=\"tree\"/>"
-     restUL <- build' node False
+     restUL <- build' node node False
      append topUL restUL
      return topUL
   where
-    f :: JQuery -> ProofTreeNode -> IO JQuery
-    f jq node = do li' <- build' node True
-                   append jq li'
-                   return jq
-    dropje :: ProofTreeNode -> UIThisEventHandler
-    dropje node this _ _  = do
+    f :: Proof -> JQuery -> Proof -> IO JQuery
+    f wp jq node = do li' <- build' wp node True
+                      append jq li'
+                      return jq
+    dropje :: Proof -> Proof -> UIThisEventHandler
+    dropje wp node this _ _  = do
       elemVal <- findSelector this "input[type='text']:first" >>= valString
 
       if length elemVal == 0 then
           alert "There needs to be a term in the text field!" 
         else
-          if hasValidSyntax (fromJS elemVal) then
-              alert "Jeej! TODO: Actual unification and storing of result. :)"
-            else
+          if not $ hasValidTermSyntax (fromJS elemVal) then
               alert "You cannot possibly think I could unify this invalid term!"
+            else
+              case tryParseRule "" of
+                Nothing  -> alert "This should not happen. Dropping an invalid rule here."
+                (Just t) -> case dropUnify wp [] t of
+                              (DropRes False _) -> alert "I could not unify this."
+                              (DropRes True  p) -> do
+                                oldUL <- jQuery "ul#proof-tree-view.tree"
+                                newUL <- buildRuleUl p
+                                replaceWith oldUL newUL
+      
       return True
 
     
-    build' :: ProofTreeNode -> Bool -> IO JQuery
-    build' n@(Node term mcid childTerms proofResult) disabled =
+    build' :: Proof -> Proof -> Bool -> IO JQuery
+    build' wp n@(T.Node term childTerms) disabled =
       do li <- jQuery "<li/>"
-         appendString li  $ proof_tree_item term "" disabled
+         appendString li  $ proof_tree_item (show term) "" disabled
 
          dropzones <- findSelector li ".dropzone"
          
-         drop'   <- mkJUIThisEventHandler (dropje n) 
+         drop'   <- mkJUIThisEventHandler (dropje wp n) 
          drop''  <- wrappedJQueryUIEvent drop'
          droppable dropzones $ Droppable (toJS "dropHover") drop''
          
          
          startUl <- jQuery "<ul/>"
-         res <- foldM f startUl childTerms
+         res <- foldM (f wp) startUl childTerms
          append li res
          return li
 
