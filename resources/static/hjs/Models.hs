@@ -49,7 +49,7 @@ hasValidSyntax term =
   
     
 run :: Parser a b -> [a] -> Maybe b    
-run p as = fmap fst . find (null . snd) $ startParse p as    
+run p as = fmap fst . find (null . snd) $ startParse p as 
 
 -- class exports.ProofTreeNode extends Backbone.Model
 --   # Available attributes:

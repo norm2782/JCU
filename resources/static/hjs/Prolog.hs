@@ -9,6 +9,10 @@ import            Language.Prolog.NanoProlog.ParserUUTC
 
 type Proof     =  Tree Term
 
+instance Subst Proof where
+  subst env (Node tm cs) = Node (subst env tm) (subst env cs)
+  
+  
 data DropRes   =  DropRes Bool Proof
                deriving Show
   

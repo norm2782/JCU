@@ -47,18 +47,15 @@ class FromJS a b => FromJSPlus a b where
   jsType :: a -> b -> String
   check :: a -> b -> Bool
   check a b = jsType a b == fromJS (typeof a)
-  -- fromJSP :: a -> Maybe b
-  -- fromJSP a = if check a undefined then
-  --                 Just (fromJS a)
-  --               else
-  --                 Nothing
-
--- 
--- foreign import jscript "typeof(%1)"
---   typeof :: a -> JSString
+  fromJSP :: a -> Maybe b
+  fromJSP a = let (v::b) = fromJS a
+               in if check a v then
+                    Just v
+                  else
+                    Nothing
 
 
-ajaxQ :: (JS r) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
+ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url vals onSuccess onFail = do
   AQ.ajaxQ "jcu_app"
            (AjaxOptions { ao_url         = url,
@@ -176,8 +173,7 @@ addRules obj str obj2 = do
   draggable draggables $ Draggable (toJS True) (toJS "document") (toJS True) 100 50 onStart
   
   return ()
-  
--- instance Language.UHC.JScript.Types.JS UHC.Base.PackedString where
+
 --   
 -- instance JS () where
   
