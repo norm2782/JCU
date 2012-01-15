@@ -193,6 +193,11 @@ addRuleEvent event = do
                                appendString ul $ "<li>" ++ rules_list_item r ++ "</li>"
         onFail _ _ _ = alert "faal"
         
+createRule :: String -> IO JQuery
+createRule rule = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</li>"
+                     
+                     return item
+        
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
   
