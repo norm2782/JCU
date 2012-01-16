@@ -22,10 +22,12 @@ import            Data.ListLike (CharString(..))
 import            Data.Map (Map)
 import qualified  Data.Map as DM
 import            Data.Maybe
+import            Data.Pool
 import            Data.String
 import            Data.Text (Text)
 import qualified  Data.Text as DT
 import qualified  Data.Text.Encoding as DT
+import qualified  Database.HDBC as HDBC
 import            Database.HDBC.PostgreSQL
 import            JCU.Prolog
 import            JCU.Templates
@@ -52,18 +54,15 @@ import qualified  Text.Email.Validate as E
 data App = App
   {  _authLens  :: Snaplet (AuthManager App)
   ,  _sessLens  :: Snaplet SessionManager
-  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection IO)
+  ,  _dbLens    :: Snaplet (HdbcSnaplet Connection Pool)
   }
 
 makeLens ''App
 
 type AppHandler = Handler App App
 
-instance HasHdbc (Handler b App) Connection IO where
+instance HasHdbc (Handler b App) Connection Pool where
   getHdbcState = with dbLens get
-  
--- instance Control.Monad.Trans.Control.MonadBaseControl IO (Handler b App) where
-  
 
 jcu :: SnapletInit App App
 jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
@@ -84,12 +83,11 @@ jcu = makeSnaplet "jcu" "Prolog proof tree practice application" Nothing $ do
              ]
   _sesslens'  <- nestSnaplet "session" sessLens $ initCookieSessionManager
                    "config/site_key.txt" "_session" Nothing
-  let sqli = do connString <- readFile "config/connection_string.conf"
-                c <- connectPostgreSQL connString
-                return c
-  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit sqli
+  let pgsql = connectPostgreSQL' =<< readFile "config/connection_string.conf"
+  pool <- liftIO $ createPool pgsql HDBC.disconnect 1 500 1
+  _dblens'    <- nestSnaplet "hdbc" dbLens $ hdbcInit pool
   _authlens'  <- nestSnaplet "auth" authLens $ initHdbcAuthManager
-                   defAuthSettings sessLens sqli defAuthTable defQueries
+                   defAuthSettings sessLens pool defAuthTable defQueries
   return  $ App _authlens' _sesslens' _dblens'
 
 
@@ -180,7 +178,9 @@ deleteStoredRuleH = restrict forbiddenH $ do
   mrid <- getParam "id"
   case mrid of
     Nothing  -> return ()
-    Just x   -> deleteRule x -- TODO: Take user ID into account. we don't want people deleting other users's rules
+    Just x   -> do
+      uid <- getUserId
+      deleteRule uid x
 
 addStoredRuleH :: AppHandler ()
 addStoredRuleH = restrict forbiddenH $ do
@@ -341,7 +341,6 @@ registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
 -------------------------------------------------------------------------------
 -- Database interaction
 
-
 insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
 insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
   query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
@@ -351,15 +350,15 @@ insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
              []     -> Nothing
              (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
-deleteRule :: (Functor m, HasHdbc m c s) => ByteString -> m ()
-deleteRule rid = void $ query' "DELETE FROM rules WHERE rid = ?" [toSql rid]
+deleteRule :: (Functor m, HasHdbc m c s) => UserId -> ByteString -> m ()
+deleteRule uid rid = void $
+  query' "DELETE FROM rules WHERE rid = ? AND uid = ?" [toSql rid, toSql uid]
 
 getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
 getStoredRules uid = do
-  rs <- query  "SELECT rid, rule_order, rule FROM rules WHERE uid = ?"
-               [toSql uid]
-  return $ map convRow rs
-  where  convRow :: Map String SqlValue -> DBRule
+  rws <- query "SELECT rid, rule_order, rule FROM rules WHERE uid = ?" [toSql uid]
+  return $ map convRow rws
+  where  convRow :: Map String HDBC.SqlValue -> DBRule
          convRow mp =
            let  rdSql k = fromSql $ mp DM.! k
            in   DBRule  (rdSql "rid")
@@ -368,4 +367,3 @@ getStoredRules uid = do
 
 deleteUserRules :: (Functor m, HasHdbc m c s) => UserId -> m ()
 deleteUserRules uid = void $ query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
-
