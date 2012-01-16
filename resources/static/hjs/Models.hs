@@ -7,7 +7,7 @@ import Language.UHC.JScript.Types
 import Data.List (find)
 
 import ParseLib.Abstract
-import Language.Prolog.NanoProlog.NanoProlog
+import Language.Prolog.NanoProlog.NanoProlog as NP
 import Language.Prolog.NanoProlog.ParserUUTC
 
 
@@ -43,13 +43,25 @@ proofTreeNode = Node "" "" [] ""
 foreign import jscript "%1.rule"
   getRule :: JSRule -> JSString
   
-hasValidSyntax :: String -> Bool
-hasValidSyntax term = 
-  maybe False (const True) (run pTerm term)
+hasValidTermSyntax :: String -> Bool
+hasValidTermSyntax term = 
+  maybe False (const True) (tryParseTerm term)
+  
+  
+tryParseTerm :: String -> Maybe Term
+tryParseTerm = run pTerm
+
+
+hasValidRuleSyntax :: String -> Bool
+hasValidRuleSyntax rule = 
+  maybe False (const True) (tryParseRule rule)
+
+tryParseRule :: String -> Maybe NP.Rule
+tryParseRule = run pRule
   
     
 run :: Parser a b -> [a] -> Maybe b    
-run p as = fmap fst . find (null . snd) $ startParse p as    
+run p as = fmap fst . find (null . snd) $ startParse p as 
 
 -- class exports.ProofTreeNode extends Backbone.Model
 --   # Available attributes:
