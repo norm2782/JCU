@@ -35,6 +35,8 @@ data Status    =  Correct
                |  Incomplete
                |  Invalid
                deriving Show
+               
+data AddRes = AddRes Int
 
 type Proof     =  Tree Term
 type PCheck    =  Tree Status
@@ -65,6 +67,9 @@ instance ToJSON DropRes where
 instance ToJSON PCheck where
   toJSON (Node st cs) = object  [  "proofCheckResult"    .= show st
                                 ,  "proofCheckChildren"  .= toJSON cs ]
+
+instance ToJSON AddRes where
+  toJSON (AddRes r) = toJSON r
 
 instance ToJSON Rule where
   toJSON t = object [ "rule" .= show t ]

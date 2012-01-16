@@ -40,22 +40,6 @@ import Array
 import Templates
 import Models
 
-foreign import jscript "typeof(%1)"
-  typeof :: a -> JSString
-
--- | Would like fun dep here
-class FromJS a b => FromJSPlus a b where
-  jsType :: a -> b -> String
-  check :: a -> b -> Bool
-  check a b = jsType a b == fromJS (typeof a)
-  fromJSP :: a -> Maybe b
-  fromJSP a = let (v::b) = fromJS a
-               in if check a v then
-                    Just v
-                  else
-                    Nothing
-
-
 ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url vals onSuccess onFail = do
   AQ.ajaxQ "jcu_app"
@@ -92,10 +76,6 @@ initialize = do -- Rendering
                 ajaxQ GET "/rules/stored" obj addRules noop
                 
                 addRuleTree
-                
-
-                alert $ show $ startParse pRule "ma(bea,alex)."
-                
                 
                 registerEvents $ [("#btnCheck"  , "click"   , noevent)
                                  ,("#btnAddRule", "click"   , addRuleEvent)
@@ -136,8 +116,6 @@ buildRuleUl node =
       
       jsRuleText <- (getAttr "draggable" ui >>= getAttr "context" >>= getAttr "innerText") :: IO JSString
       let ruleText = fromJS jsRuleText :: String
-      alert ruleText
-
       if length elemVal == 0 then
           alert "There needs to be a term in the text field!" 
         else
@@ -185,11 +163,11 @@ addRules obj str obj2 = do
   -- slet rules  = (Data.List.map fromJS . elems . jsArrayToArray) obj
   rules_list_div <- jQuery "#rules-list-div"
   rules_list_ul  <- jQuery "<ul id=\"rules-list-view\"/>"
+  append rules_list_div rules_list_ul
   f <- mkEachIterator (\idx e -> do
-    rule' <- jsRule2Rule e
-    let rt = rules_list_item ((fromJS . rule) rule')
-    append rules_list_div rules_list_ul
-    appendString rules_list_ul ("<li>" ++ rt ++ "</li>")    
+    (Rule id _ rule') <- jsRule2Rule e
+    listItem <- createRuleLi (fromJS rule') id
+    append rules_list_ul listItem
     return ())
   each' obj f
   
@@ -208,15 +186,17 @@ addRuleEvent event = do
   let str = JSString.concat (toJS "{\"rule\":\"") $ JSString.concat rule (toJS "\"}")
   ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
   return True
-  where onSuccess :: String -> AjaxCallback JSString
-        onSuccess r _ _ _ = do ul <- jQuery "ul#rules-list-view"
-                               appendString ul $ "<li>" ++ rules_list_item r ++ "</li>"
+  where onSuccess :: String -> AjaxCallback Int
+        onSuccess r id _ _ = do ul   <- jQuery "ul#rules-list-view"
+                                item <- createRuleLi r id 
+                                append ul item
         onFail _ _ _ = alert "faal"
         
-createRule :: String -> IO JQuery
-createRule rule = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</li>"
-                     
-                     return item
+createRuleLi :: String -> Int -> IO JQuery
+createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</li>"
+                          delButton <- findSelector item "button.btnDeleteList"
+                          click delButton (deleteRule item id)
+                          return item
         
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
@@ -227,7 +207,10 @@ foreign import jscript "wrapper"
 foreign import jscript "wrapper"
   ioWrap :: IO () -> IO (JSFunPtr (IO ()))
 
-
-
-alertType :: a -> IO ()
-alertType = _alert . typeof
+deleteRule :: JQuery -> Int -> EventHandler
+deleteRule jq i _ = do ajaxQ DELETE ("/rules/stored/"++show i) i removeLi noop
+                       return False
+  where removeLi :: AjaxCallback ()
+        removeLi _ _ _ = remove jq
+        noop :: AjaxCallback ()
+        noop _ _ _ = return ()
