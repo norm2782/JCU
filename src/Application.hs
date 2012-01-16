@@ -191,7 +191,12 @@ addStoredRuleH = restrict forbiddenH $ do
     Left   err  -> error500H err
     Right  rl   -> do
       uid  <- getUserId
-      voidM $ insertRule uid rl
+      insRes <- insertRule uid rl
+      case insRes of
+        (Just newID) -> do modifyResponse $ setContentType "application/json"
+                           writeLBS $ encode (AddRes newID)
+        Nothing      -> error500H undefined
+        
 
 loadExampleH :: AppHandler ()
 loadExampleH = restrict forbiddenH $ do
