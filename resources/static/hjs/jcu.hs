@@ -29,6 +29,10 @@ import Language.UHC.JScript.JQuery.Droppable
 import Language.Prolog.NanoProlog.NanoProlog
 import Language.Prolog.NanoProlog.ParserUUTC
 
+import Language.UHC.JScript.Deferred 
+
+import Language.UHC.JScript.WebWorker 
+
 ----
 --  App
 ----
@@ -103,7 +107,7 @@ emptyProof = T.Node (Var "") []
 
 addRuleTree :: IO ()
 addRuleTree = do
-  status      <- checkProof emptyProof
+  let status = T.Node Correct []
   ruleTreeDiv <- jQuery "#proof-tree-div"
   ruleTreeUL  <- buildRuleUl emptyProof status
   append ruleTreeDiv ruleTreeUL
@@ -168,7 +172,7 @@ replaceRuleTree p = do
   status <- checkProof p
   oldUL <- jQuery ruleTreeId
   newUL <- buildRuleUl p status
-  
+
   -- Store new proof in the subst funct
   registerEvents [("#btnSubst", "click", doSubst p)]
   -- Draw the new ruleTree
@@ -217,13 +221,32 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
                           delButton <- findSelector item "button.btnDeleteList"
                           click delButton (deleteRule item id)
                           return item
-                          
+
 checkProof :: Proof -> IO PCheck
 checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
                   rules' <- (mapM f . elems . jsArrayToArray) rules
                   return $ Prolog.checkProof rules' p
   where f x =    getAttr "innerText" x 
             >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)
+                          
+-- checkProof :: Proof -> (PCheck -> IO ()) -> IO ()
+-- checkProof p cps = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
+--                       rules' <- (mapM f . elems . jsArrayToArray) rules
+--                       
+--                       let messagecps = \ obj -> do res <- getAttr "data" obj :: IO PCheck
+--                                                    cps res
+--                                             
+--                       proofWorker <- newWorker "hjs/worker.js"
+--                       setOnMessage proofWorker messagecps
+--                       let l = Data.List.length $ show (p, rules')
+--                       msg <- mkAnonObj
+--                       p' <- mkObj p
+--                       rules'' <- mkObj rules'
+--                       setAttr "proof" p'      msg
+--                       setAttr "rules" rules'  msg
+--                       postMessage proofWorker msg
+                      
+
                     
 doSubst :: Proof -> EventHandler
 doSubst p _ = do sub <- jQuery "#txtSubstSub" >>= valString
