@@ -15,3 +15,7 @@ assocs = id
 
 empty :: Map k a
 empty = []
+
+assocs = id
+
+fromList = id

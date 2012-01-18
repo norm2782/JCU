@@ -6,6 +6,9 @@ all: build
 build:
 	${COMPILER} jcu.hs
 	
+infinite: 
+	${COMPILER} infinite.hs
+
 testcase: testcases/*.hs
 	cd testcases && ${COMPILER} alert.hs
 	

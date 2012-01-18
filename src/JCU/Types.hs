@@ -83,7 +83,7 @@ mkJSONRule :: LBS.ByteString -> Rule
 mkJSONRule = fst . startParse pRule . CSL
 
 instance FromJSON Proof where
-  parseJSON (Object o)  = mkJSONProofTree <$> o .: "term" <*> o .: "childTerms"
+  parseJSON (Object o)  = mkJSONProofTree <$> o .: "rootLabel" <*> o .: "childTerms"
   parseJSON val         = fail $ "No case for (FromJSON Proof) with value: " ++ show val
 
 instance ToJSON Proof where
