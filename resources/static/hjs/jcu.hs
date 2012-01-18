@@ -84,10 +84,9 @@ initialize = do -- Rendering
                 
                 registerEvents $ [("#btnCheck"  , "click"   , toggleClue)
                                  ,("#btnAddRule", "click"   , addRuleEvent)
-                                 ,("#btnReset"  , "click"   , noevent)
+                                 ,("#btnReset"  , "click"   , resetTree)
                                  ,("#txtAddRule", "keypress", noevent)
-                                 ,("#txtAddRule", "blur"    , noevent)
-                                 ,("#btnSubst"  , "click"   , noevent)
+                                 ,("#txtAddRule", "blur"    , checkTermSyntax)
                                  ]
   where noop :: AjaxCallback (JSPtr a)
         noop = (\x y z -> return ())
@@ -96,6 +95,16 @@ initialize = do -- Rendering
         toggleClue :: EventHandler 
         toggleClue _ = do toggleClassString "#proof-tree-div" "noClue"
                           return True
+        checkTermSyntax _ = do inp   <- jQuery "#txtAddRule"
+                               input <- valString inp
+                               case tryParseTerm input of
+                                 Nothing -> do markInvalidTerm inp
+                                 _       -> return ()
+                               return True
+        resetTree _ = do replaceRuleTree emptyProof
+                         return True
+                
+                                               
 
 emptyProof :: Proof
 emptyProof = T.Node (Var "") []
@@ -159,15 +168,12 @@ buildRuleUl node status =
     fCheck this _ = do  term <- valString this
                         case tryParseTerm term of
                           (Just t) -> replaceRuleTree $ T.Node t []
-                          _        -> do removeClass this "blueField yellowField redField whiteField greenField"
-                                         addClass this "blueField"
+                          _        -> markInvalidTerm this
                         return False
          
 replaceRuleTree :: Proof -> IO ()
 replaceRuleTree p = do
-  alert "start checkproof"
   status <- checkProof p
-  alert "end checkproof"
   oldUL <- jQuery ruleTreeId
   newUL <- buildRuleUl p status
   
@@ -220,20 +226,24 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
 checkProof :: Proof -> IO PCheck
 checkProof p = do rules  <- (jQuery ".rule-list-item" >>= jQueryToArray) :: IO (ECMAArray.JSArray JQuery)
                   rules' <- (mapM (\ x -> getAttr "innerText" x >>= (return . fromJust . tryParseRule . (fromJS :: JSString -> String))) . elems . jsArrayToArray) rules
-                  alert (show p)
-                  alert (show rules')
-                  alert "start actual checking"
                   return $ Prolog.checkProof rules' p
   -- where f x = do text <- getAttr "innertext"
                     
 doSubst :: Proof -> EventHandler
 doSubst p _ = do sub <- jQuery "#txtSubstSub" >>= valString
                  for <- jQuery "#txtSubstFor" >>= valString
-                 case tryParseTerm for of
+                 case tryParseTerm sub of
                    Nothing  -> return False
-                   (Just t) -> do let newP = subst (Env $ fromList [(sub, t)]) p
+                   (Just t) -> do let newP = subst (Env $ fromList [(for, t)]) p
                                   replaceRuleTree newP
                                   return True
+                                  
+clearClasses :: JQuery -> IO ()
+clearClasses = flip removeClass "blueField yellowField redField whiteField greenField"
+
+markInvalidTerm :: JQuery -> IO ()
+markInvalidTerm jq = do clearClasses jq
+                        addClass jq "blueField"
         
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
