@@ -3,7 +3,9 @@ module JCU where
 
 import Control.Monad (liftM, foldM)
 
+import Data.Array (elems)
 import Data.List
+import Data.Maybe (fromJust)
 import Data.Tree as T
 
 
@@ -33,12 +35,14 @@ import Language.Prolog.NanoProlog.ParserUUTC
 
 import Prolog
 
--- import Language.UHC.JScript.ECMA.Array
+import Language.UHC.JScript.ECMA.Array as ECMAArray (JSArray, jsArrayToArray)
 
 import Array
 
 import Templates
 import Models
+
+showError = alert
 
 ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url vals onSuccess onFail = do
@@ -89,16 +93,20 @@ initialize = do -- Rendering
         noevent :: EventHandler
         noevent x = return False
 
+emptyProof :: Proof
+emptyProof = T.Node (Var "") []
+
 addRuleTree :: IO ()
 addRuleTree = do
+  status      <- checkProof emptyProof
   ruleTreeDiv <- jQuery "#proof-tree-div"
-  ruleTreeUL  <- buildRuleUl $ T.Node (Var "") []
+  ruleTreeUL  <- buildRuleUl emptyProof status
   append ruleTreeDiv ruleTreeUL
   
-buildRuleUl :: Proof -> IO JQuery
-buildRuleUl node =
+buildRuleUl :: Proof -> PCheck -> IO JQuery
+buildRuleUl node status =
   do topUL <- jQuery "<ul id=\"proof-tree-view\" class=\"tree\"/>"
-     restUL <- build' [0] node node False
+     restUL <- build' [0] node (node, status) False
      append topUL restUL
      inputField <- findSelector restUL "input"
      eh  <- mkJThisEventHandler fCheck
@@ -106,10 +114,10 @@ buildRuleUl node =
      _bind inputField (toJS "blur") eh'
      return topUL
   where
-    f :: [Int] -> Proof -> (JQuery, Int) -> Proof -> IO (JQuery, Int)
-    f lvl wp (jq, n) node = do li' <- build' (lvl ++ [n]) wp node True
-                               append jq li'
-                               return (jq, n + 1)
+    f :: [Int] -> Proof -> (JQuery, Int) -> (Proof, PCheck) -> IO (JQuery, Int)
+    f lvl wp (jq, n) (node,status) = do li' <- build' (lvl ++ [n]) wp (node,status) True
+                                        append jq li'
+                                        return (jq, n + 1)
     dropje :: Proof -> [Int] -> Proof -> UIThisEventHandler
     dropje wp lvl node this _ ui = do
       elemVal <- findSelector this "input[type='text']:first" >>= valString
@@ -117,21 +125,21 @@ buildRuleUl node =
       jsRuleText <- (getAttr "draggable" ui >>= getAttr "context" >>= getAttr "innerText") :: IO JSString
       let ruleText = fromJS jsRuleText :: String
       if length elemVal == 0 then
-          alert "There needs to be a term in the text field!" 
+          showError "There needs to be a term in the text field!" 
         else
           case tryParseRule ruleText of
-            Nothing  -> alert "This should not happen. Dropping an invalid rule here."
+            Nothing  -> showError "This should not happen. Dropping an invalid rule here."
             (Just t) -> case dropUnify wp lvl t of
-                          (DropRes False _) -> alert "I could not unify this."
+                          (DropRes False _) -> showError "I could not unify this."
                           (DropRes True  p) -> replaceRuleTree p
       
       return True
 
     
-    build' :: [Int] -> Proof -> Proof -> Bool -> IO JQuery
-    build' lvl wp n@(T.Node term childTerms) disabled =
+    build' :: [Int] -> Proof -> (Proof, PCheck) -> Bool -> IO JQuery
+    build' lvl wp (n@(T.Node term childTerms), (T.Node status childStatus)) disabled =
       do li <- jQuery "<li/>"
-         appendString li  $ proof_tree_item (show term) (intercalate "." $ map show lvl) disabled
+         appendString li  $ proof_tree_item (show term) (intercalate "." $ map show lvl) disabled status
 
          dropzones <- findSelector li ".dropzone"
          
@@ -139,7 +147,7 @@ buildRuleUl node =
          drop''  <- wrappedJQueryUIEvent drop'
          droppable dropzones $ Droppable (toJS "dropHover") drop''
          startUl <- jQuery "<ul/>"
-         (res,_) <- foldM (f lvl wp) (startUl, 1) childTerms
+         (res,_) <- foldM (f lvl wp) (startUl, 1) (zip childTerms childStatus)
          append li res
          return li
          
@@ -153,8 +161,9 @@ buildRuleUl node =
          
 replaceRuleTree :: Proof -> IO ()
 replaceRuleTree p = do
+  status <- checkProof p
   oldUL <- jQuery ruleTreeId
-  newUL <- buildRuleUl p
+  newUL <- buildRuleUl p status
   replaceWith oldUL newUL
 
 
@@ -187,16 +196,24 @@ addRuleEvent event = do
   ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
   return True
   where onSuccess :: String -> AjaxCallback Int
-        onSuccess r id _ _ = do ul   <- jQuery "ul#rules-list-view"
+        onSuccess r id _ _ = do ul   <- jQuery "ul#rules-list-view" 
                                 item <- createRuleLi r id 
                                 append ul item
-        onFail _ _ _ = alert "faal"
+        onFail _ _ _ = showError "faal"
         
 createRuleLi :: String -> Int -> IO JQuery
 createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</li>"
                           delButton <- findSelector item "button.btnDeleteList"
                           click delButton (deleteRule item id)
                           return item
+                          
+checkProof :: Proof -> IO PCheck
+checkProof p = do rules  <- (jQuery ".rule-list-item" >>= jQueryToArray) :: IO (ECMAArray.JSArray JQuery)
+                  rules' <- (mapM (\ x -> getAttr "innerText" x >>= (return . fromJust . tryParseRule . (fromJS :: JSString -> String))) . elems . jsArrayToArray) rules
+                  return $ Prolog.checkProof rules' p
+  -- where f x = do text <- getAttr "innertext"
+                    
+                          
         
 foreign import jscript "jQuery.noop()"
   noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
