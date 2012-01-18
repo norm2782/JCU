@@ -97,8 +97,8 @@ initialize = do -- Rendering
                           return True
         checkTermSyntax _ = do inp   <- jQuery "#txtAddRule"
                                input <- valString inp
-                               case tryParseTerm input of
-                                 Nothing -> do markInvalidTerm inp
+                               case tryParseRule input of
+                                 Nothing -> markInvalidTerm inp
                                  _       -> return ()
                                return True
         resetTree _ = do replaceRuleTree emptyProof
