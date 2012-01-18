@@ -81,7 +81,7 @@ initialize = do -- Rendering
                 
                 addRuleTree
                 
-                registerEvents $ [("#btnCheck"  , "click"   , noevent)
+                registerEvents $ [("#btnCheck"  , "click"   , toggleClue)
                                  ,("#btnAddRule", "click"   , addRuleEvent)
                                  ,("#btnReset"  , "click"   , noevent)
                                  ,("#txtAddRule", "keypress", noevent)
@@ -92,6 +92,9 @@ initialize = do -- Rendering
         noop = (\x y z -> return ())
         noevent :: EventHandler
         noevent x = return False
+        toggleClue :: EventHandler 
+        toggleClue _ = do toggleClassString "#proof-tree-div" "noClue"
+                          return True
 
 emptyProof :: Proof
 emptyProof = T.Node (Var "") []
@@ -156,7 +159,8 @@ buildRuleUl node status =
                         let term = fromJS elemVal :: String
                         case tryParseTerm term of
                           (Just t) -> replaceRuleTree $ T.Node t []
-                          _        -> addClass this "blueField"
+                          _        -> do removeClass this "blueField yellowField redField whiteField greenField"
+                                         addClass this "blueField"
                         return False
          
 replaceRuleTree :: Proof -> IO ()

@@ -29,6 +29,7 @@ ul.tree,ul.tree ul{list-style-type:none;margin:0;padding:0}
 .greenField{background-color:#7fff69}
 .whiteField{background-color:#fff}
 .blueField{background-color:#8fffff}
+.noClue .redField, .noClue .yellowField, .noClue .greenField {background-color:#FEFEFE  }
 .box{width:12px;height:12px;border:1px solid #000;float:left;clear:both;margin-right:5px}
 .rule-list-item{background-image:url("/img/drag.png");background-repeat:no-repeat;background-position:8px 8px;background-color:#fafafa;width:490px;padding:5px 5px 8px 5px;text-indent:30px;margin:0;border:1px solid #000;position:absolute !important}
 #color-coding-list{margin-left:10px;padding-left:0}
