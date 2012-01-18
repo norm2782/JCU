@@ -55,9 +55,7 @@ ajaxQ rt url =
 
 registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
 registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
-                                               bind elem
-                                                    event 
-                                                    eh)
+                                               bind elem event eh)
 
 main :: IO ()
 main = do init <- wrapIO initialize
@@ -84,9 +82,7 @@ initialize = do -- Rendering
                                ,("#txtAddRule", "keypress", noevent)
                                ,("#txtAddRule", "blur"    , checkTermSyntax)
                                ]
-  where noop :: AjaxCallback (JSPtr a)
-        noop _ _ _ = return ()
-        noevent :: EventHandler
+  where noevent :: EventHandler
         noevent x = return False
         toggleClue :: EventHandler 
         toggleClue _ = do toggleClassString "#proof-tree-div" "noClue"
@@ -250,5 +246,3 @@ deleteRule jq i _ = do ajaxQ DELETE ("/rules/stored/"++show i) i removeLi noop
                        return False
   where removeLi :: AjaxCallback ()
         removeLi _ _ _ = remove jq
-        noop :: AjaxCallback ()
-        noop _ _ _ = return ()
