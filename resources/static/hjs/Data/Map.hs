@@ -14,3 +14,5 @@ insert :: k -> v -> Map k v -> Map k v
 insert k v = (:) (k,v)
 
 assocs = id
+
+fromList = id
