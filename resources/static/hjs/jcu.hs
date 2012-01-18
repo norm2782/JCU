@@ -1,4 +1,3 @@
-{-# LANGUAGE EmptyDataDecls #-}
 module JCU where
 
 import Control.Monad (liftM, foldM)
@@ -10,7 +9,7 @@ import Data.Maybe (fromJust)
 import Data.Tree as T
 
 
-
+import Language.UHC.JScript.Prelude
 import Language.UHC.JScript.Types -- (JS, toJS, fromJS, FromJS)
 import Language.UHC.JScript.Primitives
 import Language.UHC.JScript.JQuery.JQuery
@@ -46,16 +45,13 @@ import Models
 showError = alert
 
 ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
-ajaxQ rt url vals onSuccess onFail = do
+ajaxQ rt url =
   AQ.ajaxQ "jcu_app"
-           (AjaxOptions { ao_url         = url,
-                          ao_requestType = rt,
-                          ao_contentType = "application/json",
-                          ao_dataType    = "json"
-                        })
-           vals
-           onSuccess
-           onFail
+           AjaxOptions { ao_url         = url,
+                         ao_requestType = rt,
+                         ao_contentType = "application/json",
+                         ao_dataType    = "json"
+                       }
 
 registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
 registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
@@ -64,7 +60,7 @@ registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
                                                     eh)
 
 main :: IO ()
-main = do init <- ioWrap initialize
+main = do init <- wrapIO initialize
           onDocumentReady init
           
 ruleTreeId = "ul#proof-tree-view.tree"
@@ -82,14 +78,14 @@ initialize = do -- Rendering
                 
                 addRuleTree
                 
-                registerEvents $ [("#btnCheck"  , "click"   , toggleClue)
-                                 ,("#btnAddRule", "click"   , addRuleEvent)
-                                 ,("#btnReset"  , "click"   , resetTree)
-                                 ,("#txtAddRule", "keypress", noevent)
-                                 ,("#txtAddRule", "blur"    , checkTermSyntax)
-                                 ]
+                registerEvents [("#btnCheck"  , "click"   , toggleClue)
+                               ,("#btnAddRule", "click"   , addRuleEvent)
+                               ,("#btnReset"  , "click"   , resetTree)
+                               ,("#txtAddRule", "keypress", noevent)
+                               ,("#txtAddRule", "blur"    , checkTermSyntax)
+                               ]
   where noop :: AjaxCallback (JSPtr a)
-        noop = (\x y z -> return ())
+        noop _ _ _ = return ()
         noevent :: EventHandler
         noevent x = return False
         toggleClue :: EventHandler 
@@ -133,11 +129,11 @@ buildRuleUl node status =
                                         return (jq, n + 1)
     dropje :: Proof -> [Int] -> Proof -> UIThisEventHandler
     dropje wp lvl node this _ ui = do
-      elemVal <- findSelector this "input[type='text']:first" >>= valJSString
+      elemVal <- findSelector this "input[type='text']:first" >>= valString
       
       jsRuleText <- (getAttr "draggable" ui >>= getAttr "context" >>= getAttr "innerText") :: IO JSString
       let ruleText = fromJS jsRuleText :: String
-      if length elemVal == 0 then
+      if null elemVal then
           showError "There needs to be a term in the text field!" 
         else
           case tryParseRule ruleText of
@@ -150,7 +146,7 @@ buildRuleUl node status =
 
     
     build' :: [Int] -> Proof -> (Proof, PCheck) -> Bool -> IO JQuery
-    build' lvl wp (n@(T.Node term childTerms), (T.Node status childStatus)) disabled =
+    build' lvl wp (n@(T.Node term childTerms), T.Node status childStatus) disabled =
       do li <- jQuery "<li/>"
          appendString li  $ proof_tree_item (show term) (intercalate "." $ map show lvl) disabled status
 
@@ -208,8 +204,11 @@ addRules obj str obj2 = do
 addRuleEvent :: EventHandler
 addRuleEvent event = do
   rule  <- jQuery "#txtAddRule" >>= valJSString
-  let str = JSString.concat (toJS "{\"rule\":\"") $ JSString.concat rule (toJS "\"}")
-  ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
+  
+  case tryParseRule (fromJS rule) of
+    Nothing   -> showError "Invalid rule, not adding to rule list."
+    (Just _)  -> do let str = JSString.concat (toJS "{\"rule\":\"") $ JSString.concat rule (toJS "\"}")
+                    ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
   return True
   where onSuccess :: String -> AjaxCallback Int
         onSuccess r id _ _ = do ul   <- jQuery "ul#rules-list-view" 
@@ -224,10 +223,11 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
                           return item
                           
 checkProof :: Proof -> IO PCheck
-checkProof p = do rules  <- (jQuery ".rule-list-item" >>= jQueryToArray) :: IO (ECMAArray.JSArray JQuery)
-                  rules' <- (mapM (\ x -> getAttr "innerText" x >>= (return . fromJust . tryParseRule . (fromJS :: JSString -> String))) . elems . jsArrayToArray) rules
+checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
+                  rules' <- (mapM f . elems . jsArrayToArray) rules
                   return $ Prolog.checkProof rules' p
-  -- where f x = do text <- getAttr "innertext"
+  where f x =    getAttr "innerText" x 
+            >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)
                     
 doSubst :: Proof -> EventHandler
 doSubst p _ = do sub <- jQuery "#txtSubstSub" >>= valString
@@ -245,15 +245,6 @@ markInvalidTerm :: JQuery -> IO ()
 markInvalidTerm jq = do clearClasses jq
                         addClass jq "blueField"
         
-foreign import jscript "jQuery.noop()"
-  noop :: IO (JSFunPtr (JSPtr a -> String -> JSPtr b -> IO()))
-  
-foreign import jscript "wrapper"
-  eventWrap :: (JQuery -> IO Bool)-> IO (JSFunPtr (JQuery -> IO Bool))
-
-foreign import jscript "wrapper"
-  ioWrap :: IO () -> IO (JSFunPtr (IO ()))
-
 deleteRule :: JQuery -> Int -> EventHandler
 deleteRule jq i _ = do ajaxQ DELETE ("/rules/stored/"++show i) i removeLi noop
                        return False
