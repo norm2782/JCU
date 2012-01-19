@@ -47,6 +47,7 @@ import Templates
 import Models
 
 showError = alert
+showInfo  = alert
 
 ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url =
@@ -185,6 +186,10 @@ replaceRuleTree p = do
                  ]
   -- Draw the new ruleTree
   replaceWith oldUL newUL
+  
+  case status of
+    (Node Correct _) -> showInfo "Congratulations! You have successfully completed your proof!"
+    _                -> return ()
 
 
 addRules :: AjaxCallback (JSArray JSRule)
@@ -231,11 +236,8 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
                           return item
 
 checkProof :: Proof -> IO PCheck
-checkProof p = do alert (show p)
-                  rules  <- jQuery ".rule-list-item" >>= jQueryToArray
+checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
                   rules' <- (mapM f . elems . jsArrayToArray) rules
-                  -- t <- deepE (rules', p)
-                  -- alert (show t)
                   doCheck <- fmap (read :: String -> Bool) (jQuery storeDoCheckId >>= valString)
                   if doCheck then
                       return $ Prolog.checkProof rules' p
@@ -263,8 +265,8 @@ checkProof p = do alert (show p)
 --  where f x =    getAttr "innerText" x 
 --            >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)                      
 
-foreign import jscript "_deepe_"
-  deepE :: a -> IO a
+-- foreign import jscript "_deepe_"
+--   deepE :: a -> IO a
                     
 doSubst :: Proof -> EventHandler
 doSubst p _ = do sub <- jQuery "#txtSubstSub" >>= valString
