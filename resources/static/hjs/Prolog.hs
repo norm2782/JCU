@@ -17,6 +17,10 @@ data Status    =  Correct
                |  Incomplete
                |  Invalid
                deriving Show
+               
+dummyProof :: Proof -> PCheck
+-- dummyProof = fmap (const Incomplete)
+dummyProof (Node _ xs) = Node Incomplete (map dummyProof xs)
 
 -- | Check if the proof provided by the client is correct, incomplete or
 -- incorrect. It returns a @PCheck@: a @Tree Status@. Each node is assigned

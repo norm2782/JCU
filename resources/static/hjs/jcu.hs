@@ -59,6 +59,7 @@ ajaxQ rt url =
 
 registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
 registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
+                                               unbind elem event
                                                bind elem event eh)
 
 main :: IO ()
@@ -66,6 +67,7 @@ main = do init <- wrapIO initialize
           onDocumentReady init
           
 ruleTreeId = "ul#proof-tree-view.tree"
+storeDoCheckId = "#storeDoChecking"
 
 initialize :: IO ()
 initialize = do -- Rendering
@@ -80,7 +82,7 @@ initialize = do -- Rendering
                 
                 addRuleTree
                 
-                registerEvents [("#btnCheck"  , "click"   , toggleClue)
+                registerEvents [("#btnCheck"  , "click"   , toggleClue emptyProof)
                                ,("#btnAddRule", "click"   , addRuleEvent)
                                ,("#btnReset"  , "click"   , resetTree)
                                ,("#txtAddRule", "keypress", noevent)
@@ -88,9 +90,6 @@ initialize = do -- Rendering
                                ]
   where noevent :: EventHandler
         noevent x = return False
-        toggleClue :: EventHandler 
-        toggleClue _ = do toggleClassString "#proof-tree-div" "noClue"
-                          return True
         checkTermSyntax _ = do inp   <- jQuery "#txtAddRule"
                                input <- valString inp
                                case tryParseRule input of
@@ -99,7 +98,14 @@ initialize = do -- Rendering
                                return True
         resetTree _ = do replaceRuleTree emptyProof
                          return True
-                
+
+toggleClue :: Proof -> EventHandler
+toggleClue p _ = do toggleClassString "#proof-tree-div" "noClue"
+                    store <- jQuery storeDoCheckId
+                    val   <- fmap (read :: String -> Bool) (valString store)
+                    setValString store (show $ not val)
+                    replaceRuleTree p
+                    return True                
                                                
 
 emptyProof :: Proof
@@ -174,7 +180,9 @@ replaceRuleTree p = do
   newUL <- buildRuleUl p status
 
   -- Store new proof in the subst funct
-  registerEvents [("#btnSubst", "click", doSubst p)]
+  registerEvents [("#btnCheck", "click", toggleClue p)
+                 ,("#btnSubst", "click", doSubst p)
+                 ]
   -- Draw the new ruleTree
   replaceWith oldUL newUL
 
@@ -223,9 +231,16 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
                           return item
 
 checkProof :: Proof -> IO PCheck
-checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
+checkProof p = do alert (show p)
+                  rules  <- jQuery ".rule-list-item" >>= jQueryToArray
                   rules' <- (mapM f . elems . jsArrayToArray) rules
-                  return $ Prolog.checkProof rules' p
+                  -- t <- deepE (rules', p)
+                  -- alert (show t)
+                  doCheck <- fmap (read :: String -> Bool) (jQuery storeDoCheckId >>= valString)
+                  if doCheck then
+                      return $ Prolog.checkProof rules' p
+                    else
+                      return $ Prolog.dummyProof p
   where f x =    getAttr "innerText" x 
             >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)
                           
@@ -245,8 +260,11 @@ checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
 --                       setAttr "proof" p'      msg
 --                       setAttr "rules" rules'  msg
 --                       postMessage proofWorker msg
-                      
+--  where f x =    getAttr "innerText" x 
+--            >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)                      
 
+foreign import jscript "_deepe_"
+  deepE :: a -> IO a
                     
 doSubst :: Proof -> EventHandler
 doSubst p _ = do sub <- jQuery "#txtSubstSub" >>= valString
