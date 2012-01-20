@@ -83,11 +83,11 @@ initialize = do -- Rendering
                 
                 addRuleTree
                 
-                registerEvents [("#btnCheck"  , "click"   , toggleClue emptyProof)
-                               ,("#btnAddRule", "click"   , addRuleEvent)
-                               ,("#btnReset"  , "click"   , resetTree)
-                               ,("#txtAddRule", "keypress", noevent)
-                               ,("#txtAddRule", "blur"    , checkTermSyntax)
+                registerEvents [("#btnCheck"  , Click    , toggleClue emptyProof)
+                               ,("#btnAddRule", Click    , addRuleEvent)
+                               ,("#btnReset"  , Click    , resetTree)
+                               ,("#txtAddRule", KeyPress , noevent)
+                               ,("#txtAddRule", Blur     , checkTermSyntax)
                                ]
   where noevent :: EventHandler
         noevent x = return False
@@ -181,8 +181,8 @@ replaceRuleTree p = do
   newUL <- buildRuleUl p status
 
   -- Store new proof in the subst funct
-  registerEvents [("#btnCheck", "click", toggleClue p)
-                 ,("#btnSubst", "click", doSubst p)
+  registerEvents [("#btnCheck", Click , toggleClue p)
+                 ,("#btnSubst", Click , doSubst p)
                  ]
   -- Draw the new ruleTree
   replaceWith oldUL newUL
