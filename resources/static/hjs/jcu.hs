@@ -46,9 +46,22 @@ import Array
 import Templates
 import Models
 
+
+----
+--   Constants
+---- 
+
+ruleTreeId     = "ul#proof-tree-view.tree"
+storeDoCheckId = "#storeDoChecking"
+
+----
+--   Helpers
+----
 showError = alert
 showInfo  = alert
 
+-- | Wrapper function for making Ajax Requests with all types set to JSON as it
+--   is the only type of request we will be making.
 ajaxQ :: (JS r, JS v) => AjaxRequestType -> String -> v -> AjaxCallback r -> AjaxCallback r -> IO ()
 ajaxQ rt url =
   AQ.ajaxQ "jcu_app"
@@ -58,17 +71,27 @@ ajaxQ rt url =
                          ao_dataType    = "json"
                        }
 
-registerEvents :: [(String, JEventType, EventHandler)] -> IO ()
-registerEvents = mapM_ (\ (e, event, eh) -> do elem <- jQuery e
-                                               unbind elem event
-                                               bind elem event eh)
+-- | Update an existing input field that is used to store `global' variables
+--   Not entirely best practice. This should perhaps be modelled in a State
+--   monad.
+updateStore :: (Read a, Show a) => Selector -> (a -> a) -> IO ()
+updateStore sel updateF = do
+  store <- jQuery sel
+  val   <- fmap read (valString store)
+  setValString store (show $ updateF val)
 
+-- | Read the contents of the store
+readStore :: (Read a) => Selector -> IO a
+readStore sel = fmap read (jQuery storeDoCheckId >>= valString)
+
+----
+--   Application
+----
 main :: IO ()
 main = do init <- wrapIO initialize
           onDocumentReady init
           
-ruleTreeId = "ul#proof-tree-view.tree"
-storeDoCheckId = "#storeDoChecking"
+
 
 initialize :: IO ()
 initialize = do -- Rendering
@@ -76,12 +99,10 @@ initialize = do -- Rendering
                 setHTML bd Templates.home
                 wrapInner bd "<div id=\"home-view\"/>"
                 -- Proof tree
-                
+                addRuleTree
                 -- Rules list
                 obj <- mkAnonObj
                 ajaxQ GET "/rules/stored" obj addRules noop
-                
-                addRuleTree
                 
                 registerEvents [("#btnCheck"  , Click    , toggleClue emptyProof)
                                ,("#btnAddRule", Click    , addRuleEvent)
@@ -97,17 +118,20 @@ initialize = do -- Rendering
                                  Nothing -> markInvalidTerm inp
                                  _       -> return ()
                                return True
-        resetTree _ = do replaceRuleTree emptyProof
+        resetTree _ = do -- Do not forget to add the class that hides the colours
+                         jQuery "#proof-tree-div" >>= flip addClass "noClue"
+                         -- Always store False in the store.
+                         updateStore storeDoCheckId (const False)
+                         replaceRuleTree emptyProof
                          return True
 
+-- Toggles checking of the proof and showing the results
 toggleClue :: Proof -> EventHandler
 toggleClue p _ = do toggleClassString "#proof-tree-div" "noClue"
-                    store <- jQuery storeDoCheckId
-                    val   <- fmap (read :: String -> Bool) (valString store)
-                    setValString store (show $ not val)
+                    updateStore storeDoCheckId not
                     replaceRuleTree p
                     return True                
-                                               
+                                          
 
 emptyProof :: Proof
 emptyProof = T.Node (Var "") []
@@ -118,7 +142,8 @@ addRuleTree = do
   ruleTreeDiv <- jQuery "#proof-tree-div"
   ruleTreeUL  <- buildRuleUl emptyProof status
   append ruleTreeDiv ruleTreeUL
-  
+
+-- | Builds up the rule tree  
 buildRuleUl :: Proof -> PCheck -> IO JQuery
 buildRuleUl node status =
   do topUL <- jQuery "<ul id=\"proof-tree-view\" class=\"tree\"/>"
@@ -134,8 +159,8 @@ buildRuleUl node status =
     f lvl wp (jq, n) (node,status) = do li' <- build' (lvl ++ [n]) wp (node,status) True
                                         append jq li'
                                         return (jq, n + 1)
-    dropje :: Proof -> [Int] -> Proof -> UIThisEventHandler
-    dropje wp lvl node this _ ui = do
+    onDrop :: Proof -> [Int] -> Proof -> UIThisEventHandler
+    onDrop wp lvl node this _ ui = do
       elemVal <- findSelector this "input[type='text']:first" >>= valString
       
       jsRuleText <- (getAttr "draggable" ui >>= getAttr "context" >>= getAttr "innerText") :: IO JSString
@@ -159,9 +184,9 @@ buildRuleUl node status =
 
          dropzones <- findSelector li ".dropzone"
          
-         drop'   <- mkJUIThisEventHandler (dropje wp lvl n) 
-         drop''  <- wrappedJQueryUIEvent drop'
-         droppable dropzones $ Droppable (toJS "dropHover") drop''
+         drop      <- mkJUIThisEventHandler (onDrop wp lvl n) 
+                        >>= wrappedJQueryUIEvent
+         droppable dropzones $ Droppable (toJS "dropHover") drop
          startUl <- jQuery "<ul/>"
          (res,_) <- foldM (f lvl wp) (startUl, 1) (zip childTerms childStatus)
          append li res
@@ -220,7 +245,7 @@ addRuleEvent event = do
   
   case tryParseRule (fromJS rule) of
     Nothing   -> showError "Invalid rule, not adding to rule list."
-    (Just _)  -> do let str = JSString.concat (toJS "{\"rule\":\"") $ JSString.concat rule (toJS "\"}")
+    (Just _)  -> do let str = foldl1 JSString.concat [toJS "{\"rule\":\"", rule, toJS "\"}"]
                     ajaxQ POST "/rules/stored" str (onSuccess (fromJS rule)) onFail
   return True
   where onSuccess :: String -> AjaxCallback Int
@@ -235,17 +260,22 @@ createRuleLi rule id = do item <- jQuery $ "<li>" ++ rules_list_item rule ++ "</
                           click delButton (deleteRule item id)
                           return item
 
+-- | Checks the current proof against the current list of rules. If the user
+--   added rules in a different window or deleted them there those changes will
+--   not be visible here.
 checkProof :: Proof -> IO PCheck
 checkProof p = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
                   rules' <- (mapM f . elems . jsArrayToArray) rules
-                  doCheck <- fmap (read :: String -> Bool) (jQuery storeDoCheckId >>= valString)
+                  doCheck <- readStore storeDoCheckId
                   if doCheck then
                       return $ Prolog.checkProof rules' p
                     else
                       return $ Prolog.dummyProof p
   where f x =    getAttr "innerText" x 
             >>=  return . fromJust . tryParseRule . (fromJS :: JSString -> String)
-                          
+
+
+-- | This is how I think checkProof should look when using workers.                          
 -- checkProof :: Proof -> (PCheck -> IO ()) -> IO ()
 -- checkProof p cps = do rules  <- jQuery ".rule-list-item" >>= jQueryToArray
 --                       rules' <- (mapM f . elems . jsArrayToArray) rules
@@ -285,7 +315,8 @@ markInvalidTerm jq = do clearClasses jq
                         addClass jq "blueField"
         
 deleteRule :: JQuery -> Int -> EventHandler
-deleteRule jq i _ = do ajaxQ DELETE ("/rules/stored/"++show i) i removeLi noop
-                       return False
+deleteRule jq i _ = do 
+  ajaxQ DELETE ("/rules/stored/"++show i) i removeLi noop
+  return False
   where removeLi :: AjaxCallback ()
         removeLi _ _ _ = remove jq
