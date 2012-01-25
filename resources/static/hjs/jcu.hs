@@ -29,7 +29,7 @@ import Language.UHC.JScript.JQuery.Droppable
 import Language.Prolog.NanoProlog.NanoProlog
 import Language.Prolog.NanoProlog.ParserUUTC
 
-import Language.UHC.JScript.Deferred 
+import Language.UHC.JScript.JQuery.Deferred 
 
 import Language.UHC.JScript.WebWorker 
 
