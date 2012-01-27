@@ -341,18 +341,19 @@ registrationForm = (\ep pp _ -> FormUser (fst ep) (fst pp) False)
 -------------------------------------------------------------------------------
 -- Database interaction
 
-insertRule :: HasHdbc m c s => UserId -> Rule -> m (Maybe Int)
-insertRule uid rl = let sqlVals = [toSql $ unUid uid, toSql $ show rl] in do
-  query'  "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
-  rws <- query  "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC"
-                sqlVals
-  return $ case rws of
-             []     -> Nothing
-             (x:_)  -> Just $ fromSql $ x DM.! "rid"
+insertRule :: (Functor m, HasHdbc m c s) => UserId -> Rule -> m (Maybe Int)
+insertRule uid rl =
+  let sqlVals = [toSql $ unUid uid, toSql $ show rl]
+  in do
+    void $ query' "INSERT INTO rules (uid, rule_order, rule) VALUES (?, 1, ?)" sqlVals
+    rws <- query "SELECT rid FROM rules WHERE uid = ? AND rule = ? ORDER BY rid DESC" sqlVals
+    return $ case rws of
+               []     -> Nothing
+               (x:_)  -> Just $ fromSql $ x DM.! "rid"
 
 deleteRule :: (Functor m, HasHdbc m c s) => UserId -> ByteString -> m ()
-deleteRule uid rid = void $
-  query' "DELETE FROM rules WHERE rid = ? AND uid = ?" [toSql rid, toSql uid]
+deleteRule uid rid = void $ query'
+  "DELETE FROM rules WHERE rid = ? AND uid = ?" [toSql rid, toSql uid]
 
 getStoredRules :: HasHdbc m c s => UserId -> m [DBRule]
 getStoredRules uid = do
@@ -366,4 +367,5 @@ getStoredRules uid = do
                         (fst . startParse pRule $ CS (rdSql "rule"))
 
 deleteUserRules :: (Functor m, HasHdbc m c s) => UserId -> m ()
-deleteUserRules uid = void $ query' "DELETE FROM rules WHERE uid = ?" [toSql uid]
+deleteUserRules uid = void $ query'
+  "DELETE FROM rules WHERE uid = ?" [toSql uid]
